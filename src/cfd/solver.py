@@ -47,7 +47,10 @@ class SU2Solver:
         """
         workdir.mkdir(parents=True, exist_ok=True)
 
-        cmd = [str(self.su2_cfd), str(config_path)]
+        # SU2 expects config file relative to working directory
+        # If config_path is absolute and in workdir, pass just the filename
+        config_name = Path(config_path).name
+        cmd = [str(self.su2_cfd), config_name]
         logger.info(f"Running SU2: {' '.join(cmd)}")
         logger.info(f"Working directory: {workdir}")
 
@@ -91,8 +94,9 @@ class SU2Solver:
                 results.iterations = len(results.history)
 
                 # Check convergence (residual drop)
-                first_residual = float(results.history[0].get("RMS_DENSITY", 1.0))
-                last_residual = float(results.history[-1].get("RMS_DENSITY", 1.0))
+                # SU2 history.csv uses "rms[Rho]" as the column name
+                first_residual = float(results.history[0].get("rms[Rho]", 1.0))
+                last_residual = float(results.history[-1].get("rms[Rho]", 1.0))
                 results.residual_drop = first_residual - last_residual
                 results.converged = results.residual_drop > 3.0  # 3 orders of magnitude
 
@@ -108,12 +112,31 @@ class SU2Solver:
         history: list[dict] = []
         try:
             with open(history_path, 'r') as f:
-                # Skip comment lines
-                lines = [line for line in f if not line.startswith('"') and line.strip()]
-                if lines:
-                    reader = csv.DictReader(lines)
-                    for row in reader:
-                        history.append(row)
+                lines = f.readlines()
+            
+            if not lines:
+                return history
+            
+            # SU2 history.csv format:
+            # Line 1: Header line with quoted column names
+            # Line 2+: Data rows
+            
+            # Parse header (first line)
+            header_line = lines[0].strip()
+            # Remove quotes and split by comma
+            header = [h.strip().strip('"') for h in header_line.split(',')]
+            
+            # Parse data rows
+            for line in lines[1:]:
+                line_stripped = line.strip()
+                if not line_stripped:
+                    continue
+                
+                values = [v.strip() for v in line_stripped.split(',')]
+                if len(values) == len(header):
+                    row = dict(zip(header, values))
+                    history.append(row)
+                    
         except Exception as e:
             logger.warning(f"Failed to parse history: {e}")
         return history

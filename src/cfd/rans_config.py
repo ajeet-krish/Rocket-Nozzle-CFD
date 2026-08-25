@@ -50,6 +50,10 @@ GAMMA_VALUE= {self.gamma}
 GAS_CONSTANT= {self.gas_constant}
 SYSTEM_MEASUREMENTS= SI
 
+% Reynolds number for RANS
+REYNOLDS_NUMBER= 1e6
+REYNOLDS_LENGTH= 0.1
+
 % -------------------- BOUNDARY CONDITIONS -------------------
 MARKER_SYM= ( {self.symmetry_marker} )
 MARKER_HEATFLUX= ( {self.wall_marker}, {self.wall_heat_flux} )
@@ -66,8 +70,7 @@ MUSCL_FLOW= NO
 TIME_DISCRE_FLOW= EULER_IMPLICIT
 
 % Turbulence initialization
-FREESTREAM_TURBULENCE_INTENSITY= {self.freestream_turbulence_intensity}
-FREESTREAM_TURBULENCE_VISCOSITY_RATIO= {self.freestream_viscosity_ratio}
+FREESTREAM_TURBULENCEINTENSITY= {self.freestream_turbulence_intensity}
 
 % Turbulence numerics
 CONV_NUM_METHOD_TURB= {self.conv_num_method_turb}

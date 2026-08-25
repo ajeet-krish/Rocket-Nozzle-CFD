@@ -50,6 +50,11 @@ def main() -> None:
     print("\n[3/4] Running RANS simulation...")
     rans_dir = workdir / "rans"
     rans_dir.mkdir(exist_ok=True)
+    
+    # Copy mesh to RANS directory
+    import shutil
+    shutil.copy(workdir / "nozzle.su2", rans_dir / "nozzle.su2")
+    
     rans_config_path = rans_config.write(rans_dir)
     rans_results = solver.run(rans_config_path, rans_dir)
     print(f"  Exit Mach: {rans_results.exit_mach:.4f}")
