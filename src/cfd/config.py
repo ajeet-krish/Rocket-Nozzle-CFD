@@ -71,27 +71,25 @@ SYSTEM_MEASUREMENTS= SI
 MARKER_EULER= ( {self.wall_marker} )
 MARKER_SYM= ( {self.symmetry_marker} )
 
-% Inlet: total conditions (chamber)
-MARKER_TOTAL_CONDITIONS= ( {self.inlet_marker}, 1.0, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )
+% Inlet: subsonic inlet with total conditions (Tt, Pt, Vx, Vy, Vz)
+MARKER_INLET= ( {self.inlet_marker}, {self.total_temperature:.1f}, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )
 
 % Outlet: static pressure
 MARKER_OUTLET= ( {self.outlet_marker}, {self.static_pressure:.1f} )
 
 % -------------------- NUMERICAL METHOD -----------------------
 CONV_NUM_METHOD_FLOW= ROE
-MUSCL_FLOW= YES
-SLOPE_LIMITER_FLOW= VENKATAKRISHNAN
+MUSCL_FLOW= NO
 TIME_DISCRE_FLOW= EULER_IMPLICIT
 
 % -------------------- CONVERGENCE ----------------------------
 ITER= {self.iterations}
 CFL_NUMBER= {self.cfl_number}
-CFL_ADAPT= NO
+CFL_ADAPT= YES
+CFL_ADAPT_PARAM= ( 0.1, 1.5, 0.5, 100.0 )
 CONV_FIELD= RMS_DENSITY
 CONV_RESIDUAL_MINVAL= {self.conv_residual_minval}
 CONV_STARTITER= 100
-CONV_CAUCHY_ELEMS= 100
-CONV_CAUCHY_EPS= 1E-10
 
 % -------------------- LINEAR SOLVER --------------------------
 LINEAR_SOLVER= FGMRES
@@ -103,13 +101,9 @@ LINEAR_SOLVER_ITER= 10
 MGLEVEL= 0
 
 % -------------------- OUTPUT -----------------------------------
-SCREEN_OUTPUT= (INNER_ITER, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, MACH)
-HISTORY_OUTPUT= (INNER_ITER, RMS_RES)
-TABULAR_FORMAT= CSV
+SCREEN_OUTPUT= (INNER_ITER, RMS_DENSITY, MACH)
 OUTPUT_FILES= (RESTART, PARAVIEW)
 VOLUME_FILENAME= {self.volume_filename}
-SURFACE_FILENAME= surface
-HISTORY_FILENAME= {self.history_filename}
 
 MESH_FILENAME= {mesh}
 """

@@ -2,7 +2,7 @@
 import pytest
 from pathlib import Path
 from nozzle.config import NozzleConfig
-from cfd.mesh import generate_nozzle_mesh, validate_mesh, _compute_zone_fractions, _compute_zone_indices
+from cfd.mesh import generate_nozzle_mesh, validate_mesh
 from cfd.mesh_config import MeshConfig
 
 
@@ -56,19 +56,13 @@ class TestMeshGeneration:
         assert mesh_path.stat().st_size > 1000
 
     def test_mesh_with_custom_config(self, tmp_path):
-        """Mesh generation should work with custom MeshConfig."""
+        """Mesh generation should work with custom parameters."""
         nozzle_config = NozzleConfig(throat_radius=0.05, expansion_ratio=12.0)
-        mesh_config = MeshConfig(
-            converging_cells=20,
-            throat_cells=15,
-            diverging_cells=30,
-            plume_cells=20,
-            n_normal=40,
-        )
         mesh_path = generate_nozzle_mesh(
             nozzle_config,
+            n_axial=30,
+            n_normal=40,
             output_file=str(tmp_path / "custom.su2"),
-            mesh_config=mesh_config,
         )
         assert mesh_path.exists()
 
@@ -148,40 +142,3 @@ class TestMeshConfig:
         )
         assert mc.converging_cells == 25
         assert mc.first_cell_height == 5e-7
-
-
-class TestZoneFractions:
-    """Tests for zone fraction computation."""
-
-    def test_fractions_sum_to_one(self):
-        """Zone fractions should span [0, 1]."""
-        mc = MeshConfig()
-        f1, f2, f3 = _compute_zone_fractions(mc)
-        assert 0 < f1 < f2 < f3 <= 1.0
-
-    def test_fractions_proportional_to_cells(self):
-        """Fractions should be proportional to cell counts."""
-        mc = MeshConfig(converging_cells=10, throat_cells=10,
-                         diverging_cells=10, plume_cells=10)
-        f1, f2, f3 = _compute_zone_fractions(mc)
-        assert f1 == pytest.approx(0.25, abs=0.01)
-        assert f2 == pytest.approx(0.50, abs=0.01)
-        assert f3 == pytest.approx(0.75, abs=0.01)
-
-
-class TestZoneIndices:
-    """Tests for zone index computation."""
-
-    def test_indices_within_bounds(self):
-        """Zone indices should be within contour bounds."""
-        n = 200
-        fracs = (0.2, 0.35, 0.7)
-        i1, i2, i3 = _compute_zone_indices(n, fracs)
-        assert 0 < i1 < i2 < i3 < n
-
-    def test_indices_increase(self):
-        """Zone indices should be strictly increasing."""
-        n = 100
-        fracs = (0.25, 0.40, 0.75)
-        i1, i2, i3 = _compute_zone_indices(n, fracs)
-        assert i1 < i2 < i3

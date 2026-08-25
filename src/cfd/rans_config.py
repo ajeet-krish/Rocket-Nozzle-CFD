@@ -54,16 +54,15 @@ SYSTEM_MEASUREMENTS= SI
 MARKER_SYM= ( {self.symmetry_marker} )
 MARKER_HEATFLUX= ( {self.wall_marker}, {self.wall_heat_flux} )
 
-% Inlet: total conditions (chamber)
-MARKER_TOTAL_CONDITIONS= ( {self.inlet_marker}, 1.0, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )
+% Inlet: subsonic inlet with total conditions (Tt, Pt, Vx, Vy, Vz)
+MARKER_INLET= ( {self.inlet_marker}, {self.total_temperature:.1f}, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )
 
 % Outlet: static pressure
 MARKER_OUTLET= ( {self.outlet_marker}, {self.static_pressure:.1f} )
 
 % -------------------- NUMERICAL METHOD -----------------------
 CONV_NUM_METHOD_FLOW= ROE
-MUSCL_FLOW= YES
-SLOPE_LIMITER_FLOW= VENKATAKRISHNAN
+MUSCL_FLOW= NO
 TIME_DISCRE_FLOW= EULER_IMPLICIT
 
 % Turbulence initialization
@@ -94,13 +93,9 @@ LINEAR_SOLVER_ITER= 10
 MGLEVEL= 0
 
 % -------------------- OUTPUT -----------------------------------
-SCREEN_OUTPUT= (INNER_ITER, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, RMS_TKE, RMS_DISSIPATION, MACH)
-HISTORY_OUTPUT= (INNER_ITER, RMS_RES)
-TABULAR_FORMAT= CSV
+SCREEN_OUTPUT= (INNER_ITER, RMS_DENSITY, MACH)
 OUTPUT_FILES= (RESTART, PARAVIEW)
 VOLUME_FILENAME= {self.volume_filename}
-SURFACE_FILENAME= surface
-HISTORY_FILENAME= {self.history_filename}
 
 MESH_FILENAME= {mesh}
 """

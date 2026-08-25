@@ -86,7 +86,7 @@ class TestSU2RANSConfig:
         config_path = config.write(tmp_path)
         content = config_path.read_text()
         assert "RMS_TKE" in content
-        assert "RMS_DISSIPATION" in content
+        assert "RMS_DENSITY" in content
 
     def test_custom_turb_model(self, tmp_path: Path) -> None:
         """Custom turbulence model should appear in config."""

@@ -38,7 +38,7 @@ def main() -> int:
         static_pressure=101325.0,
         gamma=1.4,
         iterations=5000,
-        cfl_number=1.0,
+        cfl_number=0.1,
     )
 
     # Setup directories
@@ -61,8 +61,8 @@ def main() -> int:
     print("\n[2/6] Generating Gmsh mesh...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=200,
-        n_normal=80,
+        n_axial=20,
+        n_normal=10,
         output_file=str(workdir / "nozzle.su2"),
     )
     print(f"  Mesh: {mesh_path}")

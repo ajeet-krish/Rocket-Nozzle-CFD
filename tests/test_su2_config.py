@@ -74,7 +74,7 @@ class TestSU2NozzleConfig:
         content = config_path.read_text()
         assert "MARKER_EULER=" in content
         assert "MARKER_SYM=" in content
-        assert "MARKER_TOTAL_CONDITIONS=" in content
+        assert "MARKER_INLET=" in content
         assert "MARKER_OUTLET=" in content
 
     def test_cfg_contains_iterations(self, default_config, tmp_path):
@@ -123,7 +123,6 @@ class TestSU2NozzleConfig:
         """Config file should have output settings."""
         config_path = default_config.write(tmp_path)
         content = config_path.read_text()
-        assert "TABULAR_FORMAT= CSV" in content
         assert "OUTPUT_FILES=" in content
 
     def test_cfg_contains_linear_solver(self, default_config, tmp_path):
