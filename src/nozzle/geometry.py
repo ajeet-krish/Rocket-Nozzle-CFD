@@ -114,3 +114,29 @@ def plot_contour(x: np.ndarray, y: np.ndarray, title: str = "Nozzle Contour") ->
     plt.tight_layout()
     plt.savefig('docs/assets/images/nozzle_contour.png', dpi=150)
     plt.close()
+
+
+def generate_plume_contour(
+    config: NozzleConfig,
+    plume_length_ratio: float = 30.0,
+    n_points: int = 100,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Generate plume contour downstream of nozzle exit.
+
+    Creates a constant-radius extension (plume) downstream of the nozzle
+    exit plane. The plume radius equals the nozzle exit radius.
+
+    Args:
+        config: Nozzle geometry parameters
+        plume_length_ratio: Plume length as multiple of throat radius
+        n_points: Number of contour points in plume
+
+    Returns:
+        x: axial coordinates (m), shape (n_points,)
+        y: radial coordinates (m), shape (n_points,)
+    """
+    plume_length = plume_length_ratio * config.throat_radius
+    x_exit = config.diverging_length
+    x = np.linspace(x_exit, x_exit + plume_length, n_points)
+    y = np.full_like(x, config.exit_radius)
+    return x, y
