@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rocket Nozzle CFD Results: Reference case analysis and parametric sweeps.">
+  <title>Results - Rocket Nozzle CFD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">Rocket Nozzle CFD</a>
+    <button class="nav__toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links">
+      <li><a href="index.html" class="nav__link">Home</a></li>
+      <li><a href="results.html" class="nav__link active">Results</a></li>
+      <li><a href="validation.html" class="nav__link">Validation</a></li>
+    </ul>
+  </nav>
+
+  <main class="main" id="main-content">
+
+    <!-- Hero -->
+    <section class="hero" style="min-height: 40vh;">
+      <div class="hero__content">
+        <h1 class="hero__title">Results</h1>
+        <p class="hero__description">
+          Reference case analysis and parametric sweep results for the converging-diverging rocket nozzle.
+        </p>
+      </div>
+    </section>
+
+    <!-- Reference Case -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Reference Case</h2>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat">
+            <div class="stat__value">4.13</div>
+            <div class="stat__label">Exit Mach</div>
+          </div>
+          <div class="stat">
+            <div class="stat__value">12</div>
+            <div class="stat__label">Expansion Ratio</div>
+          </div>
+          <div class="stat">
+            <div class="stat__value">10 MPa</div>
+            <div class="stat__label">Chamber Pressure</div>
+          </div>
+          <div class="stat">
+            <div class="stat__value">5 cm</div>
+            <div class="stat__label">Throat Radius</div>
+          </div>
+        </div>
+
+        <!-- Mach Contour -->
+        <h3>Mach Number Contour</h3>
+        <p>The Mach number distribution shows the flow accelerating from subsonic at the inlet through the sonic throat (M=1) to supersonic in the diverging section. Shock diamonds are visible in the exhaust plume.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/mach_contour.png" alt="Mach number contour" loading="lazy">
+        </div>
+
+        <!-- Convergence -->
+        <h3>Convergence History</h3>
+        <p>RMS density residual drops approximately 4 orders of magnitude, confirming steady-state convergence of the Euler simulation.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/convergence.png" alt="Convergence history" loading="lazy">
+        </div>
+
+        <!-- Wall Pressure -->
+        <h3>Wall Pressure Distribution</h3>
+        <p>Static pressure along the nozzle wall decreases monotonically from chamber pressure (10 MPa) to near-vacuum conditions at the exit.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/wall_pressure.png" alt="Wall pressure distribution" loading="lazy">
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3>Shock Diamond Structure</h3>
+        <p>Density gradient magnitude reveals the shock diamond pattern in the exhaust plume, characteristic of over-expanded nozzle flow.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/shock_diamonds.png" alt="Shock diamond visualization" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- Parametric Sweeps -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Parametric Sweeps</h2>
+
+        <h3>Exit Mach vs Expansion Ratio</h3>
+        <p>Sweeping expansion ratio from 4 to 20 while holding chamber pressure at 10 MPa and throat radius at 5 cm. Exit Mach increases with expansion ratio following the isentropic area-Mach relation.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/sweep_mach_vs_epsilon.png" alt="Exit Mach vs expansion ratio" loading="lazy">
+        </div>
+
+        <h3>Exit Mach vs Chamber Pressure</h3>
+        <p>Sweeping chamber pressure from 5 to 50 MPa. For calorically perfect gas (constant gamma), exit Mach is independent of chamber pressure. The SU2 results confirm this theoretical prediction.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/sweep_mach_vs_pc.png" alt="Exit Mach vs chamber pressure" loading="lazy">
+        </div>
+
+        <h3>Exit Mach vs Throat Radius</h3>
+        <p>Sweeping throat radius from 1 cm to 10 cm. Exit Mach is independent of absolute scale for geometrically similar nozzles. The SU2 results confirm scale invariance.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/sweep_mach_vs_rstar.png" alt="Exit Mach vs throat radius" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Rocket Nozzle CFD &middot; Built by Ajeet Krishnasamy &middot; <a href="https://github.com/ajeet-krish/rocket-nozzle-cfd"
+        target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/ajeetkrishnasamy/"
+        target="_blank">LinkedIn</a></p>
+  </footer>
+
+  <script src="assets/js/main.js" type="module" defer></script>
+
+</body>
+
+</html>
