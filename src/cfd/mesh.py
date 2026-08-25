@@ -15,6 +15,7 @@ def generate_nozzle_mesh(
     n_normal: int = 10,
     first_cell_height: float = 1e-6,
     output_file: str = "nozzle.su2",
+    rans_mode: bool = False,
 ) -> Path:
     """Generate structured O-grid mesh for converging-diverging nozzle.
 
@@ -22,6 +23,7 @@ def generate_nozzle_mesh(
     - Spline wall curve (3 control points: inlet, throat, exit)
     - Transfinite meshing with 4 boundary curves
     - Recombined quad elements for SU2
+    - Optional boundary layer refinement for RANS
 
     Args:
         config: Nozzle geometry parameters
@@ -29,6 +31,7 @@ def generate_nozzle_mesh(
         n_normal: Number of cells normal to wall
         first_cell_height: First cell height for boundary layer (m)
         output_file: Output .su2 mesh file path
+        rans_mode: If True, add boundary layer refinement
 
     Returns:
         Path to generated .su2 mesh file
@@ -69,10 +72,22 @@ def generate_nozzle_mesh(
     surface = gmsh.model.geo.addPlaneSurface([loop])
 
     # Transfinite (use nodes = cells + 1)
-    gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1)
-    gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
-    gmsh.model.geo.mesh.setTransfiniteCurve(outlet_line, n_normal + 1)
-    gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
+    if rans_mode:
+        # For RANS: use geometric progression for boundary layer refinement
+        # The inlet and outlet curves are normal to the wall
+        # Use Progression with growth ratio to cluster cells near the wall
+        growth_ratio = 1.15
+        gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1, "Progression", growth_ratio)
+        gmsh.model.geo.mesh.setTransfiniteCurve(outlet_line, n_normal + 1, "Progression", growth_ratio)
+        gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
+    else:
+        # For Euler: uniform spacing
+        gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(outlet_line, n_normal + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
+    
     gmsh.model.geo.mesh.setTransfiniteSurface(surface, "Left")
     gmsh.model.geo.mesh.setRecombine(2, surface)
 
