@@ -103,6 +103,8 @@ def thrust_coefficient(
     chamber_pressure: float,
     throat_area: float,
     gamma: float = 1.4,
+    gas_constant: float = 287.058,
+    total_temperature: float = 3500.0,
 ) -> float:
     """Compute thrust coefficient.
 
@@ -112,23 +114,85 @@ def thrust_coefficient(
         chamber_pressure: Chamber (total) pressure (Pa)
         throat_area: Throat cross-sectional area (m^2)
         gamma: Ratio of specific heats
+        gas_constant: Specific gas constant (J/(kg*K))
+        total_temperature: Total temperature (K)
 
     Returns:
         Thrust coefficient (dimensionless)
     """
-    # For perfectly expanded nozzle (p_exit = p_ambient)
-    # Cf = (rho_e * v_e^2) / (p_0 * A*)
-
     # Exit velocity
-    v_exit = exit_mach * math.sqrt(gamma * 287.058 * 3500.0 / (1.0 + (gamma - 1.0) / 2.0 * exit_mach**2))
+    v_exit = exit_mach * math.sqrt(
+        gamma * gas_constant * total_temperature /
+        (1.0 + (gamma - 1.0) / 2.0 * exit_mach**2)
+    )
 
     # Exit density
-    rho_exit = chamber_pressure / (287.058 * 3500.0) * (1.0 + (gamma - 1.0) / 2.0 * exit_mach**2)**(-1.0 / (gamma - 1.0))
+    rho_exit = chamber_pressure / (gas_constant * total_temperature) * (
+        1.0 + (gamma - 1.0) / 2.0 * exit_mach**2
+    )**(-1.0 / (gamma - 1.0))
+
+    # Exit area from throat area and exit Mach
+    exit_area = throat_area * area_mach_relation(exit_mach, gamma)
 
     # Thrust force
-    thrust = rho_exit * v_exit**2 * math.pi * (0.05 * math.sqrt(12.0))**2
+    thrust = rho_exit * v_exit**2 * exit_area
 
     # Reference force
     ref_force = chamber_pressure * throat_area
 
     return thrust / ref_force
+
+
+def total_to_static_density(M: float, gamma: float = 1.4) -> float:
+    """Compute rho0/rho from Mach number.
+
+    Args:
+        M: Mach number
+        gamma: Ratio of specific heats
+
+    Returns:
+        Density ratio rho0/rho
+    """
+    return (1.0 + (gamma - 1.0) / 2.0 * M**2) ** (1.0 / (gamma - 1.0))
+
+
+def mach_from_area_ratio(
+    area_ratio: float,
+    gamma: float = 1.4,
+    supersonic: bool = True,
+) -> float:
+    """Solve for Mach number given area ratio A/A*.
+
+    Args:
+        area_ratio: Area ratio A/A*
+        gamma: Ratio of specific heats
+        supersonic: If True, return supersonic branch; else subsonic
+
+    Returns:
+        Mach number
+    """
+    if area_ratio < 1.0:
+        raise ValueError("Area ratio must be >= 1.0")
+
+    if area_ratio == 1.0:
+        return 1.0
+
+    # Define the equation to solve: A/A*(M) - area_ratio = 0
+    def equation(M: float) -> float:
+        return area_mach_relation(M, gamma) - area_ratio
+
+    # Solve for appropriate branch
+    try:
+        if supersonic:
+            M = brentq(equation, 1.0, 10.0)
+        else:
+            M = brentq(equation, 0.01, 1.0)
+        return M
+    except ValueError:
+        # Fallback: approximate solution
+        if supersonic:
+            return math.sqrt(2.0 / (gamma - 1.0) * (
+                (area_ratio * (gamma + 1.0) / 2.0) ** (2.0 * (gamma - 1.0) / (gamma + 1.0)) - 1.0
+            ))
+        else:
+            return 1.0 / area_ratio  # Approximate for low Mach

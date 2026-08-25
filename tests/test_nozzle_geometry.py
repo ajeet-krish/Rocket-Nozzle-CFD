@@ -48,18 +48,13 @@ class TestGenerateContour:
             f"Throat should be at x~0, found x={x[throat_idx]}"
         )
 
-    def test_exit_radius_from_conical_formula(self, default_config, default_contour):
-        """Exit radius should match conical formula: R_throat + L_div * tan(half_angle)."""
+    def test_exit_radius_matches_expansion_ratio(self, default_config, default_contour):
+        """Exit radius should match config.exit_radius from expansion_ratio."""
         x, y = default_contour
-        half_angle_rad = math.radians(default_config.half_angle)
-        expected_exit_radius = (
-            default_config.throat_radius
-            + default_config.diverging_length * math.tan(half_angle_rad)
-        )
         actual_exit_radius = y[-1]
-        assert actual_exit_radius == pytest.approx(expected_exit_radius, rel=1e-6), (
-            f"Exit radius should be {expected_exit_radius:.4f}m (from conical formula), "
-            f"got {actual_exit_radius:.4f}m"
+        assert actual_exit_radius == pytest.approx(default_config.exit_radius, rel=1e-6), (
+            f"Exit radius should be {default_config.exit_radius:.4f}m "
+            f"(from expansion_ratio), got {actual_exit_radius:.4f}m"
         )
 
     def test_converging_section_decreasing(self, default_contour):
@@ -125,19 +120,60 @@ class TestGenerateContour:
         _, y = default_contour
         assert np.all(y >= 0), f"Found negative radii: {y[y < 0]}"
 
-    def test_conical_area_ratio(self):
-        """Verify exit/throat area ratio matches the conical formula result."""
+    def test_area_ratio_matches_expansion_ratio(self):
+        """Verify exit/throat area ratio matches config.expansion_ratio."""
         config = NozzleConfig(
             throat_radius=0.05,
-            half_angle=15.0,
+            expansion_ratio=12.0,
             diverging_length=0.5,
         )
         _, y = generate_contour(config)
-        half_angle_rad = math.radians(config.half_angle)
-        expected_exit_r = config.throat_radius + config.diverging_length * math.tan(half_angle_rad)
-        expected_area_ratio = (expected_exit_r / config.throat_radius) ** 2
         actual_area_ratio = (y[-1] / config.throat_radius) ** 2
-        assert actual_area_ratio == pytest.approx(expected_area_ratio, rel=1e-6), (
-            f"Area ratio should be {expected_area_ratio:.2f} (from conical formula), "
-            f"got {actual_area_ratio:.2f}"
+        assert actual_area_ratio == pytest.approx(config.expansion_ratio, rel=1e-6), (
+            f"Area ratio should be {config.expansion_ratio:.2f} "
+            f"(from expansion_ratio), got {actual_area_ratio:.2f}"
         )
+
+
+class TestRaoBellContour:
+    """Tests for Rao parabolic bell contour generation."""
+
+    def test_rao_bell_exit_radius(self):
+        """Exit radius must match expansion_ratio exactly."""
+        config = NozzleConfig(throat_radius=0.05, expansion_ratio=12.0)
+        _, y = generate_contour(config)
+        assert y[-1] == pytest.approx(config.exit_radius, rel=1e-10), (
+            f"Rao bell exit radius {y[-1]:.6f} should match "
+            f"config.exit_radius {config.exit_radius:.6f}"
+        )
+
+    def test_rao_bell_monotonic(self):
+        """Diverging section must be monotonically increasing."""
+        config = NozzleConfig()
+        x, y = generate_contour(config)
+        mask = x > 0
+        y_div = y[mask]
+        for i in range(len(y_div) - 1):
+            assert y_div[i] <= y_div[i + 1], (
+                f"Rao bell not monotonic: y[{i}]={y_div[i]:.6f} > "
+                f"y[{i+1}]={y_div[i+1]:.6f}"
+            )
+
+    def test_rao_bell_length(self):
+        """Bell must span the full diverging_length."""
+        config = NozzleConfig(diverging_length=0.5)
+        x, _ = generate_contour(config)
+        assert np.max(x) == pytest.approx(config.diverging_length, rel=0.01), (
+            f"Bell exit should be at x={config.diverging_length}m, "
+            f"got x={np.max(x):.4f}m"
+        )
+
+    def test_rao_bell_different_expansion_ratios(self):
+        """Rao bell must work for various expansion ratios."""
+        for eps in [4.0, 12.0, 25.0, 50.0]:
+            config = NozzleConfig(throat_radius=0.05, expansion_ratio=eps)
+            _, y = generate_contour(config)
+            assert y[-1] == pytest.approx(config.exit_radius, rel=1e-10), (
+                f"Rao bell failed for expansion_ratio={eps}: "
+                f"exit={y[-1]:.6f}, expected={config.exit_radius:.6f}"
+            )

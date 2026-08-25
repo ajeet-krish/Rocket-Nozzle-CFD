@@ -27,7 +27,6 @@ def main() -> int:
     nozzle_config = NozzleConfig(
         throat_radius=0.05,
         expansion_ratio=12.0,
-        half_angle=15.0,
         converging_length=0.1,
         diverging_length=0.5,
         num_points=200,

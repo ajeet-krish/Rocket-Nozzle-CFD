@@ -12,7 +12,7 @@ class TestNozzleConfig:
         config = NozzleConfig()
         assert config.throat_radius == 0.05
         assert config.expansion_ratio == 12.0
-        assert config.half_angle == 15.0
+        assert config.half_angle == pytest.approx(13.84, abs=0.01)
         assert config.converging_length == 0.1
         assert config.diverging_length == 0.5
         assert config.num_points == 200
@@ -62,14 +62,13 @@ class TestNozzleConfig:
         config = NozzleConfig(
             throat_radius=0.1,
             expansion_ratio=25.0,
-            half_angle=20.0,
             converging_length=0.2,
             diverging_length=1.0,
             num_points=500,
         )
         assert config.throat_radius == 0.1
         assert config.expansion_ratio == 25.0
-        assert config.half_angle == 20.0
+        assert config.half_angle == pytest.approx(21.80, abs=0.01)
         assert config.converging_length == 0.2
         assert config.diverging_length == 1.0
         assert config.num_points == 500
@@ -85,3 +84,75 @@ class TestNozzleConfig:
         c1 = NozzleConfig(throat_radius=0.05)
         c2 = NozzleConfig(throat_radius=0.1)
         assert c1 != c2
+
+    def test_half_angle_derived_from_geometry(self):
+        """half_angle should be computed from expansion_ratio and diverging_length."""
+        config = NozzleConfig(
+            throat_radius=0.05, expansion_ratio=12.0, diverging_length=0.5,
+        )
+        expected_exit = 0.05 * math.sqrt(12.0)
+        expected_angle = math.degrees(math.atan(
+            (expected_exit - 0.05) / 0.5
+        ))
+        assert config.half_angle == pytest.approx(expected_angle, rel=1e-10)
+
+    def test_bell_fraction_default(self):
+        """Default NozzleConfig should not have bell_fraction (removed)."""
+        config = NozzleConfig()
+        assert not hasattr(config, "bell_fraction")
+
+    def test_ideal_length(self):
+        """Ideal bell length should follow Rao formula."""
+        config = NozzleConfig(throat_radius=0.05, expansion_ratio=12.0)
+        expected = 0.5 * (
+            math.sqrt(config.exit_radius) - math.sqrt(config.throat_radius)
+        ) * math.sqrt(config.throat_radius + config.exit_radius)
+        assert config.ideal_length == pytest.approx(expected, rel=1e-10)
+
+
+class TestNozzleConfigValidation:
+    """Tests for NozzleConfig.validate() classmethod."""
+
+    def test_validate_default(self):
+        """Default config should pass validation."""
+        config = NozzleConfig.validate()
+        assert config.throat_radius == 0.05
+
+    def test_validate_custom(self):
+        """Custom valid config should pass validation."""
+        config = NozzleConfig.validate(
+            throat_radius=0.1, expansion_ratio=25.0, diverging_length=1.0,
+        )
+        assert config.throat_radius == 0.1
+        assert config.expansion_ratio == 25.0
+
+    def test_validate_negative_throat_radius(self):
+        """Negative throat_radius should raise ValueError."""
+        with pytest.raises(ValueError, match="throat_radius must be > 0"):
+            NozzleConfig.validate(throat_radius=-0.05)
+
+    def test_validate_zero_throat_radius(self):
+        """Zero throat_radius should raise ValueError."""
+        with pytest.raises(ValueError, match="throat_radius must be > 0"):
+            NozzleConfig.validate(throat_radius=0.0)
+
+    def test_validate_low_expansion_ratio(self):
+        """Expansion ratio < 1.0 should raise ValueError."""
+        with pytest.raises(ValueError, match="expansion_ratio must be >= 1.0"):
+            NozzleConfig.validate(expansion_ratio=0.5)
+
+    def test_validate_negative_diverging_length(self):
+        """Negative diverging_length should raise ValueError."""
+        with pytest.raises(ValueError, match="diverging_length must be > 0"):
+            NozzleConfig.validate(diverging_length=-1.0)
+
+    def test_validate_too_few_points(self):
+        """num_points < 2 should raise ValueError."""
+        with pytest.raises(ValueError, match="num_points must be >= 2"):
+            NozzleConfig.validate(num_points=1)
+
+    def test_validate_returns_frozen(self):
+        """Validated config should still be frozen."""
+        config = NozzleConfig.validate()
+        with pytest.raises(AttributeError):
+            config.throat_radius = 0.1  # type: ignore[misc]
