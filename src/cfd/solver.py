@@ -27,13 +27,20 @@ class SU2Solver:
     def __init__(self, su2_cfd: Path | None = None):
         self.su2_cfd = su2_cfd or get_su2_binary()
 
-    def run(self, config_path: Path, workdir: Path, timeout: int = 1800) -> SU2Results:
+    def run(
+        self,
+        config_path: Path,
+        workdir: Path,
+        timeout: int = 1800,
+        gamma: float = 1.4,
+    ) -> SU2Results:
         """Execute SU2_CFD and return parsed results.
 
         Args:
             config_path: Path to SU2 .cfg config file
             workdir: Working directory for simulation
             timeout: Maximum runtime in seconds
+            gamma: Ratio of specific heats (default 1.4 for air)
 
         Returns:
             Parsed simulation results
@@ -58,17 +65,22 @@ class SU2Solver:
                 logger.error(f"stderr: {result.stderr}")
                 return SU2Results(converged=False)
 
-            return self.parse_results(workdir)
+            return self.parse_results(workdir, gamma=gamma)
 
         except subprocess.TimeoutExpired:
             logger.error(f"SU2 timed out after {timeout}s")
-            return self.parse_results(workdir)
+            return self.parse_results(workdir, gamma=gamma)
         except FileNotFoundError:
             logger.error(f"SU2 binary not found: {self.su2_cfd}")
             return SU2Results(converged=False)
 
-    def parse_results(self, workdir: Path) -> SU2Results:
-        """Parse history.csv and flow.vtu for exit conditions."""
+    def parse_results(self, workdir: Path, gamma: float = 1.4) -> SU2Results:
+        """Parse history.csv and flow.vtu for exit conditions.
+
+        Args:
+            workdir: Directory containing SU2 output files
+            gamma: Ratio of specific heats (default 1.4 for air)
+        """
         results = SU2Results()
 
         # Parse history.csv
@@ -87,7 +99,7 @@ class SU2Solver:
         # Parse flow.vtu for exit Mach
         vtu_path = workdir / "flow.vtu"
         if vtu_path.exists():
-            results.exit_mach = self._extract_exit_mach(vtu_path)
+            results.exit_mach = self._extract_exit_mach(vtu_path, gamma=gamma)
 
         return results
 
@@ -106,41 +118,91 @@ class SU2Solver:
             logger.warning(f"Failed to parse history: {e}")
         return history
 
-    def _extract_exit_mach(self, vtu_path: Path) -> float:
-        """Extract Mach number at exit plane from VTU file."""
+    def _extract_exit_mach(self, vtu_path: Path, gamma: float = 1.4) -> float:
+        """Extract Mach number at exit plane from VTU file.
+
+        Tries to read Mach directly from PointData. Falls back to computing
+        Mach from conservative variables (Density, Momentum_x, Momentum_y,
+        Energy) when a Mach field is not present.
+
+        Args:
+            vtu_path: Path to SU2 flow.vtu file
+            gamma: Ratio of specific heats (default 1.4 for air)
+
+        Returns:
+            Area-averaged Mach number at the exit plane, or 0.0 on failure
+        """
         try:
             import numpy as np
-
-            # Read VTU file as XML
             import xml.etree.ElementTree as ET
+
             tree = ET.parse(vtu_path)
             root = tree.getroot()
 
-            # Find Points data
             for piece in root.iter('Piece'):
                 point_data = piece.find('PointData')
                 if point_data is None:
                     continue
 
+                # Try to find Mach field directly
                 for data_array in point_data.findall('DataArray'):
                     if data_array.get('Name') == 'Mach':
-                        mach_values = np.fromstring(
-                            data_array.text,
-                            sep=' '
-                        )
+                        mach_values = np.fromstring(data_array.text, sep=' ')
 
                         # Get coordinates
                         points = piece.find('Points')
                         coords_array = points.find('DataArray')
-                        coords = np.fromstring(coords_array.text, sep=' ').reshape(-1, 3)
+                        coords = np.fromstring(
+                            coords_array.text, sep=' '
+                        ).reshape(-1, 3)
 
                         # Find exit plane (maximum x coordinate)
                         max_x = coords[:, 0].max()
                         exit_mask = np.abs(coords[:, 0] - max_x) < 0.01
 
                         if exit_mask.any():
-                            exit_mach = mach_values[exit_mask].mean()
-                            return float(exit_mach)
+                            return float(mach_values[exit_mask].mean())
+
+                # Fallback: compute Mach from conservative variables
+                conservative: dict[str, np.ndarray] = {}
+                for data_array in point_data.findall('DataArray'):
+                    name = data_array.get('Name')
+                    if name in ['Density', 'Momentum_x', 'Momentum_y', 'Energy']:
+                        conservative[name] = np.fromstring(
+                            data_array.text, sep=' '
+                        )
+
+                if len(conservative) == 4:
+                    rho = conservative['Density']
+                    mom_x = conservative['Momentum_x']
+                    mom_y = conservative['Momentum_y']
+                    energy = conservative['Energy']
+
+                    # Velocity components
+                    u = mom_x / rho
+                    v = mom_y / rho
+
+                    # Pressure (ideal gas)
+                    p = (gamma - 1.0) * (energy - 0.5 * rho * (u**2 + v**2))
+
+                    # Speed of sound
+                    c = np.sqrt(gamma * p / rho)
+
+                    # Mach
+                    mach = np.abs(np.sqrt(u**2 + v**2)) / c
+
+                    # Get coordinates
+                    points = piece.find('Points')
+                    coords_array = points.find('DataArray')
+                    coords = np.fromstring(
+                        coords_array.text, sep=' '
+                    ).reshape(-1, 3)
+
+                    max_x = coords[:, 0].max()
+                    exit_mask = np.abs(coords[:, 0] - max_x) < 0.01
+
+                    if exit_mask.any():
+                        return float(mach[exit_mask].mean())
 
             return 0.0
 

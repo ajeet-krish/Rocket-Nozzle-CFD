@@ -35,7 +35,8 @@ class TestSU2NozzleConfig:
         assert default_config.gamma == 1.4
         assert default_config.gas_constant == 287.058
         assert default_config.iterations == 5000
-        assert default_config.cfl_number == 1.0
+        assert default_config.cfl_number == 5.0
+        assert default_config.conv_residual_minval == -6.0
 
     def test_write_creates_file(self, default_config, tmp_path):
         """write() should create a .cfg file."""
@@ -87,6 +88,36 @@ class TestSU2NozzleConfig:
         config_path = default_config.write(tmp_path)
         content = config_path.read_text()
         assert f"CFL_NUMBER= {default_config.cfl_number}" in content
+
+    def test_cfg_contains_conv_residual_minval(self, default_config, tmp_path):
+        """Config file should contain convergence residual minimum value."""
+        config_path = default_config.write(tmp_path)
+        content = config_path.read_text()
+        assert f"CONV_RESIDUAL_MINVAL= {default_config.conv_residual_minval}" in content
+
+    def test_cfg_contains_screen_output(self, default_config, tmp_path):
+        """Config file should contain SCREEN_OUTPUT configuration."""
+        config_path = default_config.write(tmp_path)
+        content = config_path.read_text()
+        assert "SCREEN_OUTPUT=" in content
+        assert "RMS_DENSITY" in content
+        assert "MACH" in content
+
+    def test_cfg_contains_output_files(self, default_config, tmp_path):
+        """Config file should request RESTART and PARAVIEW output."""
+        config_path = default_config.write(tmp_path)
+        content = config_path.read_text()
+        assert "OUTPUT_FILES= (RESTART, PARAVIEW)" in content
+
+    def test_cfl_5_default(self):
+        """Default CFL should be 5.0 for Phase 3 convergence."""
+        config = SU2NozzleConfig()
+        assert config.cfl_number == 5.0
+
+    def test_conv_residual_minval_negative_six(self):
+        """Default CONV_RESIDUAL_MINVAL should be -6.0 for Phase 3."""
+        config = SU2NozzleConfig()
+        assert config.conv_residual_minval == -6.0
 
     def test_cfg_contains_output_config(self, default_config, tmp_path):
         """Config file should have output settings."""

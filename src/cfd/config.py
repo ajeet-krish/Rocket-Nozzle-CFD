@@ -27,9 +27,9 @@ class SU2NozzleConfig:
     symmetry_marker: str = "symmetry"
 
     # Numerics
-    cfl_number: float = 1.0
+    cfl_number: float = 5.0
     iterations: int = 5000
-    conv_residual_minval: float = -8.0
+    conv_residual_minval: float = -6.0
 
     # Gas properties (air)
     gamma: float = 1.4
