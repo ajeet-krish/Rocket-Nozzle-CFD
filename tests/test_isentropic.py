@@ -4,6 +4,7 @@ import pytest
 from validation.isentropic import (
     area_mach_relation,
     exit_mach_from_area_ratio,
+    mach_from_area_ratio,
     total_to_static_pressure,
     total_to_static_temperature,
     choked_mass_flow_rate,
@@ -177,3 +178,41 @@ class TestChokedMassFlowRate:
         mdot1 = choked_mass_flow_rate(0.001, 5e6, 3500.0)
         mdot2 = choked_mass_flow_rate(0.001, 10e6, 3500.0)
         assert mdot2 == pytest.approx(2.0 * mdot1, rel=1e-10)
+
+
+class TestMachFromAreaRatio:
+    """Tests for mach_from_area_ratio function."""
+
+    def test_area_ratio_one_returns_sonic(self):
+        """Area ratio of 1.0 should return Mach 1.0."""
+        M = mach_from_area_ratio(1.0, gamma=1.4)
+        assert M == pytest.approx(1.0, abs=1e-10)
+
+    def test_supersonic_branch(self):
+        """Supersonic branch should return M > 1."""
+        M = mach_from_area_ratio(4.0, gamma=1.4, supersonic=True)
+        assert M > 1.0
+
+    def test_subsonic_branch(self):
+        """Subsonic branch should return M < 1."""
+        M = mach_from_area_ratio(4.0, gamma=1.4, supersonic=False)
+        assert M < 1.0
+
+    def test_area_ratio_below_one_raises(self):
+        """Area ratio below 1.0 should raise ValueError."""
+        with pytest.raises(ValueError, match="Area ratio must be >= 1.0"):
+            mach_from_area_ratio(0.5, gamma=1.4)
+
+    def test_roundtrip_supersonic(self):
+        """Mach -> area ratio -> Mach should recover original (supersonic)."""
+        M_orig = 3.0
+        area_ratio = area_mach_relation(M_orig, gamma=1.4)
+        M_recovered = mach_from_area_ratio(area_ratio, gamma=1.4, supersonic=True)
+        assert M_recovered == pytest.approx(M_orig, abs=0.01)
+
+    def test_roundtrip_subsonic(self):
+        """Mach -> area ratio -> Mach should recover original (subsonic)."""
+        M_orig = 0.5
+        area_ratio = area_mach_relation(M_orig, gamma=1.4)
+        M_recovered = mach_from_area_ratio(area_ratio, gamma=1.4, supersonic=False)
+        assert M_recovered == pytest.approx(M_orig, abs=0.01)

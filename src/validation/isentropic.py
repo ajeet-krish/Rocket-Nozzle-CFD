@@ -191,8 +191,68 @@ def mach_from_area_ratio(
     except ValueError:
         # Fallback: approximate solution
         if supersonic:
-            return math.sqrt(2.0 / (gamma - 1.0) * (
-                (area_ratio * (gamma + 1.0) / 2.0) ** (2.0 * (gamma - 1.0) / (gamma + 1.0)) - 1.0
-            ))
+            inner = (area_ratio * (gamma + 1.0) / 2.0) ** (
+                2.0 * (gamma - 1.0) / (gamma + 1.0)
+            ) - 1.0
+            if inner < 0:
+                raise ValueError(
+                    f"Cannot compute Mach for area_ratio={area_ratio}"
+                )
+            return math.sqrt(2.0 / (gamma - 1.0) * inner)
         else:
             return 1.0 / area_ratio  # Approximate for low Mach
+
+
+def prandtl_meyer(mach: float, gamma: float = 1.4) -> float:
+    """Compute Prandtl-Meyer angle from Mach number.
+
+    The Prandtl-Meyer function relates Mach number to the maximum
+    turning angle for isentropic supersonic expansion.
+
+    Args:
+        mach: Mach number
+        gamma: Ratio of specific heats
+
+    Returns:
+        Prandtl-Meyer angle (radians)
+    """
+    if mach <= 1.0:
+        return 0.0
+
+    term1 = math.sqrt((gamma + 1) / (gamma - 1))
+    term2 = math.atan(math.sqrt((gamma - 1) / (gamma + 1) * (mach**2 - 1)))
+    term3 = math.atan(math.sqrt(mach**2 - 1))
+
+    return term1 * term2 - term3
+
+
+def mach_from_prandtl_meyer(nu: float, gamma: float = 1.4) -> float:
+    """Compute Mach number from Prandtl-Meyer angle (inverse).
+
+    Uses Newton-Raphson iteration to solve for Mach number given
+    a Prandtl-Meyer angle.
+
+    Args:
+        nu: Prandtl-Meyer angle (radians)
+        gamma: Ratio of specific heats
+
+    Returns:
+        Mach number
+    """
+    if nu <= 0:
+        return 1.0
+
+    # Newton-Raphson iteration
+    mach = 2.0  # Initial guess
+    for _ in range(50):
+        nu_calc = prandtl_meyer(mach, gamma)
+        dnu_dmach = (
+            math.sqrt(mach**2 - 1)
+            / (mach * (1 + (gamma - 1) / 2 * mach**2))
+        )
+        if abs(dnu_dmach) < 1e-12:
+            break
+        mach = mach - (nu_calc - nu) / dnu_dmach
+        mach = max(mach, 1.001)
+
+    return mach
