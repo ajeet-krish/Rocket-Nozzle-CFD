@@ -56,6 +56,7 @@ class SweepRunner:
                 total_pressure=case.chamber_pressure,
                 total_temperature=case.total_temperature,
                 gamma=case.gamma,
+                cfl_number=0.1,  # Conservative CFL for convergence
             )
             config_path = su2_config.write(case_dir)
 

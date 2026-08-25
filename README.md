@@ -173,7 +173,3 @@ uv run pytest tests/ -v
 - Roache, P.J. "Verification and Validation in Computational Science" (GCI)
 - ASME V&V 20-2009 (Grid Convergence Index standard)
 - SU2 Documentation: https://su2code.github.io/
-
-## License
-
-MIT License

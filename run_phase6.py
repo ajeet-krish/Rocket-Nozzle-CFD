@@ -46,6 +46,7 @@ def main() -> int:
     su2_config = SU2NozzleConfig(
         total_pressure=10e6,
         total_temperature=3500.0,
+        cfl_number=0.1,
         gamma=1.4,
     )
 
@@ -76,6 +77,11 @@ def main() -> int:
     )
     su2_workdir = workdir / "triple"
     su2_workdir.mkdir(exist_ok=True)
+    
+    # Copy mesh to SU2 working directory
+    import shutil
+    shutil.copy(mesh_path, su2_workdir / "nozzle.su2")
+    
     config_path = su2_config.write(su2_workdir)
     solver = SU2Solver()
     su2_results = solver.run(config_path, su2_workdir, gamma=su2_config.gamma)

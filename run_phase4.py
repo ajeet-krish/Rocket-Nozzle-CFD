@@ -34,7 +34,7 @@ def main() -> None:
     images_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate Euler mesh (coarser)
-    print("\n[1/4] Generating Euler mesh...")
+    print("\n[1/5] Generating Euler mesh...")
     euler_mesh = generate_nozzle_mesh(
         nozzle_config,
         n_axial=20,
@@ -44,19 +44,19 @@ def main() -> None:
     )
     print(f"  Euler mesh: {euler_mesh}")
 
-    # Generate RANS mesh (finer with boundary layer)
-    print("\n[2/4] Generating RANS mesh...")
+    # Generate RANS mesh (same as Euler for restart compatibility)
+    print("\n[2/5] Generating RANS mesh...")
     rans_mesh = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=40,
-        n_normal=20,
+        n_axial=20,
+        n_normal=10,
         output_file=str(workdir / "rans" / "nozzle.su2"),
         rans_mode=True,
     )
     print(f"  RANS mesh: {rans_mesh}")
 
     # Run Euler (reference)
-    print("\n[3/4] Running Euler simulation...")
+    print("\n[3/5] Running Euler simulation...")
     solver = SU2Solver()
     euler_dir = workdir / "euler"
     euler_dir.mkdir(exist_ok=True)
@@ -65,11 +65,18 @@ def main() -> None:
     print(f"  Converged: {euler_results.converged}")
     print(f"  Exit Mach: {euler_results.exit_mach:.4f}")
 
-    # Run RANS
-    print("\n[4/4] Running RANS simulation...")
+    # Run RANS (without restart - initialize from freestream)
+    print("\n[4/5] Running RANS simulation...")
     rans_dir = workdir / "rans"
     rans_dir.mkdir(exist_ok=True)
+    
+    # Copy Euler mesh to RANS directory
+    shutil.copy(euler_dir / "nozzle.su2", rans_dir / "nozzle.su2")
+    print("  Copied Euler mesh to RANS directory")
+    
+    # Write RANS config (no restart - initialize from freestream)
     rans_config_path = rans_config.write(rans_dir)
+    
     rans_results = solver.run(rans_config_path, rans_dir)
     print(f"  Converged: {rans_results.converged}")
     print(f"  Exit Mach: {rans_results.exit_mach:.4f}")

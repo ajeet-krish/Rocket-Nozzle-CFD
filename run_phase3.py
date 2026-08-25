@@ -37,7 +37,7 @@ def main() -> int:
         static_pressure=101325.0,
         gamma=1.4,
         iterations=5000,
-        cfl_number=5.0,
+        cfl_number=0.1,
     )
 
     # Setup directories
