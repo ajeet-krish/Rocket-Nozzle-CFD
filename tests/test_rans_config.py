@@ -128,3 +128,29 @@ class TestSU2RANSConfig:
         config_path = config.write(tmp_path)
         content = config_path.read_text()
         assert f"MESH_FILENAME= {config.mesh_filename}" in content
+
+    def test_farfield_marker_default_empty(self) -> None:
+        """Default farfield_marker should be empty (no plume domain)."""
+        config = SU2RANSConfig()
+        assert config.farfield_marker == ""
+
+    def test_cfg_no_farfield_when_empty(self, tmp_path: Path) -> None:
+        """Config should not contain MARKER_FAR when farfield_marker is empty."""
+        config = SU2RANSConfig()
+        config_path = config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR" not in content
+
+    def test_cfg_contains_farfield_when_set(self, tmp_path: Path) -> None:
+        """Config should contain MARKER_FAR when farfield_marker is set."""
+        config = SU2RANSConfig(farfield_marker="farfield")
+        config_path = config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR= ( farfield )" in content
+
+    def test_farfield_marker_custom_value(self, tmp_path: Path) -> None:
+        """Custom farfield marker name should appear in config."""
+        config = SU2RANSConfig(farfield_marker="plume_boundary")
+        config_path = config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR= ( plume_boundary )" in content

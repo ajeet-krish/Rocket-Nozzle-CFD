@@ -14,6 +14,9 @@ uv run python run_euler_spike.py
 # Full Euler simulation (fine mesh, ~10 min)
 uv run python run_euler.py
 
+# Plume extension with shock diamonds (Merlin 1D, ~15 min)
+uv run python run_plume.py
+
 # RANS simulation (requires Euler first, ~15 min)
 uv run python run_rans.py
 
@@ -41,7 +44,7 @@ uv run python run_all.py
 | `src/viz/` | Visualization | Mach contour, shock diamonds, comparison |
 | `tests/` | Test suite | 287 tests, pytest |
 | `docs/` | Portfolio HTML site | AK-Vortex theme, 5 pages |
-| `run_*.py` | Single-responsibility run files | 7 scripts for different CFD tasks |
+| `run_*.py` | Single-responsibility run files | 8 scripts for different CFD tasks |
 
 ## Key Interfaces
 

@@ -147,7 +147,7 @@ class TestMeshPlumeExtension:
                 f"Missing marker: {marker}"
             )
         # Plume markers
-        for marker in ["farfield", "plume_outlet"]:
+        for marker in ["farfield", "outlet"]:
             assert f"MARKER_TAG= {marker}" in content, (
                 f"Missing marker: {marker}"
             )
@@ -190,7 +190,6 @@ class TestMeshPlumeExtension:
         with open(mesh_path) as f:
             content = f.read()
         assert "MARKER_TAG= farfield" not in content
-        assert "MARKER_TAG= plume_outlet" not in content
 
 
 class TestMeshKeyPoints:

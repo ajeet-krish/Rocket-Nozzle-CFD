@@ -163,3 +163,28 @@ class TestSU2NozzleConfig:
         config_path = default_config.write(tmp_path)
         content = config_path.read_text()
         assert len(content) > 100, "Config file should contain substantial content"
+
+    def test_farfield_marker_default_empty(self):
+        """Default farfield_marker should be empty (no plume domain)."""
+        config = SU2NozzleConfig()
+        assert config.farfield_marker == ""
+
+    def test_cfg_no_farfield_when_empty(self, default_config, tmp_path):
+        """Config should not contain MARKER_FAR when farfield_marker is empty."""
+        config_path = default_config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR" not in content
+
+    def test_cfg_contains_farfield_when_set(self, tmp_path):
+        """Config should contain MARKER_FAR when farfield_marker is set."""
+        config = SU2NozzleConfig(farfield_marker="farfield")
+        config_path = config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR= ( farfield )" in content
+
+    def test_farfield_marker_custom_value(self, tmp_path):
+        """Custom farfield marker name should appear in config."""
+        config = SU2NozzleConfig(farfield_marker="plume_boundary")
+        config_path = config.write(tmp_path)
+        content = config_path.read_text()
+        assert "MARKER_FAR= ( plume_boundary )" in content

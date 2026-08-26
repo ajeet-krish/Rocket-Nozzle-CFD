@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Full Euler simulation of converging-diverging rocket nozzle.
+"""Plume extension simulation with shock diamond visualization.
 
-Uses fine mesh (60x30) for accurate results.
-Validates against isentropic theory.
+Uses conformal plume mesh to capture external shock structure
+downstream of the nozzle exit. Generates Mach contour with shock
+diamonds and validates against isentropic theory.
 """
 import sys
 from pathlib import Path
@@ -10,8 +11,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.config import NozzleConfig
-from nozzle.geometry import generate_contour, plot_contour
+from nozzle.presets import merlin_1d
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
 from cfd.solver import SU2Solver
@@ -19,26 +19,21 @@ from validation.isentropic import exit_mach_from_area_ratio
 from validation.compare import compare_results
 from viz.convergence import plot_convergence
 from viz.mach_contour import plot_mach_contour
+from viz.postprocessing import plot_shock_diamonds
 
 
 def main() -> int:
-    """Run full Euler simulation.
+    """Run plume simulation.
 
     Returns:
         0 on success, 1 on failure.
     """
     print("=" * 60)
-    print("Full Euler Simulation: Rocket Nozzle")
+    print("Plume Extension: Shock Diamond Visualization")
     print("=" * 60)
 
-    # Configuration: epsilon=16, Merlin 1D conditions
-    nozzle_config = NozzleConfig(
-        throat_radius=0.05,
-        expansion_ratio=16.0,
-        converging_length=0.1,
-        diverging_length=0.5,
-        num_points=200,
-    )
+    # Configuration (Merlin 1D preset)
+    nozzle_config = merlin_1d()
 
     su2_config = SU2NozzleConfig(
         total_pressure=9.7e6,
@@ -47,49 +42,44 @@ def main() -> int:
         gamma=1.4,
         iterations=5000,
         cfl_number=0.1,
+        farfield_marker="farfield",
     )
 
     # Setup directories
-    workdir = Path("output/euler")
+    workdir = Path("output/plume")
     workdir.mkdir(parents=True, exist_ok=True)
 
-    images_dir = workdir / "plots"
-    images_dir.mkdir(parents=True, exist_ok=True)
+    plots_dir = workdir / "plots"
+    plots_dir.mkdir(parents=True, exist_ok=True)
 
-    # Step 1: Generate nozzle contour
-    print("\n[1/6] Generating nozzle contour...")
-    x, y = generate_contour(nozzle_config)
-    print(f"  Contour: {len(x)} points, throat R={nozzle_config.throat_radius}m, exit R={nozzle_config.exit_radius:.4f}m")
-
-    plot_contour(x, y, "Euler - Nozzle Contour")
-    print("  Saved: nozzle_contour.png")
-
-    # Step 2: Generate mesh (fine: 60x30, with plume for conformal interface)
-    print("\n[2/6] Generating Gmsh mesh (60x30) with plume extension...")
+    # Step 1: Generate mesh with plume extension
+    print("\n[1/6] Generating mesh with plume extension...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
         n_axial=60,
         n_normal=30,
         output_file=str(workdir / "nozzle.su2"),
         plume_extension=True,
+        plume_length_ratio=20.0,
+        plume_radius_ratio=3.0,
     )
     print(f"  Mesh: {mesh_path}")
 
-    # Step 3: Generate SU2 config
-    print("\n[3/6] Generating SU2 config...")
+    # Step 2: Generate SU2 config with farfield BC
+    print("\n[2/6] Generating SU2 config with farfield BC...")
     config_path = su2_config.write(workdir)
     print(f"  Config: {config_path}")
 
-    # Step 4: Run SU2
-    print("\n[4/6] Running SU2 Euler simulation...")
+    # Step 3: Run SU2
+    print("\n[3/6] Running SU2 Euler simulation...")
     solver = SU2Solver()
     results = solver.run(config_path, workdir, timeout=1800, gamma=su2_config.gamma)
     print(f"  Converged: {results.converged}")
     print(f"  Iterations: {results.iterations}")
     print(f"  Exit Mach: {results.exit_mach:.4f}")
 
-    # Step 5: Validate against isentropic
-    print("\n[5/6] Validating against isentropic theory...")
+    # Step 4: Validate
+    print("\n[4/6] Validating against isentropic theory...")
     theory_exit_mach = exit_mach_from_area_ratio(nozzle_config.expansion_ratio, 1.4)
     report = compare_results(
         results.exit_mach,
@@ -102,24 +92,31 @@ def main() -> int:
     print(f"  Error: {report.mach_error_percent:.2f}%")
     print(f"  Result: {'PASSED' if report.passed else 'FAILED'}")
 
-    # Step 6: Generate plots
-    print("\n[6/6] Generating plots...")
+    # Step 5: Generate plots
+    print("\n[5/6] Generating plots...")
 
     history_path = workdir / "history.csv"
     if history_path.exists():
-        convergence_path = images_dir / "convergence.png"
+        convergence_path = plots_dir / "convergence.png"
         plot_convergence(history_path, convergence_path)
         print(f"  Saved: {convergence_path}")
 
     vtu_path = workdir / "flow.vtu"
     if vtu_path.exists():
-        mach_path = images_dir / "mach_contour.png"
+        mach_path = plots_dir / "mach_contour.png"
         plot_mach_contour(vtu_path, mach_path, nozzle_config=nozzle_config)
         print(f"  Saved: {mach_path}")
 
+        # Shock diamonds
+        from cfd.vtu_parser import parse_vtu
+        vtu_data = parse_vtu(vtu_path)
+        shock_path = plots_dir / "shock_diamonds.png"
+        plot_shock_diamonds(vtu_data, shock_path)
+        print(f"  Saved: {shock_path}")
+
     # Summary
     print("\n" + "=" * 60)
-    print("Full Euler Simulation Complete!")
+    print("Plume Simulation Complete!")
     print("=" * 60)
     print(f"Exit Mach (SU2): {results.exit_mach:.4f}")
     print(f"Exit Mach (Theory): {theory_exit_mach:.4f}")

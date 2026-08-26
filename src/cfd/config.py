@@ -26,6 +26,9 @@ class SU2NozzleConfig:
     # Axis
     symmetry_marker: str = "symmetry"
 
+    # Farfield (plume domain)
+    farfield_marker: str = ""
+
     # Numerics
     cfl_number: float = 5.0
     iterations: int = 5000
@@ -77,7 +80,9 @@ MARKER_INLET= ( {self.inlet_marker}, {self.total_temperature:.1f}, {self.total_p
 % Outlet: static pressure
 MARKER_OUTLET= ( {self.outlet_marker}, {self.static_pressure:.1f} )
 
-% -------------------- NUMERICAL METHOD -----------------------
+{f'''% Farfield: characteristic-based non-reflecting BC (plume domain)
+MARKER_FAR= ( {self.farfield_marker} )
+''' if self.farfield_marker else ''}% -------------------- NUMERICAL METHOD -----------------------
 CONV_NUM_METHOD_FLOW= ROE
 MUSCL_FLOW= NO
 TIME_DISCRE_FLOW= EULER_IMPLICIT

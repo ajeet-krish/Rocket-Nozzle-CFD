@@ -54,15 +54,15 @@ def main() -> int:
         print("\nWARNING: Euler solution not found at output/euler/flow.vtu")
         print("  Run 'uv run python run_euler.py' first for comparison.")
 
-    # Step 1: Generate RANS mesh (no aggressive BL for stability)
-    print("\n[1/4] Generating RANS mesh (40x30)...")
+    # Step 1: Generate RANS mesh (with plume for conformal interface)
+    print("\n[1/4] Generating RANS mesh (40x30) with plume extension...")
     rans_mesh = generate_nozzle_mesh(
         nozzle_config,
         n_axial=40,
         n_normal=30,
         output_file=str(workdir / "nozzle.su2"),
         rans_mode=False,
-        plume_extension=False,
+        plume_extension=True,
     )
     print(f"  RANS mesh: {rans_mesh}")
 
