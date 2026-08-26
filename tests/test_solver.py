@@ -57,7 +57,8 @@ class TestSU2Solver:
         """Parsing an empty history should return empty list."""
         solver = SU2Solver()
         history_file = tmp_path / "history.csv"
-        history_file.write_text('"Comment line\n')
+        # SU2 v8.4.0 format: quoted header only
+        history_file.write_text('"Time_Iter","Outer_Iter","Inner_Iter","rms[Rho]"\n')
         result = solver._parse_history(history_file)
         assert result == []
 
@@ -65,17 +66,16 @@ class TestSU2Solver:
         """Parsing history with CSV data should return row dicts."""
         solver = SU2Solver()
         history_file = tmp_path / "history.csv"
+        # SU2 v8.4.0 format: quoted header, then data rows
         history_file.write_text(
-            '"Comment line\n'
-            'INNER_ITER,RMS_DENSITY\n'
-            '1,-1.0\n'
-            '2,-2.0\n'
+            '"Time_Iter","Outer_Iter","Inner_Iter","rms[Rho]"\n'
+            '0,0,1,-1.0\n'
+            '0,0,2,-2.0\n'
         )
         result = solver._parse_history(history_file)
         assert len(result) == 2
-        assert result[0]['INNER_ITER'] == '1'
-        assert result[0]['RMS_DENSITY'] == '-1.0'
-        assert result[1]['INNER_ITER'] == '2'
+        assert result[0]['rms[Rho]'] == '-1.0'
+        assert result[1]['rms[Rho]'] == '-2.0'
 
     def test_parse_history_missing_file(self, tmp_path: Path) -> None:
         """Parsing a non-existent file should return empty list."""
@@ -87,12 +87,12 @@ class TestSU2Solver:
         """parse_results should detect convergence from residual drop."""
         solver = SU2Solver()
 
-        # Create a history file with large residual drop
+        # Create a history file with large residual drop (SU2 v8.4.0 format)
         history_file = tmp_path / "history.csv"
-        lines = ['"Comment\n', 'INNER_ITER,RMS_DENSITY\n']
+        lines = ['"Time_Iter","Outer_Iter","Inner_Iter","rms[Rho]"\n']
         for i in range(1, 101):
-            residual = -1.0 - (i * 0.05)
-            lines.append(f'{i},{residual:.2f}\n')
+            residual = 1.0 - (i * 0.05)  # Positive values (log scale)
+            lines.append(f'0,0,{i},{residual:.2f}\n')
         history_file.write_text(''.join(lines))
 
         results = solver.parse_results(tmp_path)
