@@ -64,6 +64,8 @@ def main() -> int:
     print("\n[2/6] Generating Gmsh mesh...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
+        n_axial=40,
+        n_normal=20,
         output_file=str(workdir / "nozzle.su2"),
     )
     print(f"  Mesh: {mesh_path}")

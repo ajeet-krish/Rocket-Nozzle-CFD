@@ -3,8 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-from cfd.vtu_parser import parse_vtu
+from matplotlib.tri import Triangulation
 
 
 def plot_mach_comparison(
@@ -15,6 +14,8 @@ def plot_mach_comparison(
 ) -> Path:
     """Plot side-by-side Mach contours for Euler vs RANS.
 
+    Uses tricontourf for filled contours.
+
     Args:
         euler_vtu: Path to Euler VTU file
         rans_vtu: Path to RANS VTU file
@@ -24,6 +25,10 @@ def plot_mach_comparison(
     Returns:
         Path to saved plot
     """
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from cfd.vtu_parser import parse_vtu
+    
     euler_data = parse_vtu(euler_vtu)
     rans_data = parse_vtu(rans_vtu)
 
@@ -31,14 +36,10 @@ def plot_mach_comparison(
 
     # Euler Mach contour
     if euler_data.mach is not None:
-        scatter1 = ax1.scatter(
-            euler_data.coordinates[:, 0],
-            euler_data.coordinates[:, 1],
-            c=euler_data.mach,
-            cmap="jet",
-            s=0.1,
-        )
-        plt.colorbar(scatter1, ax=ax1, shrink=0.8, label="Mach")
+        triang1 = Triangulation(euler_data.coordinates[:, 0], euler_data.coordinates[:, 1])
+        contour1 = ax1.tricontourf(triang1, euler_data.mach, levels=20, cmap='jet')
+        ax1.tricontour(triang1, euler_data.mach, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+        plt.colorbar(contour1, ax=ax1, shrink=0.8, label="Mach")
 
     ax1.set_title("Euler (Inviscid)", fontsize=12)
     ax1.set_xlabel("Axial Distance (m)")
@@ -47,14 +48,10 @@ def plot_mach_comparison(
 
     # RANS Mach contour
     if rans_data.mach is not None:
-        scatter2 = ax2.scatter(
-            rans_data.coordinates[:, 0],
-            rans_data.coordinates[:, 1],
-            c=rans_data.mach,
-            cmap="jet",
-            s=0.1,
-        )
-        plt.colorbar(scatter2, ax=ax2, shrink=0.8, label="Mach")
+        triang2 = Triangulation(rans_data.coordinates[:, 0], rans_data.coordinates[:, 1])
+        contour2 = ax2.tricontourf(triang2, rans_data.mach, levels=20, cmap='jet')
+        ax2.tricontour(triang2, rans_data.mach, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+        plt.colorbar(contour2, ax=ax2, shrink=0.8, label="Mach")
 
     ax2.set_title("RANS SST (Viscous)", fontsize=12)
     ax2.set_xlabel("Axial Distance (m)")

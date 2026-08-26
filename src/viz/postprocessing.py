@@ -105,6 +105,8 @@ def plot_shock_diamonds(
 ) -> Path:
     """Plot shock diamond visualization using density gradient.
 
+    Uses tricontourf for filled contours.
+
     Args:
         vtu_data: Parsed VTU data
         output_path: Path to save plot
@@ -113,32 +115,31 @@ def plot_shock_diamonds(
     Returns:
         Path to saved plot
     """
+    from matplotlib.tri import Triangulation
+    
     coords = vtu_data.coordinates
     grad = compute_density_gradient(vtu_data)
-
+    
+    # Create triangulation
+    triang = Triangulation(coords[:, 0], coords[:, 1])
+    
     fig, ax = plt.subplots(1, 1, figsize=(12, 4))
-
-    scatter = ax.scatter(
-        coords[:, 0],
-        coords[:, 1],
-        c=grad,
-        cmap="hot",
-        s=0.1,
-        vmin=0,
-        vmax=np.percentile(grad, 95),
-    )
-
+    
+    # Filled contour plot
+    contour = ax.tricontourf(triang, grad, levels=20, cmap='hot', 
+                            vmin=0, vmax=np.percentile(grad, 95))
+    
     ax.set_xlabel("Axial Distance (m)", fontsize=12)
     ax.set_ylabel("Radial Distance (m)", fontsize=12)
     ax.set_title("Shock Diamond Visualization (Density Gradient)", fontsize=14)
     ax.set_aspect("equal")
-
-    cbar = plt.colorbar(scatter, ax=ax, shrink=0.8)
+    
+    cbar = plt.colorbar(contour, ax=ax, shrink=0.8)
     cbar.set_label("Density Gradient Magnitude", fontsize=11)
-
+    
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=dpi, bbox_inches="tight")
     plt.close()
-
+    
     return output_path
