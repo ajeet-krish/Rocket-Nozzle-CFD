@@ -5,33 +5,43 @@ Compressible CFD analysis of converging-diverging rocket nozzles using SU2, with
 ## Quick Commands
 
 ```bash
-# Run all tests (228 tests)
+# Run all tests (287 tests)
 uv run pytest tests/ -v
 
-# Run Phase 0 spike (validates SU2 convergence)
-uv run python run_phase0.py
+# Quick convergence spike (coarse mesh, ~2 min)
+uv run python run_euler_spike.py
 
-# Run Phase 3 Euler reference case
-uv run python run_phase3.py
+# Full Euler simulation (fine mesh, ~10 min)
+uv run python run_euler.py
 
-# Run Phase 4 RANS + post-processing
-uv run python run_phase4.py
+# RANS simulation (requires Euler first, ~15 min)
+uv run python run_rans.py
 
-# Run Phase 6 parametric sweeps + GCI
-uv run python run_phase6.py
+# Post-processing (requires Euler + RANS)
+uv run python run_postprocess.py
+
+# Triple validation + GCI study
+uv run python run_validation.py
+
+# Parametric sweeps
+uv run python run_sweeps.py
+
+# Run everything in sequence
+uv run python run_all.py
 ```
 
 ## Architecture
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| `src/nozzle/` | Geometry & physics | Nozzle contour, isentropic relations |
-| `src/cfd/` | SU2 mesh & solver | Gmsh mesh, SU2 config, VTU parsing |
+| `src/nozzle/` | Geometry & physics | Nozzle contour, isentropic relations, presets |
+| `src/cfd/` | SU2 mesh & solver | Gmsh mesh, SU2 config, RANS config, VTU parsing |
 | `src/validation/` | Analytical validation | Isentropic, MoC, triple comparison, GCI |
 | `src/sweep/` | Parametric sweeps | Sweep config, runner, results, plots |
 | `src/viz/` | Visualization | Mach contour, shock diamonds, comparison |
-| `tests/` | Test suite | 228 tests, pytest |
+| `tests/` | Test suite | 287 tests, pytest |
 | `docs/` | Portfolio HTML site | AK-Vortex theme, 5 pages |
+| `run_*.py` | Single-responsibility run files | 7 scripts for different CFD tasks |
 
 ## Key Interfaces
 

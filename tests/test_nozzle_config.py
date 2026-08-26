@@ -2,6 +2,7 @@
 import math
 import pytest
 from nozzle.config import NozzleConfig
+from nozzle.presets import merlin_1d, raptor_sl, generic_test
 
 
 class TestNozzleConfig:
@@ -110,6 +111,64 @@ class TestNozzleConfig:
         assert config.ideal_length == pytest.approx(expected, rel=1e-10)
 
 
+class TestNozzleConfigV2Fields:
+    """Tests for NozzleConfig v2 fields and defaults."""
+
+    def test_v2_default_values(self):
+        """Verify v2 default field values."""
+        config = NozzleConfig()
+        assert config.chamber_length == 0.0
+        assert config.chamber_radius == 0.0
+        assert config.convergent_half_angle == 45.0
+        assert config.throat_radius_of_curvature == 0.0
+        assert config.theta_n == 30.0
+
+    def test_v2_custom_values(self):
+        """Verify v2 fields accept custom values."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            chamber_radius=0.0833,
+            convergent_half_angle=30.0,
+            throat_radius_of_curvature=0.04,
+            theta_n=25.0,
+        )
+        assert config.chamber_length == 0.1
+        assert config.chamber_radius == 0.0833
+        assert config.convergent_half_angle == 30.0
+        assert config.throat_radius_of_curvature == 0.04
+        assert config.theta_n == 25.0
+
+    def test_v2_frozen_dataclass(self):
+        """NozzleConfig v2 should still be immutable."""
+        config = NozzleConfig()
+        with pytest.raises(AttributeError):
+            config.chamber_length = 0.1  # type: ignore[misc]
+
+    def test_effective_inlet_radius_default(self):
+        """Default: chamber_radius=0, so inlet = 1.5x throat."""
+        config = NozzleConfig(throat_radius=0.05)
+        assert config.effective_inlet_radius == pytest.approx(0.075, rel=1e-10)
+
+    def test_effective_inlet_radius_custom(self):
+        """Custom chamber_radius should override the default."""
+        config = NozzleConfig(throat_radius=0.05, chamber_radius=0.1)
+        assert config.effective_inlet_radius == pytest.approx(0.1, rel=1e-10)
+
+    def test_total_length_default(self):
+        """Default total_length = converging + diverging (no chamber)."""
+        config = NozzleConfig(
+            converging_length=0.1, diverging_length=0.5
+        )
+        assert config.total_length == pytest.approx(0.6, rel=1e-10)
+
+    def test_total_length_with_chamber(self):
+        """total_length includes chamber_length when set."""
+        config = NozzleConfig(
+            chamber_length=0.1, converging_length=0.15, diverging_length=0.5
+        )
+        assert config.total_length == pytest.approx(0.75, rel=1e-10)
+
+
 class TestNozzleConfigValidation:
     """Tests for NozzleConfig.validate() classmethod."""
 
@@ -156,3 +215,121 @@ class TestNozzleConfigValidation:
         config = NozzleConfig.validate()
         with pytest.raises(AttributeError):
             config.throat_radius = 0.1  # type: ignore[misc]
+
+    def test_validate_negative_chamber_length(self):
+        """Negative chamber_length should raise ValueError."""
+        with pytest.raises(ValueError, match="chamber_length must be >= 0"):
+            NozzleConfig.validate(chamber_length=-0.1)
+
+    def test_validate_negative_chamber_radius(self):
+        """Negative chamber_radius should raise ValueError."""
+        with pytest.raises(ValueError, match="chamber_radius must be >= 0"):
+            NozzleConfig.validate(chamber_radius=-0.05)
+
+    def test_validate_convergent_half_angle_too_low(self):
+        """convergent_half_angle < 10 should raise ValueError."""
+        with pytest.raises(ValueError, match="convergent_half_angle must be between 10 and 80"):
+            NozzleConfig.validate(convergent_half_angle=5.0)
+
+    def test_validate_convergent_half_angle_too_high(self):
+        """convergent_half_angle > 80 should raise ValueError."""
+        with pytest.raises(ValueError, match="convergent_half_angle must be between 10 and 80"):
+            NozzleConfig.validate(convergent_half_angle=85.0)
+
+    def test_validate_negative_throat_radius_of_curvature(self):
+        """Negative throat_radius_of_curvature should raise ValueError."""
+        with pytest.raises(ValueError, match="throat_radius_of_curvature must be >= 0"):
+            NozzleConfig.validate(throat_radius_of_curvature=-0.01)
+
+    def test_validate_theta_n_too_low(self):
+        """theta_n < 5 should raise ValueError."""
+        with pytest.raises(ValueError, match="theta_n must be between 5 and 60"):
+            NozzleConfig.validate(theta_n=3.0)
+
+    def test_validate_theta_n_too_high(self):
+        """theta_n > 60 should raise ValueError."""
+        with pytest.raises(ValueError, match="theta_n must be between 5 and 60"):
+            NozzleConfig.validate(theta_n=65.0)
+
+    def test_validate_v2_boundary_values(self):
+        """Boundary values for v2 fields should pass."""
+        config = NozzleConfig.validate(
+            chamber_length=0.0,
+            chamber_radius=0.0,
+            convergent_half_angle=10.0,
+            throat_radius_of_curvature=0.0,
+            theta_n=5.0,
+        )
+        assert config.convergent_half_angle == 10.0
+        assert config.theta_n == 5.0
+
+
+class TestNozzleConfigPresets:
+    """Tests for preset nozzle configurations."""
+
+    def test_merlin_1d(self):
+        """Merlin 1D preset should have correct geometry."""
+        config = merlin_1d()
+        assert config.throat_radius == 0.0825
+        assert config.expansion_ratio == 16.0
+        assert config.chamber_length == pytest.approx(0.09993, rel=1e-3)
+        assert config.chamber_radius == 0.0833
+        assert config.convergent_half_angle == 45.0
+        assert config.throat_radius_of_curvature == 0.04
+        assert config.theta_n == 30.0
+        assert config.num_points == 300
+        assert config.exit_radius == pytest.approx(
+            0.0825 * math.sqrt(16.0), rel=1e-10
+        )
+        assert config.total_length == pytest.approx(
+            0.09993 + 0.15 + 0.334, rel=1e-3
+        )
+
+    def test_raptor_sl(self):
+        """Raptor SL preset should have correct geometry."""
+        config = raptor_sl()
+        assert config.throat_radius == 0.0825
+        assert config.expansion_ratio == 34.0
+        assert config.chamber_length == 0.1
+        assert config.chamber_radius == 0.0833
+        assert config.convergent_half_angle == 45.0
+        assert config.throat_radius_of_curvature == 0.04
+        assert config.theta_n == 30.0
+        assert config.num_points == 300
+        assert config.exit_radius == pytest.approx(
+            0.0825 * math.sqrt(34.0), rel=1e-10
+        )
+
+    def test_generic_test(self):
+        """Generic test preset should match v1 defaults."""
+        config = generic_test()
+        assert config.throat_radius == 0.05
+        assert config.expansion_ratio == 12.0
+        assert config.converging_length == 0.1
+        assert config.diverging_length == 0.5
+        assert config.num_points == 200
+        # v1 compatible: no chamber, linear convergent
+        assert config.chamber_length == 0.0
+        assert config.chamber_radius == 0.0
+        assert config.throat_radius_of_curvature == 0.0
+        assert config.effective_inlet_radius == pytest.approx(0.075, rel=1e-10)
+        assert config.total_length == pytest.approx(0.6, rel=1e-10)
+
+    def test_presets_pass_validation(self):
+        """All presets should pass validation."""
+        for preset_fn in [merlin_1d, raptor_sl, generic_test]:
+            config = preset_fn()
+            # Re-validate to ensure all fields are within range
+            NozzleConfig.validate(**config.__dict__)
+
+    def test_generic_test_v1_equivalence(self):
+        """Generic test preset should produce identical geometry to v1 defaults."""
+        v1_config = NozzleConfig(
+            throat_radius=0.05,
+            expansion_ratio=12.0,
+            converging_length=0.1,
+            diverging_length=0.5,
+            num_points=200,
+        )
+        preset_config = generic_test()
+        assert v1_config == preset_config

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Phase 6: Triple validation, parametric sweeps, and GCI study."""
+"""Triple validation and Grid Convergence Index study.
+
+Compares isentropic theory, Method of Characteristics, and SU2 Euler.
+Runs GCI study with 3 mesh levels (coarse/medium/fine).
+"""
 import sys
+import shutil
 from pathlib import Path
 
+# Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.config import NozzleConfig
+from nozzle.presets import merlin_1d
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
 from cfd.solver import SU2Solver
@@ -14,34 +20,23 @@ from validation.moc_solver import MoCSolver
 from validation.compare import compare_results
 from validation.triple import compare_three_way
 from validation.gci import GCIMeshLevel, compute_gci
-from sweep.config import SweepConfig
-from sweep.runner import SweepRunner
-from sweep.plotter import plot_sweep
 
 
 def main() -> int:
-    """Run Phase 6 validation pipeline.
-
-    Steps:
-        1. Triple validation (isentropic vs MoC vs SU2)
-        2. Parametric sweeps (epsilon, Pc, R*)
-        3. Grid Convergence Index study
+    """Run triple validation and GCI study.
 
     Returns:
         0 on success, 1 on failure.
     """
     print("=" * 60)
-    print("Phase 6: Triple Validation + Parametric Sweeps + GCI")
+    print("Triple Validation + GCI Study")
     print("=" * 60)
 
     images_dir = Path("docs/assets/images")
     images_dir.mkdir(parents=True, exist_ok=True)
 
     # Configuration
-    nozzle_config = NozzleConfig(
-        throat_radius=0.05,
-        expansion_ratio=12.0,
-    )
+    nozzle_config = merlin_1d()
 
     su2_config = SU2NozzleConfig(
         total_pressure=10e6,
@@ -50,8 +45,10 @@ def main() -> int:
         gamma=1.4,
     )
 
-    workdir = Path("output/phase6")
+    workdir = Path("output/validation")
     workdir.mkdir(parents=True, exist_ok=True)
+
+    solver = SU2Solver()
 
     # ================================================================
     # STEP 1: Triple Validation
@@ -77,13 +74,11 @@ def main() -> int:
     )
     su2_workdir = workdir / "triple"
     su2_workdir.mkdir(exist_ok=True)
-    
+
     # Copy mesh to SU2 working directory
-    import shutil
     shutil.copy(mesh_path, su2_workdir / "nozzle.su2")
-    
+
     config_path = su2_config.write(su2_workdir)
-    solver = SU2Solver()
     su2_results = solver.run(config_path, su2_workdir, gamma=su2_config.gamma)
     mach_su2 = su2_results.exit_mach
 
@@ -111,40 +106,9 @@ def main() -> int:
     print(f"  Two-way error:   {two_way.mach_error_percent:.2f}%")
 
     # ================================================================
-    # STEP 2: Parametric Sweeps
+    # STEP 2: GCI Study
     # ================================================================
-    print("\n[2/3] Parametric Sweeps...")
-    print("-" * 60)
-
-    sweep_config = SweepConfig(
-        expansion_ratios=(4.0, 8.0, 12.0, 16.0, 20.0),
-        chamber_pressures=(5e6, 10e6, 20e6, 50e6),
-        throat_radii=(0.01, 0.025, 0.05, 0.1),
-        reference_epsilon=12.0,
-        reference_pc=10e6,
-        reference_r_star=0.05,
-        total_temperature=3500.0,
-        gamma=1.4,
-    )
-
-    sweep_runner = SweepRunner(workdir / "sweep")
-    sweep_results = sweep_runner.run_sweep(sweep_config)
-
-    # Save sweep results
-    sweep_csv_path = workdir / "sweep_results.csv"
-    sweep_results.to_csv(sweep_csv_path)
-    print(f"  Sweep results: {sweep_csv_path}")
-    print(f"  Total cases: {len(sweep_results.cases)}")
-
-    # Plot sweep
-    sweep_plots = plot_sweep(sweep_results, images_dir)
-    for plot_path in sweep_plots:
-        print(f"  Plot: {plot_path}")
-
-    # ================================================================
-    # STEP 3: GCI Study
-    # ================================================================
-    print("\n[3/3] Grid Convergence Index Study...")
+    print("\n[2/3] Grid Convergence Index Study...")
     print("-" * 60)
 
     # Mesh levels: coarse, medium, fine
@@ -175,8 +139,6 @@ def main() -> int:
         gci_levels[level_name] = GCIMeshLevel(
             n_cells=n_cells,
             exit_mach=results.exit_mach,
-            # Note: thrust coefficient GCI is not implemented in Phase 6
-            # Use exit Mach as the primary validation metric
             thrust_coefficient=0.0,
         )
 
@@ -207,14 +169,10 @@ def main() -> int:
     # SUMMARY
     # ================================================================
     print("\n" + "=" * 60)
-    print("Phase 6 Complete!")
+    print("Validation Complete!")
     print("=" * 60)
     print(f"Triple validation: {'PASSED' if triple_report.passed else 'FAILED'}")
     print(f"  Max error: {triple_report.max_error_percent:.2f}%")
-    print(f"Sweep cases: {len(sweep_results.cases)}")
-    print(f"  CSV: {sweep_csv_path}")
-    if sweep_plots:
-        print(f"  Plots: {len(sweep_plots)} files")
 
     if not triple_report.passed:
         print("\nWARNING: Triple validation failed.")

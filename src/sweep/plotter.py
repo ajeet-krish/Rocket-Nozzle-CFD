@@ -25,7 +25,7 @@ def plot_sweep(
     plots: list[Path] = []
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Mach vs epsilon
+    # Mach vs epsilon (this one should show a curve)
     eps_results = results.by_sweep_type("epsilon")
     if eps_results:
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
@@ -47,7 +47,7 @@ def plot_sweep(
         plt.close()
         plots.append(path)
 
-    # Mach vs Pc
+    # Mach vs Pc (flat line is correct - exit Mach is independent of Pc)
     pc_results = results.by_sweep_type("pc")
     if pc_results:
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
@@ -60,6 +60,11 @@ def plot_sweep(
         ax.set_xlabel('Chamber Pressure (MPa)')
         ax.set_ylabel('Exit Mach Number')
         ax.set_title('Exit Mach vs Chamber Pressure')
+        ax.annotate(
+            'Exit Mach is independent of Pc for isentropic flow',
+            xy=(0.5, 0.02), xycoords='axes fraction',
+            ha='center', fontsize=10, fontstyle='italic', color='gray',
+        )
         ax.legend()
         ax.grid(True, alpha=0.3)
 
@@ -69,7 +74,7 @@ def plot_sweep(
         plt.close()
         plots.append(path)
 
-    # Mach vs R*
+    # Mach vs R* (flat line is correct - exit Mach is independent of R*)
     rstar_results = results.by_sweep_type("r_star")
     if rstar_results:
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
@@ -82,6 +87,11 @@ def plot_sweep(
         ax.set_xlabel('Throat Radius (cm)')
         ax.set_ylabel('Exit Mach Number')
         ax.set_title('Exit Mach vs Throat Radius')
+        ax.annotate(
+            'Exit Mach is independent of R* for isentropic flow',
+            xy=(0.5, 0.02), xycoords='axes fraction',
+            ha='center', fontsize=10, fontstyle='italic', color='gray',
+        )
         ax.legend()
         ax.grid(True, alpha=0.3)
 

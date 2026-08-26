@@ -18,6 +18,7 @@ class MeshConfig:
         first_cell_height: First cell height for boundary layer (m)
         growth_ratio: Geometric growth ratio for boundary layer
         plume_length_ratio: Plume length as multiple of throat radius
+        plume_radius_ratio: Plume width as multiple of exit radius
         min_orthogonality: Minimum acceptable orthogonality (degrees)
         max_aspect_ratio: Maximum acceptable aspect ratio
         max_expansion_ratio: Maximum acceptable cell expansion ratio
@@ -30,6 +31,7 @@ class MeshConfig:
     first_cell_height: float = 1e-6
     growth_ratio: float = 1.15
     plume_length_ratio: float = 30.0
+    plume_radius_ratio: float = 3.0
     min_orthogonality: float = 20.0
     max_aspect_ratio: float = 100.0
     max_expansion_ratio: float = 2.0
@@ -63,6 +65,10 @@ class MeshConfig:
         if self.growth_ratio <= 1.0:
             raise ValueError(
                 f"growth_ratio must be > 1.0, got {self.growth_ratio}",
+            )
+        if self.plume_radius_ratio < 1.0:
+            raise ValueError(
+                f"plume_radius_ratio must be >= 1.0, got {self.plume_radius_ratio}",
             )
 
     @property

@@ -14,17 +14,42 @@ class NozzleConfig:
         converging_length: Converging section length (m)
         diverging_length: Diverging section length (m)
         num_points: Number of contour points
+        chamber_length: Straight cylinder before convergent (m, 0 = no chamber)
+        chamber_radius: Chamber radius (m, 0 = auto-computed as 1.5x throat_radius)
+        convergent_half_angle: Half-angle of convergent section (degrees)
+        throat_radius_of_curvature: Throat radius of curvature (m, 0 = linear convergent)
+        theta_n: Wall angle at throat for Rao bell (degrees)
     """
+    # Existing fields (unchanged defaults)
     throat_radius: float = 0.05          # m
     expansion_ratio: float = 12.0        # A_exit / A_throat
     converging_length: float = 0.1       # m (inlet to throat)
     diverging_length: float = 0.5        # m (throat to exit)
     num_points: int = 200                # contour resolution
 
+    # New fields
+    chamber_length: float = 0.0          # m (straight cylinder before convergent, 0 = no chamber)
+    chamber_radius: float = 0.0          # m (if 0, computed as throat_radius * 1.5 for backward compat)
+    convergent_half_angle: float = 45.0  # degrees (half-angle of convergent section)
+    throat_radius_of_curvature: float = 0.0  # m (0 = linear convergent for backward compat)
+    theta_n: float = 30.0               # degrees (wall angle at throat for Rao bell)
+
     @property
     def exit_radius(self) -> float:
         """Exit radius from expansion ratio."""
         return self.throat_radius * (self.expansion_ratio ** 0.5)
+
+    @property
+    def effective_inlet_radius(self) -> float:
+        """Inlet radius (chamber_radius if set, else 1.5x throat for backward compat)."""
+        if self.chamber_radius > 0:
+            return self.chamber_radius
+        return self.throat_radius * 1.5
+
+    @property
+    def total_length(self) -> float:
+        """Total nozzle length: chamber + converging + diverging."""
+        return self.chamber_length + self.converging_length + self.diverging_length
 
     @property
     def half_angle(self) -> float:
@@ -82,5 +107,26 @@ class NozzleConfig:
         if config.num_points < 2:
             raise ValueError(
                 f"num_points must be >= 2, got {config.num_points}"
+            )
+        if config.chamber_length < 0:
+            raise ValueError(
+                f"chamber_length must be >= 0, got {config.chamber_length}"
+            )
+        if config.chamber_radius < 0:
+            raise ValueError(
+                f"chamber_radius must be >= 0, got {config.chamber_radius}"
+            )
+        if not (10.0 <= config.convergent_half_angle <= 80.0):
+            raise ValueError(
+                f"convergent_half_angle must be between 10 and 80 degrees, "
+                f"got {config.convergent_half_angle}"
+            )
+        if config.throat_radius_of_curvature < 0:
+            raise ValueError(
+                f"throat_radius_of_curvature must be >= 0, got {config.throat_radius_of_curvature}"
+            )
+        if not (5.0 <= config.theta_n <= 60.0):
+            raise ValueError(
+                f"theta_n must be between 5 and 60 degrees, got {config.theta_n}"
             )
         return config

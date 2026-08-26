@@ -1,6 +1,7 @@
 """Gmsh O-grid mesh generation for nozzle.
 
-Single-surface mesh with spline wall curve matching nozzle contour.
+Single-surface mesh with spline wall curve matching nozzle contour,
+plus optional plume extension zone for external shock diamonds.
 Works with SU2 v8.4.0.
 """
 import numpy as np
@@ -11,27 +12,36 @@ from nozzle.geometry import generate_contour
 
 def generate_nozzle_mesh(
     config: NozzleConfig,
-    n_axial: int = 20,
-    n_normal: int = 10,
+    n_axial: int = 120,
+    n_normal: int = 60,
     first_cell_height: float = 1e-6,
     output_file: str = "nozzle.su2",
     rans_mode: bool = False,
+    plume_extension: bool = True,
+    plume_length_ratio: float = 20.0,
+    plume_radius_ratio: float = 3.0,
 ) -> Path:
     """Generate structured O-grid mesh for converging-diverging nozzle.
 
-    Creates a single-surface mesh with:
-    - Spline wall curve matching actual nozzle contour
-    - Transfinite meshing with 4 boundary curves
-    - Recombined quad elements for SU2
-    - Optional boundary layer refinement for RANS
+    Creates a mesh with:
+    - Spline wall curve matching actual nozzle contour (10+ key points)
+    - Optional plume extension for external shock diamonds
+    - Transfinite meshing with BL refinement for RANS
+
+    The nozzle domain is a single transfinite surface with 4 boundary curves.
+    When plume_extension=True, a second surface is added downstream. The plume
+    surface shares the exit boundary with the nozzle for conformal meshing.
 
     Args:
         config: Nozzle geometry parameters
-        n_axial: Number of cells along nozzle axis
+        n_axial: Number of cells along nozzle axis (and plume if enabled)
         n_normal: Number of cells normal to wall
         first_cell_height: First cell height for boundary layer (m)
         output_file: Output .su2 mesh file path
         rans_mode: If True, add boundary layer refinement
+        plume_extension: If True, add plume domain downstream of exit
+        plume_length_ratio: Plume length as multiple of throat radius
+        plume_radius_ratio: Plume width as multiple of exit radius
 
     Returns:
         Path to generated .su2 mesh file
@@ -39,16 +49,27 @@ def generate_nozzle_mesh(
     # Generate nozzle contour
     x_wall, y_wall = generate_contour(config)
 
-    # Use key points from the contour to capture the shape
-    # Select points at regular intervals plus throat and exit
+    # Use 10+ key points from the contour to capture the shape accurately
     n_points = len(x_wall)
-    throat_idx = n_points // 4  # Approximate throat location
-    
-    # Select key points to capture the curve shape
-    # Include: inlet, quarter-throat, throat, half-diverge, exit
-    key_indices = [0, n_points//8, throat_idx, n_points//2, n_points - 1]
-    key_indices = sorted(set([i for i in key_indices if 0 <= i < n_points]))
-    
+    throat_idx = int(np.argmin(np.abs(x_wall)))  # Find actual throat location
+
+    # Select key points to capture the full curve shape
+    # Include: inlet, chamber region, before-throat, throat, after-throat,
+    #          quarter-diverge, half-diverge, 3/4-diverge, exit
+    key_indices = [
+        0,                          # inlet
+        n_points // 10,             # early chamber
+        throat_idx - n_points // 20, # before throat
+        throat_idx,                  # throat
+        throat_idx + n_points // 20, # after throat
+        n_points // 2,              # mid-diverge
+        n_points * 3 // 4,          # 3/4 diverge
+        n_points - 1,               # exit
+    ]
+    key_indices = sorted(set(
+        i for i in key_indices if 0 <= i < n_points
+    ))
+
     x_key = [x_wall[i] for i in key_indices]
     y_key = [y_wall[i] for i in key_indices]
 
@@ -56,12 +77,14 @@ def generate_nozzle_mesh(
     gmsh.initialize()
     gmsh.model.add("nozzle")
 
-    # Create wall points (top boundary)
+    # --- Nozzle domain ---
+
+    # Wall points (top boundary)
     wall_pts = []
     for xi, yi in zip(x_key, y_key):
         wall_pts.append(gmsh.model.geo.addPoint(xi, yi, 0))
 
-    # Create axis points (bottom boundary, y=0)
+    # Axis points (bottom boundary, y=0)
     axis_pts = []
     for xi in x_key:
         axis_pts.append(gmsh.model.geo.addPoint(xi, 0, 0))
@@ -69,45 +92,117 @@ def generate_nozzle_mesh(
     # Wall curve: spline through wall points
     wall_spline = gmsh.model.geo.addSpline(wall_pts)
 
-    # Other lines
+    # Boundary lines
     inlet_line = gmsh.model.geo.addLine(axis_pts[0], wall_pts[0])
-    outlet_line = gmsh.model.geo.addLine(wall_pts[-1], axis_pts[-1])
+    exit_line = gmsh.model.geo.addLine(wall_pts[-1], axis_pts[-1])
     axis_line = gmsh.model.geo.addLine(axis_pts[-1], axis_pts[0])
 
-    # Curve loop
-    loop = gmsh.model.geo.addCurveLoop([inlet_line, wall_spline, outlet_line, axis_line])
-    surface = gmsh.model.geo.addPlaneSurface([loop])
+    # Nozzle surface
+    nozzle_loop = gmsh.model.geo.addCurveLoop(
+        [inlet_line, wall_spline, exit_line, axis_line],
+    )
+    nozzle_surface = gmsh.model.geo.addPlaneSurface([nozzle_loop])
 
-    # Transfinite (use nodes = cells + 1)
+    # --- Plume domain (optional) ---
+
+    plume_top = None
+    plume_outlet = None
+    plume_axis = None
+    plume_surface = None
+    plume_left = None
+
+    if plume_extension:
+        plume_length = plume_length_ratio * config.throat_radius
+        x_exit = config.diverging_length
+        x_plume_end = x_exit + plume_length
+        plume_width = plume_radius_ratio * config.exit_radius
+
+        # Plume corner points
+        #   exit_top is wall_pts[-1] at (x_exit, exit_radius)
+        #   exit_bot is axis_pts[-1] at (x_exit, 0)
+        plume_top_left = gmsh.model.geo.addPoint(x_exit, plume_width, 0)
+        plume_top_right = gmsh.model.geo.addPoint(x_plume_end, plume_width, 0)
+        plume_bot_right = gmsh.model.geo.addPoint(x_plume_end, 0, 0)
+
+        # Plume boundary curves (4 curves for transfinite surface)
+        # Left: from axis at exit up to plume top (single line, independent of nozzle exit)
+        plume_left = gmsh.model.geo.addLine(axis_pts[-1], plume_top_left)
+        plume_top = gmsh.model.geo.addLine(plume_top_left, plume_top_right)
+        plume_outlet = gmsh.model.geo.addLine(plume_top_right, plume_bot_right)
+        plume_axis = gmsh.model.geo.addLine(plume_bot_right, axis_pts[-1])
+
+        # Plume surface (4-curve loop for transfinite meshing)
+        plume_loop = gmsh.model.geo.addCurveLoop(
+            [plume_left, plume_top, plume_outlet, plume_axis],
+        )
+        plume_surface = gmsh.model.geo.addPlaneSurface([plume_loop])
+
+    # --- Transfinite meshing ---
+
+    growth_ratio = 1.15
+
     if rans_mode:
-        # For RANS: use geometric progression for boundary layer refinement
-        growth_ratio = 1.15
-        gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1, "Progression", growth_ratio)
-        gmsh.model.geo.mesh.setTransfiniteCurve(outlet_line, n_normal + 1, "Progression", growth_ratio)
+        # RANS: geometric progression for boundary layer refinement
+        gmsh.model.geo.mesh.setTransfiniteCurve(
+            inlet_line, n_normal + 1, "Progression", growth_ratio,
+        )
+        gmsh.model.geo.mesh.setTransfiniteCurve(
+            exit_line, n_normal + 1, "Progression", growth_ratio,
+        )
         gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
         gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
     else:
-        # For Euler: uniform spacing
+        # Euler: uniform spacing
         gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1)
-        gmsh.model.geo.mesh.setTransfiniteCurve(outlet_line, n_normal + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(exit_line, n_normal + 1)
         gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
         gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
-    
-    gmsh.model.geo.mesh.setTransfiniteSurface(surface, "Left")
-    gmsh.model.geo.mesh.setRecombine(2, surface)
 
-    # Physical groups
-    gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
-    gmsh.model.geo.addPhysicalGroup(1, [outlet_line], name="outlet")
-    gmsh.model.geo.addPhysicalGroup(1, [wall_spline], name="wall")
-    gmsh.model.geo.addPhysicalGroup(1, [axis_line], name="symmetry")
-    gmsh.model.geo.addPhysicalGroup(2, [surface], name="fluid")
+    gmsh.model.geo.mesh.setTransfiniteSurface(nozzle_surface, "Left")
+    gmsh.model.geo.mesh.setRecombine(2, nozzle_surface)
 
-    # Generate
+    # Plume transfinite meshing
+    if plume_extension and plume_surface is not None:
+        # Plume left boundary: from axis to plume_width (covers exit + gap)
+        # Plume outlet: from plume_width to axis (must match left node count)
+        plume_normal_nodes = n_normal + 6  # extra nodes for gap region
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_left, plume_normal_nodes)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_top, n_axial + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_outlet, plume_normal_nodes)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_axis, n_axial + 1)
+
+        gmsh.model.geo.mesh.setTransfiniteSurface(plume_surface, "Left")
+        gmsh.model.geo.mesh.setRecombine(2, plume_surface)
+
+    # --- Physical groups ---
+
+    if plume_extension:
+        # Nozzle + plume: exit_line is nozzle outlet, plume_left is plume inlet
+        # SU2 treats coincident boundaries as an interface
+        gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
+        gmsh.model.geo.addPhysicalGroup(1, [exit_line], name="outlet")
+        gmsh.model.geo.addPhysicalGroup(1, [wall_spline], name="wall")
+        gmsh.model.geo.addPhysicalGroup(
+            1, [axis_line, plume_axis], name="symmetry",
+        )
+        gmsh.model.geo.addPhysicalGroup(1, [plume_left], name="plume_inlet")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_top], name="farfield")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="plume_outlet")
+        gmsh.model.geo.addPhysicalGroup(
+            2, [nozzle_surface, plume_surface], name="fluid",
+        )
+    else:
+        # Nozzle only
+        gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
+        gmsh.model.geo.addPhysicalGroup(1, [exit_line], name="outlet")
+        gmsh.model.geo.addPhysicalGroup(1, [wall_spline], name="wall")
+        gmsh.model.geo.addPhysicalGroup(1, [axis_line], name="symmetry")
+        gmsh.model.geo.addPhysicalGroup(2, [nozzle_surface], name="fluid")
+
+    # Generate and write
     gmsh.model.geo.synchronize()
     gmsh.model.mesh.generate(2)
 
-    # Write
     output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     gmsh.write(str(output_path))
@@ -133,4 +228,3 @@ def validate_mesh(mesh_file: Path) -> dict:
         "file_size_bytes": file_size,
         "mesh_file": str(mesh_file),
     }
-

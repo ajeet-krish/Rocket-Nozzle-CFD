@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 from nozzle.config import NozzleConfig
-from nozzle.geometry import generate_contour
+from nozzle.geometry import generate_contour, _curved_convergent, _rao_bell
 
 
 class TestGenerateContour:
@@ -177,3 +177,272 @@ class TestRaoBellContour:
                 f"Rao bell failed for expansion_ratio={eps}: "
                 f"exit={y[-1]:.6f}, expected={config.exit_radius:.6f}"
             )
+
+    def test_rao_bell_theta_n_parameter(self):
+        """Rao bell should accept different theta_n values."""
+        config_default = NozzleConfig(throat_radius=0.05, expansion_ratio=12.0)
+        config_theta45 = NozzleConfig(
+            throat_radius=0.05, expansion_ratio=12.0, theta_n=45.0,
+        )
+        config_theta15 = NozzleConfig(
+            throat_radius=0.05, expansion_ratio=12.0, theta_n=15.0,
+        )
+        _, y_default = generate_contour(config_default)
+        _, y_45 = generate_contour(config_theta45)
+        _, y_15 = generate_contour(config_theta15)
+        # All should reach the same exit radius
+        assert y_default[-1] == pytest.approx(config_default.exit_radius, rel=1e-10)
+        assert y_45[-1] == pytest.approx(config_theta45.exit_radius, rel=1e-10)
+        assert y_15[-1] == pytest.approx(config_theta15.exit_radius, rel=1e-10)
+        # But the mid-bell shape should differ
+        mid_idx = len(y_default) // 2
+        assert not np.isclose(y_default[mid_idx], y_45[mid_idx], rtol=0.01), (
+            "Different theta_n should produce different mid-bell shapes"
+        )
+
+
+class TestChamberSection:
+    """Tests for chamber section generation."""
+
+    def test_chamber_present_when_length_positive(self):
+        """Contour should include chamber section when chamber_length > 0."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            chamber_radius=0.08,
+            converging_length=0.1,
+            diverging_length=0.5,
+        )
+        x, y = generate_contour(config)
+        # Domain should extend left beyond -converging_length
+        assert np.min(x) < -config.converging_length, (
+            f"Chamber should extend domain left of -converging_length, "
+            f"got min_x={np.min(x):.4f}"
+        )
+
+    def test_chamber_absent_when_length_zero(self):
+        """Contour should not include chamber when chamber_length == 0."""
+        config = NozzleConfig(chamber_length=0.0)
+        x, y = generate_contour(config)
+        # Domain should start at -converging_length
+        assert np.min(x) == pytest.approx(-config.converging_length, rel=0.01), (
+            f"No chamber: min_x should be -converging_length={-config.converging_length:.4f}, "
+            f"got {np.min(x):.4f}"
+        )
+
+    def test_chamber_straight_cylinder(self):
+        """Chamber section should be constant radius."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            chamber_radius=0.08,
+            converging_length=0.1,
+            diverging_length=0.5,
+        )
+        x, y = generate_contour(config)
+        # Find chamber region: x < -converging_length
+        mask = x < -config.converging_length
+        if np.any(mask):
+            y_chamber = y[mask]
+            # All chamber points should be at chamber_radius
+            assert np.allclose(y_chamber, config.effective_inlet_radius, rtol=1e-6), (
+                f"Chamber should be constant radius {config.effective_inlet_radius:.4f}, "
+                f"got range [{np.min(y_chamber):.4f}, {np.max(y_chamber):.4f}]"
+            )
+
+    def test_chamber_radius_default(self):
+        """Default chamber_radius should be 1.5x throat."""
+        config = NozzleConfig(chamber_length=0.1)
+        assert config.effective_inlet_radius == pytest.approx(
+            config.throat_radius * 1.5, rel=1e-10,
+        )
+
+    def test_chamber_radius_explicit(self):
+        """Explicit chamber_radius should override default."""
+        config = NozzleConfig(chamber_length=0.1, chamber_radius=0.1)
+        assert config.effective_inlet_radius == pytest.approx(0.1, rel=1e-10)
+
+    def test_chamber_total_length(self):
+        """total_length should include chamber."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            converging_length=0.15,
+            diverging_length=0.5,
+        )
+        expected = 0.1 + 0.15 + 0.5
+        assert config.total_length == pytest.approx(expected, rel=1e-10)
+
+    def test_chamber_point_count(self):
+        """Contour with chamber should have correct point count."""
+        config = NozzleConfig(
+            num_points=200,
+            chamber_length=0.1,
+            chamber_radius=0.08,
+        )
+        x, y = generate_contour(config)
+        # 3 sections: chamber (20%), convergent (25%), divergent (55%)
+        # 2 duplicate points removed
+        assert len(x) == 200 - 2, f"Expected 198 points, got {len(x)}"
+        assert len(y) == 200 - 2
+
+    def test_chamber_monotonic_convergent_divergent(self):
+        """Convergent and divergent should be monotonic with chamber."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            chamber_radius=0.08,
+            converging_length=0.1,
+            diverging_length=0.5,
+        )
+        x, y = generate_contour(config)
+        # After chamber, convergent should decrease
+        conv_mask = (x >= -config.converging_length) & (x < 0)
+        if np.any(conv_mask):
+            y_conv = y[conv_mask]
+            for i in range(len(y_conv) - 1):
+                assert y_conv[i] >= y_conv[i + 1], (
+                    f"Convergent not monotonic: y[{i}]={y_conv[i]} > y[{i+1}]={y_conv[i+1]}"
+                )
+        # Divergent should increase
+        div_mask = x > 0
+        if np.any(div_mask):
+            y_div = y[div_mask]
+            for i in range(len(y_div) - 1):
+                assert y_div[i] <= y_div[i + 1], (
+                    f"Divergent not monotonic: y[{i}]={y_div[i]} > y[{i+1}]={y_div[i+1]}"
+                )
+
+    def test_chamber_merlin_preset(self):
+        """Merlin preset should generate valid contour with chamber."""
+        from nozzle.presets import merlin_1d
+        config = merlin_1d()
+        x, y = generate_contour(config)
+        # Should have chamber, convergent, and divergent sections
+        assert np.min(x) < -config.converging_length, "Merlin should have chamber"
+        assert y[-1] == pytest.approx(config.exit_radius, rel=1e-6)
+        assert np.all(y >= 0), "No negative radii"
+
+
+class TestCurvedConvergent:
+    """Tests for curved convergent section."""
+
+    def test_curved_convergent_boundary_values(self):
+        """Curved convergent should match inlet and throat radii."""
+        r_inlet = 0.08
+        r_throat = 0.05
+        length = 0.1
+        half_angle = 45.0
+        x = np.linspace(-length, 0, 50)
+        y = _curved_convergent(r_inlet, r_throat, half_angle, x, length)
+        assert y[0] == pytest.approx(r_inlet, rel=1e-10), (
+            f"Start radius should be {r_inlet}, got {y[0]}"
+        )
+        assert y[-1] == pytest.approx(r_throat, rel=1e-10), (
+            f"End radius should be {r_throat}, got {y[-1]}"
+        )
+
+    def test_curved_convergent_monotonic(self):
+        """Curved convergent should be monotonically decreasing."""
+        x = np.linspace(-0.15, 0, 100)
+        y = _curved_convergent(0.08, 0.05, 45.0, x, 0.15)
+        for i in range(len(y) - 1):
+            assert y[i] >= y[i + 1], (
+                f"Curved convergent not monotonic: y[{i}]={y[i]} > y[{i+1}]={y[i+1]}"
+            )
+
+    def test_curved_convergent_no_negative(self):
+        """Curved convergent should have no negative radii."""
+        x = np.linspace(-0.15, 0, 100)
+        y = _curved_convergent(0.08, 0.05, 45.0, x, 0.15)
+        assert np.all(y >= 0), f"Found negative radii: {y[y < 0]}"
+
+    def test_curved_vs_linear_convergent(self):
+        """Curved convergent should differ from linear convergent."""
+        config_linear = NozzleConfig(
+            throat_radius_of_curvature=0.0,
+            converging_length=0.15,
+        )
+        config_curved = NozzleConfig(
+            throat_radius_of_curvature=0.04,
+            converging_length=0.15,
+            convergent_half_angle=45.0,
+        )
+        x_lin, y_lin = generate_contour(config_linear)
+        x_curv, y_curv = generate_contour(config_curved)
+        # Both should reach same throat and exit
+        assert np.min(y_lin) == pytest.approx(config_linear.throat_radius, rel=0.01)
+        assert np.min(y_curv) == pytest.approx(config_curved.throat_radius, rel=0.01)
+        # But shapes should differ in convergent region
+        conv_mask_lin = x_lin < 0
+        conv_mask_curv = x_curv < 0
+        y_lin_mid = y_lin[conv_mask_lin][len(y_lin[conv_mask_lin]) // 2]
+        y_curv_mid = y_curv[conv_mask_curv][len(y_curv[conv_mask_curv]) // 2]
+        assert not np.isclose(y_lin_mid, y_curv_mid, rtol=0.05), (
+            "Curved and linear convergent should have different shapes"
+        )
+
+    def test_curved_convergent_with_chamber(self):
+        """Curved convergent should work with chamber section."""
+        config = NozzleConfig(
+            chamber_length=0.1,
+            chamber_radius=0.08,
+            throat_radius_of_curvature=0.04,
+            convergent_half_angle=45.0,
+            converging_length=0.15,
+            diverging_length=0.5,
+        )
+        x, y = generate_contour(config)
+        # Should have 3 sections
+        assert np.min(x) < -config.converging_length
+        # Convergent should be monotonic
+        conv_mask = (x >= -config.converging_length) & (x < 0)
+        y_conv = y[conv_mask]
+        for i in range(len(y_conv) - 1):
+            assert y_conv[i] >= y_conv[i + 1]
+
+    def test_curved_convergent_different_angles(self):
+        """Curved convergent should work with different half-angles."""
+        for angle in [20.0, 30.0, 45.0, 60.0]:
+            config = NozzleConfig(
+                throat_radius_of_curvature=0.04,
+                convergent_half_angle=angle,
+                converging_length=0.15,
+            )
+            x, y = generate_contour(config)
+            conv_mask = x <= 0
+            y_conv = y[conv_mask]
+            assert y_conv[0] == pytest.approx(config.effective_inlet_radius, rel=1e-6)
+            # Last convergent point should be at throat radius
+            assert y_conv[-1] == pytest.approx(config.throat_radius, rel=1e-6)
+
+
+class TestPresets:
+    """Tests for preset nozzle configurations."""
+
+    def test_merlin_1d_contour(self):
+        """Merlin 1D preset should generate valid contour."""
+        from nozzle.presets import merlin_1d
+        config = merlin_1d()
+        x, y = generate_contour(config)
+        # Should have all 3 sections
+        assert len(x) > 0
+        assert len(y) > 0
+        # Exit radius should match
+        assert y[-1] == pytest.approx(config.exit_radius, rel=1e-6)
+        # Throat should be at minimum
+        throat_idx = np.argmin(y)
+        assert abs(x[throat_idx]) < 0.05, "Throat should be near x=0"
+
+    def test_raptor_sl_contour(self):
+        """Raptor SL preset should generate valid contour."""
+        from nozzle.presets import raptor_sl
+        config = raptor_sl()
+        x, y = generate_contour(config)
+        assert len(x) > 0
+        assert y[-1] == pytest.approx(config.exit_radius, rel=1e-6)
+
+    def test_generic_test_contour(self):
+        """Generic test preset should generate valid contour (v1 compat)."""
+        from nozzle.presets import generic_test
+        config = generic_test()
+        x, y = generate_contour(config)
+        # v1 behavior: no chamber
+        assert np.min(x) == pytest.approx(-config.converging_length, rel=0.01)
+        assert y[-1] == pytest.approx(config.exit_radius, rel=1e-6)

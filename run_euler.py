@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Phase 3: SU2 Euler simulation for rocket nozzle."""
+"""Full Euler simulation of SpaceX Merlin 1D nozzle.
+
+Uses fine mesh (120x60) with plume extension for accurate results.
+Validates against isentropic theory.
+"""
 import sys
 from pathlib import Path
 
+# Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.config import NozzleConfig
+from nozzle.presets import merlin_1d
 from nozzle.geometry import generate_contour, plot_contour
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
@@ -17,19 +22,17 @@ from viz.mach_contour import plot_mach_contour
 
 
 def main() -> int:
-    """Run Phase 3 simulation pipeline."""
+    """Run full Euler simulation pipeline.
+
+    Returns:
+        0 on success, 1 on failure.
+    """
     print("=" * 60)
-    print("Phase 3: SU2 Euler Simulation")
+    print("Full Euler Simulation: SpaceX Merlin 1D")
     print("=" * 60)
 
-    # Configuration
-    nozzle_config = NozzleConfig(
-        throat_radius=0.05,
-        expansion_ratio=12.0,
-        converging_length=0.1,
-        diverging_length=0.5,
-        num_points=200,
-    )
+    # Configuration (Merlin 1D preset)
+    nozzle_config = merlin_1d()
 
     su2_config = SU2NozzleConfig(
         total_pressure=10e6,
@@ -41,7 +44,7 @@ def main() -> int:
     )
 
     # Setup directories
-    workdir = Path("output/phase3")
+    workdir = Path("output/euler")
     workdir.mkdir(parents=True, exist_ok=True)
 
     images_dir = Path("docs/assets/images")
@@ -57,16 +60,17 @@ def main() -> int:
     )
 
     # Plot contour
-    plot_contour(x, y, "Phase 3 - Rao Bell Nozzle Contour")
+    plot_contour(x, y, "Merlin 1D - Rao Bell Nozzle Contour")
     print("  Saved: docs/assets/images/nozzle_contour.png")
 
-    # Step 2: Generate mesh
-    print("\n[2/6] Generating Gmsh mesh...")
+    # Step 2: Generate mesh (fine: 120x60 with plume extension)
+    print("\n[2/6] Generating Gmsh mesh (120x60 + plume)...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=40,
-        n_normal=20,
+        n_axial=120,
+        n_normal=60,
         output_file=str(workdir / "nozzle.su2"),
+        plume_extension=True,
     )
     print(f"  Mesh: {mesh_path}")
 
@@ -111,12 +115,17 @@ def main() -> int:
     vtu_path = workdir / "flow.vtu"
     if vtu_path.exists():
         mach_path = images_dir / "mach_contour.png"
-        plot_mach_contour(vtu_path, mach_path)
+        plot_mach_contour(vtu_path, mach_path, nozzle_config=nozzle_config)
         print(f"  Saved: {mach_path}")
+
+    # Nozzle contour plot
+    contour_path = images_dir / "nozzle_contour.png"
+    plot_contour(x, y, "Merlin 1D - Rao Bell Nozzle Contour")
+    print(f"  Saved: {contour_path}")
 
     # Summary
     print("\n" + "=" * 60)
-    print("Phase 3 Complete!")
+    print("Full Euler Simulation Complete!")
     print("=" * 60)
     print(f"Exit Mach (SU2): {results.exit_mach:.4f}")
     print(f"Exit Mach (Theory): {theory_exit_mach:.4f}")

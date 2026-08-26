@@ -35,10 +35,12 @@ def extract_wall_pressure(
 def compute_density_gradient(
     vtu_data: VTUData,
 ) -> np.ndarray:
-    """Compute density gradient magnitude for shock visualization.
+    """Compute density gradient magnitude using spatial neighbor search.
 
-    Note: This is a simplified approximation for unstructured data.
-    For production use, compute gradient from VTU directly using VTK/PyVista.
+    Uses cKDTree to find actual spatial neighbors, then computes
+    gradient via least-squares fit on local neighborhood. This avoids
+    the pitfall of assuming sequential node indices are spatial neighbors
+    in an unstructured mesh.
 
     Args:
         vtu_data: Parsed VTU data
@@ -49,19 +51,33 @@ def compute_density_gradient(
     if vtu_data.density is None:
         return np.zeros(len(vtu_data.coordinates))
 
-    # Simple gradient approximation using nearest neighbors
-    # In practice, use gradient from VTU or compute properly with VTK
+    from scipy.spatial import cKDTree
+
     coords = vtu_data.coordinates
     density = vtu_data.density
 
-    # Compute gradient using finite differences along x-axis
-    grad = np.zeros_like(density)
-    for i in range(1, len(density) - 1):
-        dx = coords[i + 1, 0] - coords[i - 1, 0]
-        if abs(dx) > 1e-12:
-            grad[i] = (density[i + 1] - density[i - 1]) / dx
+    # Build KD-tree for spatial neighbor search
+    tree = cKDTree(coords)
 
-    return np.abs(grad)
+    # Find k nearest neighbors for each point (exclude self at index 0)
+    k = min(8, len(coords) - 1)
+    distances, indices = tree.query(coords, k=k)
+
+    # Compute gradient using least-squares fit on neighbors
+    grad = np.zeros(len(coords))
+    for i in range(len(coords)):
+        neighbor_idx = indices[i, 1:]  # Exclude self
+        dx = coords[neighbor_idx, 0] - coords[i, 0]
+        dy = coords[neighbor_idx, 1] - coords[i, 1]
+        drho = density[neighbor_idx] - density[i]
+
+        # Least-squares gradient: drho = grad_x * dx + grad_y * dy
+        A = np.column_stack([dx, dy])
+        if A.shape[0] >= 2 and np.linalg.matrix_rank(A) >= 2:
+            grad_xy, _, _, _ = np.linalg.lstsq(A, drho, rcond=None)
+            grad[i] = np.sqrt(grad_xy[0] ** 2 + grad_xy[1] ** 2)
+
+    return grad
 
 
 def plot_wall_pressure(

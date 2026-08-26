@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Phase 0: SU2 convergence spike for rocket nozzle CFD."""
+"""Quick Euler convergence spike for rocket nozzle CFD.
+
+Uses coarse mesh (40x20) for fast validation. For full-resolution
+Euler simulation, use run_euler.py instead.
+"""
 import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.config import NozzleConfig
+from nozzle.presets import generic_test
 from nozzle.geometry import generate_contour, plot_contour
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
@@ -18,19 +22,17 @@ from viz.mach_contour import plot_mach_contour
 
 
 def main() -> int:
-    """Run Phase 0 simulation pipeline."""
+    """Run Euler convergence spike pipeline.
+
+    Returns:
+        0 on success, 1 on failure.
+    """
     print("=" * 60)
-    print("Phase 0: Rocket Nozzle CFD Spike")
+    print("Euler Spike: Quick Convergence Test")
     print("=" * 60)
 
-    # Configuration
-    nozzle_config = NozzleConfig(
-        throat_radius=0.05,
-        expansion_ratio=12.0,
-        converging_length=0.1,
-        diverging_length=0.5,
-        num_points=200,
-    )
+    # Configuration (generic_test preset for backward compatibility)
+    nozzle_config = generic_test()
 
     su2_config = SU2NozzleConfig(
         total_pressure=10e6,
@@ -42,7 +44,7 @@ def main() -> int:
     )
 
     # Setup directories
-    workdir = Path("output/phase0")
+    workdir = Path("output/euler_spike")
     workdir.mkdir(parents=True, exist_ok=True)
 
     images_dir = Path("docs/assets/images")
@@ -54,15 +56,15 @@ def main() -> int:
     print(f"  Contour: {len(x)} points, throat R={nozzle_config.throat_radius}m, exit R={nozzle_config.exit_radius:.4f}m")
 
     # Plot contour
-    plot_contour(x, y, "Phase 0 - Conical Nozzle Contour")
+    plot_contour(x, y, "Euler Spike - Nozzle Contour")
     print("  Saved: docs/assets/images/nozzle_contour.png")
 
-    # Step 2: Generate mesh
-    print("\n[2/6] Generating Gmsh mesh...")
+    # Step 2: Generate mesh (coarse: 40x20)
+    print("\n[2/6] Generating Gmsh mesh (40x20)...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=20,
-        n_normal=10,
+        n_axial=40,
+        n_normal=20,
         output_file=str(workdir / "nozzle.su2"),
     )
     print(f"  Mesh: {mesh_path}")
@@ -75,7 +77,7 @@ def main() -> int:
     # Step 4: Run SU2
     print("\n[4/6] Running SU2 Euler simulation...")
     solver = SU2Solver()
-    results = solver.run(config_path, workdir, timeout=1800)
+    results = solver.run(config_path, workdir, timeout=1800, gamma=su2_config.gamma)
     print(f"  Converged: {results.converged}")
     print(f"  Iterations: {results.iterations}")
     print(f"  Exit Mach: {results.exit_mach:.4f}")
@@ -113,7 +115,7 @@ def main() -> int:
 
     # Summary
     print("\n" + "=" * 60)
-    print("Phase 0 Complete!")
+    print("Euler Spike Complete!")
     print("=" * 60)
     print(f"Exit Mach (SU2): {results.exit_mach:.4f}")
     print(f"Exit Mach (Theory): {theory_exit_mach:.4f}")
