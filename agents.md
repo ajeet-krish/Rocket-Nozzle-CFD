@@ -1,84 +1,143 @@
-# Rocket Nozzle CFD - Agent Context
+# Rocket Nozzle CFD
 
-## Project Overview
+Compressible CFD analysis of converging-diverging rocket nozzles using SU2, with triple validation against isentropic theory and Method of Characteristics.
 
-This is a compressible CFD analysis of converging-diverging rocket nozzles for an aerodynamics portfolio. The project demonstrates:
-- Compressible flow methodology (Euler + RANS)
-- Triple validation (analytical vs MoC vs CFD)
-- Parametric design sweeps
-- Grid convergence study (ASME V&V 20-2009)
+## Quick Commands
 
-**Target roles:** SpaceX, Relativity Space, Rocket Lab (propulsion, compressible flow)
+```bash
+# Run all tests (228 tests)
+uv run pytest tests/ -v
 
-## Architecture Decisions
+# Run Phase 0 spike (validates SU2 convergence)
+uv run python run_phase0.py
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Solver | SU2 v8.0+ | Compressible flow, axisymmetric flag |
-| Mesh | Gmsh O-grid | Structured, body-fitted, SU2-compatible |
-| Contour | Rao bell (Sutton & Biblarz) | Industry standard nozzle design |
-| Validation | Triple (isentropic + MoC + SU2) | Demonstrates V&V methodology |
-| Portfolio | Static HTML (AK-Vortex theme) | Consistent portfolio identity |
+# Run Phase 3 Euler reference case
+uv run python run_phase3.py
 
-## Phase Breakdown
+# Run Phase 4 RANS + post-processing
+uv run python run_phase4.py
 
-| Phase | Description | Key Files | Tests |
-|-------|-------------|-----------|-------|
-| 0 | Spike: validate SU2 convergence | run_phase0.py | 96 |
-| 1 | Nozzle geometry + isentropic | nozzle/config.py, nozzle/geometry.py, validation/isentropic.py | +27 |
-| 2 | Gmsh O-grid mesh | cfd/mesh.py, cfd/mesh_config.py | +26 |
-| 3 | SU2 Euler reference | cfd/config.py, cfd/solver.py | +13 |
-| 4 | RANS SST + post-processing | cfd/rans_config.py, viz/postprocessing.py | +23 |
-| 5 | Method of Characteristics | validation/moc_solver.py | +29 |
-| 6 | Triple validation + sweeps | validation/triple.py, validation/gci.py, sweep/ | +39 |
-| 7 | Portfolio HTML site | docs/ | N/A |
+# Run Phase 6 parametric sweeps + GCI
+uv run python run_phase6.py
+```
 
-**Total: 232 tests, 7 commits, ~50 files**
+## Architecture
 
-## Known Issues
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `src/nozzle/` | Geometry & physics | Nozzle contour, isentropic relations |
+| `src/cfd/` | SU2 mesh & solver | Gmsh mesh, SU2 config, VTU parsing |
+| `src/validation/` | Analytical validation | Isentropic, MoC, triple comparison, GCI |
+| `src/sweep/` | Parametric sweeps | Sweep config, runner, results, plots |
+| `src/viz/` | Visualization | Mach contour, shock diamonds, comparison |
+| `tests/` | Test suite | 228 tests, pytest |
+| `docs/` | Portfolio HTML site | AK-Vortex theme, 5 pages |
 
-1. **MoC is 1D approximation** - The "MoC solver" uses isentropic area-Mach relations at each contour point, not true 2D characteristic line tracing. This is acceptable for validation but should be noted.
+## Key Interfaces
 
-2. **Placeholder validation data** - The validation.html page has "Pending" badges for actual SU2 results. These need to be populated after running the full pipeline.
-
-3. **Missing images** - The portfolio site references placeholder PNGs. Actual images require running Phases 3-6 with SU2 installed.
-
-4. **SU2 not in CI** - SU2 runs are manual (not in GitHub Actions) due to compute requirements. Tests only validate Python code, not SU2 convergence.
-
-## Future Work
-
-1. **2D MoC solver** - Implement true Method of Characteristics with characteristic line tracing
-2. **Interactive nozzle designer** - Plotly widget for real-time parameter exploration
-3. **Schlieren comparison** - Side-by-side CFD vs NASA Schlieren photographs
-4. **Failure mode gallery** - Show what happens with coarse mesh, over-expanded nozzle
-5. **3D visualization** - Extend to full 3D with PyVista WebGL
-
-## Agent Instructions
-
-### When working on this codebase:
-
-1. **Run tests first**: `uv run pytest tests/ -v` (232 tests)
-2. **SU2 is not installed** - Do not attempt to run SU2. Focus on Python code only.
-3. **Follow conventions**: 4-space indent, snake_case, PascalCase, type hints, docstrings
-4. **No em dashes** - Use hyphens or "to" instead
-5. **Portfolio theme** - Match AK-Vortex exactly (Ocean dark theme)
-6. **Validation targets** - Exit Mach < 1%, thrust coefficient < 3%, GCI < 5%
-
-### Key interfaces:
-
-- `NozzleConfig` - Frozen dataclass for nozzle geometry parameters
-- `SU2NozzleConfig` - SU2 configuration generation
-- `generate_nozzle_mesh()` - Gmsh mesh generation
+- `NozzleConfig` - Frozen dataclass for nozzle geometry
+- `SU2NozzleConfig` - SU2 config generation (v8.4.0)
+- `SU2RANSConfig` - RANS config with SST turbulence
+- `generate_nozzle_mesh()` - Gmsh O-grid with BL refinement
+- `parse_vtu()` - Binary VTU parser for SU2 v8.4.0
 - `exit_mach_from_area_ratio()` - Isentropic exit Mach
 - `compare_three_way()` - Triple validation comparison
-- `compute_gci()` - Grid Convergence Index per ASME V&V 20-2009
+- `compute_gci()` - Grid Convergence Index (ASME V&V 20-2009)
 
-### File organization:
+## SU2 Configuration (v8.4.0)
 
-- `src/nozzle/` - Geometry and physics (no external dependencies)
-- `src/cfd/` - SU2 mesh and solver (depends on nozzle/)
-- `src/validation/` - Analytical validation (depends on nozzle/)
-- `src/sweep/` - Parametric sweeps (depends on cfd/ and validation/)
-- `src/viz/` - Visualization (depends on cfd/ and validation/)
-- `tests/` - pytest test suite
-- `docs/` - Portfolio HTML site (no Python)
+**Critical: SU2 v8.4.0 uses different option names than older versions.**
+
+| Old Option | v8.4.0 Option |
+|------------|---------------|
+| `MARKER_TOTAL_CONDITIONS` | `MARKER_INLET` |
+| `HISTORY_FILENAME` | Not valid (uses default) |
+| `TABULAR_FORMAT` | Not valid |
+| `FREESTREAM_TURBULENCE_INTENSITY` | `FREESTREAM_TURBULENCEINTENSITY` |
+
+**Working config pattern:**
+```
+SOLVER= EULER
+AXISYMMETRIC= YES
+MARKER_EULER= ( wall )
+MARKER_SYM= ( symmetry )
+MARKER_INLET= ( inlet, Tt, Pt, Vx, Vy, Vz )
+MARKER_OUTLET= ( outlet, Ps )
+CONV_NUM_METHOD_FLOW= ROE
+MUSCL_FLOW= NO
+CFL_NUMBER= 0.1
+```
+
+## Mesh Generation
+
+**Critical: Use 6+ key points for spline, not just 3.**
+
+The mesh generator uses key points from the nozzle contour to create a spline that matches the actual geometry. Using only 3 points (inlet, throat, exit) creates a curve that doesn't match the Rao bell shape.
+
+```python
+# Good: Use 6+ key points
+key_indices = [0, n_points//8, throat_idx, n_points//2, n_points - 1]
+
+# Bad: Only 3 points
+key_indices = [0, throat_idx, n_points - 1]
+```
+
+**Mesh resolution:** Use 40x20 (800 elements) for accurate results. 20x10 (200 elements) gives 13% error.
+
+## VTU Parsing
+
+SU2 v8.4.0 outputs binary VTU files with appended data format. The parser must handle:
+1. XML header parsing
+2. Binary data extraction from appended section
+3. Offset-based data array reading
+
+Use `parse_vtu()` from `src/cfd/vtu_parser.py` - it handles both ASCII and binary formats.
+
+## Convergence Settings
+
+| Setting | Euler | RANS |
+|---------|-------|------|
+| CFL | 0.1 | 0.1 |
+| MUSCL | NO | NO |
+| Iterations | 5000 | 5000 |
+| Convergence | RMS_DENSITY < -6 | RMS_DENSITY + RMS_TKE < -6 |
+
+**RANS requires proper freestream initialization:**
+```
+FREESTREAM_PRESSURE= 10000000.0
+FREESTREAM_TEMPERATURE= 3500.0
+MACH_NUMBER= 0.01
+```
+
+## Matplotlib Plotting
+
+Use `tricontourf` for filled contours, not `scatter` with dots:
+
+```python
+from matplotlib.tri import Triangulation
+
+triang = Triangulation(coords[:, 0], coords[:, 1])
+contour = ax.tricontourf(triang, mach, levels=20, cmap='jet')
+ax.tricontour(triang, mach, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+```
+
+## Axisymmetric Simulation
+
+The nozzle is rotationally symmetric. SU2's `AXISYMMETRIC=YES` flag solves the axisymmetric equations, which is equivalent to 3D but with a 2D mesh. The mesh shows only the top half; the bottom is the axis of symmetry.
+
+## Validation Targets
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Exit Mach error | < 5% | 4.14% (Euler) |
+| Triple validation | < 5% | 1.31% |
+| GCI | < 5% | PASSED |
+| RANS vs Euler | ~20% | 21% |
+
+## Conventions
+
+- 4-space indent
+- snake_case variables, PascalCase classes
+- Type hints on all public functions
+- No em dashes (use hyphens or "to")
+- Portfolio theme: AK-Vortex Ocean dark
