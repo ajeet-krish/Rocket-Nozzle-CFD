@@ -399,3 +399,42 @@
   opacity: 1;
   transform: translateX(-50%) scale(1);
 }
+
+/* --- Comparison Grid (Euler vs RANS side-by-side) --- */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+}
+
+.comparison-grid__item {
+  text-align: center;
+}
+
+.comparison-grid__item h4 {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: var(--space-3);
+}
+
+.comparison-grid__item img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--current-line);
+  border-radius: var(--radius-sm);
+}
+
+.comparison-grid__item p {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 768px) {
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}

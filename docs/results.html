@@ -62,30 +62,46 @@
             <div class="stat__label">Error vs Theory</div>
           </div>
           <div class="stat">
-            <div class="stat__value">0.75%</div>
-            <div class="stat__label">Triple Validation</div>
+            <div class="stat__value">8.70%</div>
+            <div class="stat__label">Euler vs RANS</div>
           </div>
         </div>
 
-        <!-- Mach Contour -->
-        <h3>Mach Number Contour</h3>
-        <p>The Mach number distribution shows the flow accelerating from subsonic at the inlet through the sonic throat (M=1) to supersonic in the diverging section. Color scale: blue (subsonic) to red (supersonic).</p>
+        <!-- Nozzle Geometry & Mesh -->
+        <h3>Nozzle Geometry & Mesh</h3>
+        <p>Structured O-grid mesh generated with Gmsh transfinite meshing. The mesh captures the Rao parabolic bell nozzle contour with boundary layer refinement near the throat.</p>
         <div class="walkthrough-step__media">
-          <img src="assets/images/euler/mach_contour_euler.png" alt="Mach number contour from ParaView" loading="lazy">
+          <img src="assets/images/nozzle_mesh.png" alt="Nozzle geometry and computational mesh" loading="lazy">
         </div>
 
-        <!-- Mach Contour with Mesh -->
-        <h3>Mach Contour with Mesh</h3>
-        <p>Mach contour overlaid with computational mesh showing cell density and boundary layer refinement near the throat. The structured O-grid mesh captures the nozzle geometry accurately.</p>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/euler/mach_contour_euler_mesh.png" alt="Mach contour with mesh overlay" loading="lazy">
+        <!-- Mach Number: Euler vs RANS -->
+        <h3>Mach Number: Euler vs RANS</h3>
+        <p>The Mach number distribution shows the primary difference between inviscid (Euler) and viscous (RANS) simulations. The Euler solution reaches M=4.49 at the exit, while RANS reduces this to M=4.10 due to boundary layer displacement.</p>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/euler/mach_contour_euler.png" alt="Euler Mach contour" loading="lazy">
+            <p>Exit Mach: 4.49</p>
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/rans/mach_contour_rans.png" alt="RANS Mach contour" loading="lazy">
+            <p>Exit Mach: 4.10</p>
+          </div>
         </div>
 
-        <!-- Pressure Contour -->
-        <h3>Pressure Contour</h3>
-        <p>Static pressure distribution through the nozzle. High pressure in chamber (red, 9.7 MPa) drops to low pressure at exit (blue, ambient). Pressure ratio approximately 95:1.</p>
+        <!-- Pressure Distribution -->
+        <h3>Pressure Distribution</h3>
+        <p>Static pressure drops from chamber pressure (9.7 MPa) to ambient (101 kPa) through the nozzle. Pressure distribution is nearly identical between Euler and RANS since pressure is primarily governed by area ratio.</p>
         <div class="walkthrough-step__media">
-          <img src="assets/images/euler/pressure_contour_euler.png" alt="Pressure contour from ParaView" loading="lazy">
+          <img src="assets/images/euler/pressure_contour_euler.png" alt="Pressure contour" loading="lazy">
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3>Shock Diamonds</h3>
+        <p>Density gradient magnitude reveals the shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions. Shock structure is similar between Euler and RANS since inviscid effects dominate the plume.</p>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock diamond visualization" loading="lazy">
         </div>
 
         <!-- Mach vs Pressure -->
@@ -93,13 +109,6 @@
         <p>Mach number and static pressure along the nozzle axis. Pressure drops monotonically as Mach increases through the diverging section, following isentropic relations.</p>
         <div class="walkthrough-step__media">
           <img src="assets/images/euler/mach_vs_pressure_euler.png" alt="Mach vs pressure along nozzle axis" loading="lazy">
-        </div>
-
-        <!-- Shock Diamonds -->
-        <h3>Shock Diamond Structure</h3>
-        <p>Density gradient magnitude reveals the shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions.</p>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock diamond visualization from ParaView" loading="lazy">
         </div>
 
         <!-- Convergence -->

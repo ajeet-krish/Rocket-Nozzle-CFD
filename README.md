@@ -37,28 +37,6 @@ The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and thro
 | SU2 Euler (60x30) | 4.4927 | 0.75% | PASSED |
 | SU2 RANS SST (40x30) | 4.1017 | 8.7% vs Euler | Converged |
 
-### Triple Validation
-
-| Comparison | Error | Tolerance | Status |
-|------------|-------|-----------|--------|
-| SU2 vs Isentropic | 0.75% | < 5% | PASSED |
-| SU2 vs MoC | 0.75% | < 5% | PASSED |
-| Isentropic vs MoC | 0.00% | < 5% | PASSED |
-| **Max pairwise error** | **0.75%** | < 5% | **PASSED** |
-
-### Grid Convergence Index (GCI)
-
-| Mesh Level | Cells | Exit Mach | GCI |
-|------------|-------|-----------|-----|
-| Coarse | 450 | 4.0399 | - |
-| Medium | 1,800 | 4.4927 | - |
-| Fine | 7,200 | 4.7875 | 0.687% |
-| **Extrapolated** | - | **5.3372** | - |
-
-- Apparent order: 0.62
-- Asymptotic ratio: 1.00
-- **Status: PASSED**
-
 ### Euler vs RANS Comparison
 
 | Metric | Euler (Inviscid) | RANS SST (Viscous) | Difference |
@@ -69,43 +47,45 @@ The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and thro
 
 ## Visualizations
 
-### Mach Number Contour (ParaView)
-![Mach Contour](docs/assets/images/euler/mach_contour_euler.png)
-> Mach number distribution showing flow acceleration from subsonic inlet through sonic throat (M=1) to supersonic exit (M~4.5). Color scale: blue (subsonic) to red (supersonic).
+### Nozzle Geometry & Mesh
 
-### Mach Contour with Mesh
-![Mach Contour Mesh](docs/assets/images/euler/mach_contour_euler_mesh.png)
-> Mach contour overlaid with computational mesh showing cell density and boundary layer refinement near the throat.
+![Nozzle Mesh](docs/assets/images/nozzle_mesh.png)
+> Structured O-grid mesh generated with Gmsh transfinite meshing. The mesh captures the Rao parabolic bell nozzle contour with boundary layer refinement near the throat.
 
-### Pressure Contour (ParaView)
+### Mach Number: Euler vs RANS
+
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach](docs/assets/images/euler/mach_contour_euler.png) | ![RANS Mach](docs/assets/images/rans/mach_contour_rans.png) |
+
+> **Left:** Euler simulation shows inviscid flow acceleration from subsonic inlet (M~0) through sonic throat (M=1) to supersonic exit (M~4.5). **Right:** RANS SST simulation includes viscous boundary layer effects, reducing exit Mach to 4.10. The boundary layer displacement effect is clearly visible as a thinner high-Mach region near the wall.
+
+### Pressure Distribution
+
 ![Pressure Contour](docs/assets/images/euler/pressure_contour_euler.png)
-> Static pressure distribution through the nozzle. High pressure in chamber (red) drops to low pressure at exit (blue). Pressure ratio ~95:1.
+> Static pressure drops from chamber pressure (9.7 MPa, red) to ambient (101 kPa, blue) through the nozzle. Pressure distribution is nearly identical between Euler and RANS since pressure is primarily governed by area ratio.
 
-### Shock Diamonds (ParaView)
+### Shock Diamonds
+
 ![Shock Diamonds](docs/assets/images/euler/shock_diamond_euler.png)
-> Density gradient visualization showing shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions.
+> Density gradient magnitude reveals the shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions. Shock structure is similar between Euler and RANS since inviscid effects dominate the plume.
 
-### Mach vs Pressure (ParaView)
+### Mach vs Pressure Distribution
+
 ![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
-> Mach number and static pressure along the nozzle axis. Pressure drops monotonically as Mach increases through the diverging section.
+> Mach number (blue) and static pressure (red) along the nozzle axis. Pressure drops monotonically as Mach increases through the diverging section. The two curves follow isentropic relations.
 
-### Convergence History (matplotlib)
-![Convergence](docs/assets/images/convergence.png)
-> RMS density residual drops 6+ orders of magnitude, confirming steady-state convergence.
+### Parametric Sweeps
 
-### Nozzle Geometry (matplotlib)
-![Nozzle Contour](docs/assets/images/nozzle_contour.png)
-> Rao parabolic bell nozzle contour with 6 control points for accurate curve representation.
-
-### Parametric Sweep: Exit Mach vs Expansion Ratio (matplotlib)
+#### Exit Mach vs Expansion Ratio
 ![Sweep Epsilon](docs/assets/images/sweep_mach_vs_epsilon.png)
 > Exit Mach increases with expansion ratio following the isentropic area-Mach relation. SU2 results match isentropic theory within 5%.
 
-### Parametric Sweep: Exit Mach vs Chamber Pressure (matplotlib)
+#### Exit Mach vs Chamber Pressure
 ![Sweep Pc](docs/assets/images/sweep_mach_vs_pc.png)
 > For calorically perfect gas (constant gamma), exit Mach is independent of chamber pressure. SU2 results confirm this theoretical prediction.
 
-### Parametric Sweep: Exit Mach vs Throat Radius (matplotlib)
+#### Exit Mach vs Throat Radius
 ![Sweep R*](docs/assets/images/sweep_mach_vs_rstar.png)
 > Exit Mach is independent of absolute scale for geometrically similar nozzles.
 
@@ -175,7 +155,6 @@ rocket-nozzle-cfd/
     cfd/                      # SU2 mesh and solver
       config.py               # SU2NozzleConfig (v8.4.0)
       mesh.py                 # Gmsh O-grid generator
-      mesh_config.py          # MeshConfig (zone-based)
       rans_config.py          # SU2RANSConfig (SST)
       solver.py               # SU2 subprocess runner
       vtu_parser.py           # Binary VTU parser (v8.4.0)
@@ -194,8 +173,8 @@ rocket-nozzle-cfd/
       comparison.py           # Euler vs RANS plots
   tests/                      # 287 tests
   docs/                       # Portfolio HTML site
-    PARAVIEW_GUIDE.md         # ParaView visualization guide
-    assets/images/euler/      # ParaView screenshots
+    assets/images/euler/      # ParaView Euler screenshots
+    assets/images/rans/       # ParaView RANS screenshots
   run_euler_spike.py          # Quick convergence test
   run_euler.py                # Full Euler simulation
   run_rans.py                 # RANS SST simulation
@@ -246,10 +225,6 @@ uv run python run_all.py
 # Run all tests
 uv run pytest tests/ -v
 ```
-
-## ParaView Guide
-
-For publication-quality visualizations, use ParaView to create contour plots from VTU files. See [docs/PARAVIEW_GUIDE.md](docs/PARAVIEW_GUIDE.md) for detailed instructions.
 
 ## References
 

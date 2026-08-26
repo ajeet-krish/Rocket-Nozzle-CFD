@@ -17,10 +17,8 @@
 <body>
 
   <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
-  <!-- Floating Particles -->
   <canvas id="particle-canvas" aria-hidden="true"></canvas>
 
-  <!-- Navigation -->
   <nav class="nav">
     <a href="index.html" class="nav__brand">
       Rocket Nozzle CFD
@@ -68,27 +66,12 @@
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/nozzle_contour.png" alt="Rao bell nozzle contour" loading="lazy">
+            <img src="assets/images/nozzle_mesh.png" alt="Rao bell nozzle geometry and mesh" loading="lazy">
           </div>
         </article>
 
         <!-- Step 2: Mesh Generation (reverse) -->
         <article class="walkthrough-step walkthrough-step--reverse">
-          <div class="walkthrough-step__content">
-            <h3>Structured O-Grid Mesh</h3>
-            <p>
-              Generate a structured O-grid mesh using Gmsh transfinite meshing. The mesh uses
-              60x30 cells (1,800 elements) with boundary layer refinement for accurate
-              flow resolution. Spline wall curve captures the nozzle geometry precisely.
-            </p>
-          </div>
-          <div class="walkthrough-step__media">
-            <img src="assets/images/euler/mach_contour_euler_mesh.png" alt="Structured mesh with Mach contour" loading="lazy">
-          </div>
-        </article>
-
-        <!-- Step 3: SU2 Euler -->
-        <article class="walkthrough-step">
           <div class="walkthrough-step__content">
             <h3>SU2 Euler Solver</h3>
             <p>
@@ -98,27 +81,28 @@
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/euler/mach_contour_euler.png" alt="Mach number contour from SU2 Euler simulation" loading="lazy">
+            <img src="assets/images/euler/mach_contour_euler.png" alt="Euler Mach contour" loading="lazy">
           </div>
         </article>
 
-        <!-- Step 4: RANS (reverse) -->
-        <article class="walkthrough-step walkthrough-step--reverse">
+        <!-- Step 3: Mach Comparison -->
+        <article class="walkthrough-step">
           <div class="walkthrough-step__content">
-            <h3>RANS SST k-omega</h3>
+            <h3>Euler vs RANS: Mach Number</h3>
             <p>
-              Add viscous effects with Reynolds-Averaged Navier-Stokes equations and SST k-omega
-              turbulence model. Boundary layer displacement reduces exit Mach from 4.49 (Euler)
-              to 4.10 (RANS), an 8.7% difference consistent with viscous nozzle theory.
+              The primary difference between inviscid (Euler) and viscous (RANS) simulations appears
+              in the Mach number distribution. Euler reaches M=4.49 at exit, while RANS reduces this
+              to M=4.10 due to boundary layer displacement. This 8.7% difference is consistent with
+              viscous nozzle theory.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/euler/pressure_contour_euler.png" alt="Pressure contour showing viscous effects" loading="lazy">
+            <img src="assets/images/rans/mach_contour_rans.png" alt="RANS Mach contour" loading="lazy">
           </div>
         </article>
 
-        <!-- Step 5: Post-Processing -->
-        <article class="walkthrough-step">
+        <!-- Step 4: Post-Processing (reverse) -->
+        <article class="walkthrough-step walkthrough-step--reverse">
           <div class="walkthrough-step__content">
             <h3>Post-Processing & Validation</h3>
             <p>
@@ -150,7 +134,7 @@
           <div class="explore-index__number">01</div>
           <div class="explore-index__content">
             <h3>Results</h3>
-            <p>Reference case Mach contour, pressure distribution, shock diamonds, and parametric sweep analysis.</p>
+            <p>Mach contour, pressure distribution, shock diamonds, and parametric sweep analysis.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
