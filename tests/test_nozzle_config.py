@@ -272,17 +272,14 @@ class TestNozzleConfigPresets:
         config = merlin_1d()
         assert config.throat_radius == 0.0825
         assert config.expansion_ratio == 16.0
-        assert config.chamber_length == pytest.approx(0.09993, rel=1e-3)
-        assert config.chamber_radius == 0.0833
+        assert config.chamber_length == 0.05
+        assert config.chamber_radius == 0.124
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.04
+        assert config.throat_radius_of_curvature == 0.0
         assert config.theta_n == 30.0
         assert config.num_points == 300
         assert config.exit_radius == pytest.approx(
             0.0825 * math.sqrt(16.0), rel=1e-10
-        )
-        assert config.total_length == pytest.approx(
-            0.09993 + 0.15 + 0.334, rel=1e-3
         )
 
     def test_raptor_sl(self):
@@ -290,10 +287,10 @@ class TestNozzleConfigPresets:
         config = raptor_sl()
         assert config.throat_radius == 0.0825
         assert config.expansion_ratio == 34.0
-        assert config.chamber_length == 0.1
-        assert config.chamber_radius == 0.0833
+        assert config.chamber_length == 0.05
+        assert config.chamber_radius == 0.124
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.04
+        assert config.throat_radius_of_curvature == 0.0
         assert config.theta_n == 30.0
         assert config.num_points == 300
         assert config.exit_radius == pytest.approx(

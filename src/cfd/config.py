@@ -69,7 +69,7 @@ SYSTEM_MEASUREMENTS= SI
 
 % -------------------- BOUNDARY CONDITIONS -------------------
 MARKER_EULER= ( {self.wall_marker} )
-MARKER_SYM= ( {self.symmetry_marker}, farfield )
+MARKER_SYM= ( {self.symmetry_marker} )
 
 % Inlet: subsonic inlet with total conditions (Tt, Pt, Vx, Vy, Vz)
 MARKER_INLET= ( {self.inlet_marker}, {self.total_temperature:.1f}, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )
@@ -86,7 +86,7 @@ TIME_DISCRE_FLOW= EULER_IMPLICIT
 ITER= {self.iterations}
 CFL_NUMBER= {self.cfl_number}
 CFL_ADAPT= YES
-CFL_ADAPT_PARAM= ( 0.1, 1.5, 0.5, 100.0 )
+CFL_ADAPT_PARAM= ( 0.1, 1.5, 0.5, 20.0 )
 CONV_FIELD= RMS_DENSITY
 CONV_RESIDUAL_MINVAL= {self.conv_residual_minval}
 CONV_STARTITER= 100

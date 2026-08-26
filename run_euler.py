@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Full Euler simulation of SpaceX Merlin 1D nozzle.
+"""Full Euler simulation of converging-diverging rocket nozzle.
 
-Uses fine mesh (120x60) with plume extension for accurate results.
+Uses fine mesh (60x30) for accurate results.
 Validates against isentropic theory.
 """
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.presets import merlin_1d
+from nozzle.config import NozzleConfig
 from nozzle.geometry import generate_contour, plot_contour
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
@@ -22,21 +22,27 @@ from viz.mach_contour import plot_mach_contour
 
 
 def main() -> int:
-    """Run full Euler simulation pipeline.
+    """Run full Euler simulation.
 
     Returns:
         0 on success, 1 on failure.
     """
     print("=" * 60)
-    print("Full Euler Simulation: SpaceX Merlin 1D")
+    print("Full Euler Simulation: Rocket Nozzle")
     print("=" * 60)
 
-    # Configuration (Merlin 1D preset)
-    nozzle_config = merlin_1d()
+    # Configuration: epsilon=16, Merlin 1D conditions
+    nozzle_config = NozzleConfig(
+        throat_radius=0.05,
+        expansion_ratio=16.0,
+        converging_length=0.1,
+        diverging_length=0.5,
+        num_points=200,
+    )
 
     su2_config = SU2NozzleConfig(
-        total_pressure=10e6,
-        total_temperature=3500.0,
+        total_pressure=9.7e6,
+        total_temperature=3600.0,
         static_pressure=101325.0,
         gamma=1.4,
         iterations=5000,
@@ -47,30 +53,25 @@ def main() -> int:
     workdir = Path("output/euler")
     workdir.mkdir(parents=True, exist_ok=True)
 
-    images_dir = Path("docs/assets/images")
+    images_dir = workdir / "plots"
     images_dir.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Generate nozzle contour
     print("\n[1/6] Generating nozzle contour...")
     x, y = generate_contour(nozzle_config)
-    print(
-        f"  Contour: {len(x)} points, "
-        f"throat R={nozzle_config.throat_radius}m, "
-        f"exit R={nozzle_config.exit_radius:.4f}m"
-    )
+    print(f"  Contour: {len(x)} points, throat R={nozzle_config.throat_radius}m, exit R={nozzle_config.exit_radius:.4f}m")
 
-    # Plot contour
-    plot_contour(x, y, "Merlin 1D - Rao Bell Nozzle Contour")
-    print("  Saved: docs/assets/images/nozzle_contour.png")
+    plot_contour(x, y, "Euler - Nozzle Contour")
+    print("  Saved: nozzle_contour.png")
 
-    # Step 2: Generate mesh (fine: 120x60 with plume extension)
-    print("\n[2/6] Generating Gmsh mesh (120x60 + plume)...")
+    # Step 2: Generate mesh (fine: 60x30, no plume for stability)
+    print("\n[2/6] Generating Gmsh mesh (60x30)...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=120,
-        n_normal=60,
+        n_axial=60,
+        n_normal=30,
         output_file=str(workdir / "nozzle.su2"),
-        plume_extension=True,
+        plume_extension=False,
     )
     print(f"  Mesh: {mesh_path}")
 
@@ -104,24 +105,17 @@ def main() -> int:
     # Step 6: Generate plots
     print("\n[6/6] Generating plots...")
 
-    # Convergence plot
     history_path = workdir / "history.csv"
     if history_path.exists():
         convergence_path = images_dir / "convergence.png"
         plot_convergence(history_path, convergence_path)
         print(f"  Saved: {convergence_path}")
 
-    # Mach contour plot
     vtu_path = workdir / "flow.vtu"
     if vtu_path.exists():
         mach_path = images_dir / "mach_contour.png"
         plot_mach_contour(vtu_path, mach_path, nozzle_config=nozzle_config)
         print(f"  Saved: {mach_path}")
-
-    # Nozzle contour plot
-    contour_path = images_dir / "nozzle_contour.png"
-    plot_contour(x, y, "Merlin 1D - Rao Bell Nozzle Contour")
-    print(f"  Saved: {contour_path}")
 
     # Summary
     print("\n" + "=" * 60)
