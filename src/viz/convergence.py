@@ -29,8 +29,9 @@ def plot_convergence(
             reader = csv.DictReader(lines)
             for row in reader:
                 try:
-                    iter_num = int(row.get('INNER_ITER', 0))
-                    rms_d = float(row.get('RMS_DENSITY', 0))
+                    # SU2 v8.4.0 uses "Inner_Iter" and "rms[Rho]"
+                    iter_num = int(row.get('Inner_Iter', row.get('INNER_ITER', 0)))
+                    rms_d = float(row.get('rms[Rho]', row.get('RMS_DENSITY', 0)))
                     iterations.append(iter_num)
                     rms_density.append(rms_d)
                 except (ValueError, KeyError):

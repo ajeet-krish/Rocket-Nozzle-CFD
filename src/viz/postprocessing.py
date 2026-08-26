@@ -13,6 +13,9 @@ def extract_wall_pressure(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Extract pressure distribution along nozzle wall.
 
+    Identifies wall nodes as those with maximum y-coordinate at each
+    axial station (top boundary of axisymmetric domain).
+
     Args:
         vtu_data: Parsed VTU data
         nozzle_exit_x: x-coordinate of nozzle exit
@@ -22,14 +25,30 @@ def extract_wall_pressure(
         pressure: Pressure values along wall
     """
     coords = vtu_data.coordinates
+    x = coords[:, 0]
+    y = coords[:, 1]
 
-    # For now, extract along centerline (y ~ 0)
-    centerline_mask = np.abs(coords[:, 1]) < 0.001
+    if vtu_data.pressure is None:
+        return np.array([]), np.array([])
 
-    if vtu_data.pressure is not None:
-        return coords[centerline_mask, 0], vtu_data.pressure[centerline_mask]
-    else:
-        return coords[centerline_mask, 0], np.zeros_like(coords[centerline_mask, 0])
+    # Bin by x-coordinate and take the point with max y (wall) in each bin
+    x_min, x_max = x.min(), x.max()
+    n_bins = 100
+    x_bins = np.linspace(x_min, x_max, n_bins + 1)
+    x_wall = []
+    p_wall = []
+
+    for i in range(n_bins):
+        mask = (x >= x_bins[i]) & (x < x_bins[i + 1])
+        if mask.any():
+            # Take the point with maximum y (closest to wall)
+            idx = np.argmax(y[mask])
+            x_vals = x[mask]
+            p_vals = vtu_data.pressure[mask]
+            x_wall.append(x_vals[idx])
+            p_wall.append(p_vals[idx])
+
+    return np.array(x_wall), np.array(p_wall)
 
 
 def compute_density_gradient(
@@ -38,9 +57,7 @@ def compute_density_gradient(
     """Compute density gradient magnitude using spatial neighbor search.
 
     Uses cKDTree to find actual spatial neighbors, then computes
-    gradient via least-squares fit on local neighborhood. This avoids
-    the pitfall of assuming sequential node indices are spatial neighbors
-    in an unstructured mesh.
+    gradient via least-squares fit on local neighborhood.
 
     Args:
         vtu_data: Parsed VTU data
@@ -59,7 +76,7 @@ def compute_density_gradient(
     # Build KD-tree for spatial neighbor search
     tree = cKDTree(coords)
 
-    # Find k nearest neighbors for each point (exclude self at index 0)
+    # Find k nearest neighbors for each point
     k = min(8, len(coords) - 1)
     distances, indices = tree.query(coords, k=k)
 
@@ -71,7 +88,6 @@ def compute_density_gradient(
         dy = coords[neighbor_idx, 1] - coords[i, 1]
         drho = density[neighbor_idx] - density[i]
 
-        # Least-squares gradient: drho = grad_x * dx + grad_y * dy
         A = np.column_stack([dx, dy])
         if A.shape[0] >= 2 and np.linalg.matrix_rank(A) >= 2:
             grad_xy, _, _, _ = np.linalg.lstsq(A, drho, rcond=None)
@@ -99,12 +115,11 @@ def plot_wall_pressure(
     """
     fig, ax = plt.subplots(1, 1, figsize=(10, 6))
 
-    ax.plot(x, pressure, "b-", linewidth=2)
-    ax.set_xlabel("Axial Distance (m)", fontsize=12)
-    ax.set_ylabel("Static Pressure (Pa)", fontsize=12)
-    ax.set_title("Pressure Distribution Along Nozzle", fontsize=14)
+    ax.semilogy(x * 1000, pressure / 1e6, "b-", linewidth=2)
+    ax.set_xlabel("Axial Distance (mm)", fontsize=12)
+    ax.set_ylabel("Static Pressure (MPa)", fontsize=12)
+    ax.set_title("Wall Pressure Distribution", fontsize=14)
     ax.grid(True, alpha=0.3)
-    ax.set_yscale("log")
 
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,30 +147,36 @@ def plot_shock_diamonds(
         Path to saved plot
     """
     from matplotlib.tri import Triangulation
-    
+
     coords = vtu_data.coordinates
     grad = compute_density_gradient(vtu_data)
-    
+
     # Create triangulation
     triang = Triangulation(coords[:, 0], coords[:, 1])
-    
+
     fig, ax = plt.subplots(1, 1, figsize=(12, 4))
-    
-    # Filled contour plot
-    contour = ax.tricontourf(triang, grad, levels=20, cmap='hot', 
-                            vmin=0, vmax=np.percentile(grad, 95))
-    
+
+    # Filled contour plot with better scaling
+    grad_max = np.percentile(grad, 99)
+    if grad_max > 0:
+        contour = ax.tricontourf(
+            triang, grad, levels=30, cmap='hot',
+            vmin=0, vmax=grad_max,
+        )
+    else:
+        contour = ax.tricontourf(triang, grad, levels=30, cmap='hot')
+
     ax.set_xlabel("Axial Distance (m)", fontsize=12)
     ax.set_ylabel("Radial Distance (m)", fontsize=12)
     ax.set_title("Shock Diamond Visualization (Density Gradient)", fontsize=14)
     ax.set_aspect("equal")
-    
+
     cbar = plt.colorbar(contour, ax=ax, shrink=0.8)
-    cbar.set_label("Density Gradient Magnitude", fontsize=11)
-    
+    cbar.set_label("|nabla rho| (kg/m^4)", fontsize=11)
+
     plt.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=dpi, bbox_inches="tight")
     plt.close()
-    
+
     return output_path

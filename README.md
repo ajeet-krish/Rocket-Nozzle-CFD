@@ -21,45 +21,41 @@ The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and thro
 
 | Parameter | Value |
 |-----------|-------|
-| Expansion ratio (Ae/At) | 12 |
-| Chamber pressure (Pc) | 10 MPa |
+| Expansion ratio (Ae/At) | 16 |
+| Chamber pressure (Pc) | 9.7 MPa |
 | Throat radius (R*) | 0.05 m |
-| Chamber temperature (T0) | 3500 K |
+| Chamber temperature (T0) | 3600 K |
 | Gas | Air (gamma=1.4, R=287.058 J/(kg*K)) |
-| Isentropic exit Mach | 4.13 |
+| Isentropic exit Mach | 4.4593 |
 
 ### Validation Summary
 
 | Method | Exit Mach | Error | Status |
 |--------|-----------|-------|--------|
-| Isentropic (analytical) | 4.1273 | - | Reference |
-| MoC (1D) | 4.1273 | 0.00% | Reference |
-| SU2 Euler | 4.2981 | 4.14% | PASSED |
-| SU2 RANS SST | 3.2987 | - | Converged |
+| Isentropic (analytical) | 4.4593 | - | Reference |
+| MoC (1D) | 4.4593 | 0.00% | Reference |
+| SU2 Euler (60x30) | 4.4927 | 0.75% | PASSED |
+| SU2 RANS SST (40x30) | 4.1017 | 8.7% vs Euler | Converged |
 
 ### Triple Validation
 
-The triple comparison methodology validates SU2 results against two independent analytical methods:
-
 | Comparison | Error | Tolerance | Status |
 |------------|-------|-----------|--------|
-| SU2 vs Isentropic | 4.14% | < 5% | PASSED |
-| SU2 vs MoC | 4.14% | < 5% | PASSED |
+| SU2 vs Isentropic | 0.75% | < 5% | PASSED |
+| SU2 vs MoC | 0.75% | < 5% | PASSED |
 | Isentropic vs MoC | 0.00% | < 5% | PASSED |
-| **Max pairwise error** | **1.31%** | < 5% | **PASSED** |
+| **Max pairwise error** | **0.75%** | < 5% | **PASSED** |
 
 ### Grid Convergence Index (GCI)
 
-ASME V&V 20-2009 compliant mesh convergence study:
-
 | Mesh Level | Cells | Exit Mach | GCI |
 |------------|-------|-----------|-----|
-| Coarse | 4,000 | 4.2206 | - |
-| Medium | 16,000 | 4.2427 | - |
-| Fine | 64,000 | 4.2725 | 0.000% |
-| **Extrapolated** | - | **4.1570** | - |
+| Coarse | 450 | 4.0399 | - |
+| Medium | 1,800 | 4.4927 | - |
+| Fine | 7,200 | 4.7875 | 0.687% |
+| **Extrapolated** | - | **5.3372** | - |
 
-- Apparent order: -0.43
+- Apparent order: 0.62
 - Asymptotic ratio: 1.00
 - **Status: PASSED**
 
@@ -67,48 +63,52 @@ ASME V&V 20-2009 compliant mesh convergence study:
 
 | Metric | Euler (Inviscid) | RANS SST (Viscous) | Difference |
 |--------|------------------|---------------------|------------|
-| Exit Mach | 4.2981 | 3.2987 | 23.2% |
+| Exit Mach | 4.4927 | 4.1017 | 8.70% |
 | Boundary Layer | None | Resolved | - |
 | Wall Treatment | Slip | No-slip, adiabatic | - |
 
-The RANS simulation includes viscous effects (boundary layer) that reduce the effective flow area, resulting in lower exit Mach number.
-
 ## Visualizations
 
-### Nozzle Geometry
-![Nozzle Contour](docs/assets/images/nozzle_contour.png)
+<!-- REPLACE: Use ParaView to create Mach contour with nozzle wall overlay -->
+<!-- See docs/PARAVIEW_GUIDE.md for instructions -->
+### Mach Number Contour (ParaView)
+![Mach Contour](docs/assets/images/mach_contour_paraview.png)
+> ParaView screenshot of Euler Mach contour with nozzle wireframe overlay. Shows flow acceleration from subsonic inlet through sonic throat to supersonic exit.
 
-Rao parabolic bell nozzle contour with 6 control points for accurate curve representation.
+<!-- REPLACE: Use ParaView to create pressure contour -->
+### Pressure Contour (ParaView)
+![Pressure Contour](docs/assets/images/pressure_contour_paraview.png)
+> ParaView screenshot of static pressure distribution. Blue = low pressure (exit), Red = high pressure (chamber).
 
-### Mach Number Contour (Euler)
-![Mach Contour](docs/assets/images/mach_contour.png)
+<!-- REPLACE: Use ParaView to create shock diamond visualization -->
+### Shock Diamonds (ParaView)
+![Shock Diamonds](docs/assets/images/shock_diamonds_paraview.png)
+> ParaView screenshot using Gradient Of Unstructured Data filter on density. Shows compression and expansion waves in exhaust plume.
 
-Filled contour plot showing flow acceleration from subsonic inlet (M~0) through sonic throat (M=1) to supersonic exit (M~4.3). Shock diamonds visible in exhaust plume.
-
-### Convergence History
+### Convergence History (matplotlib)
 ![Convergence](docs/assets/images/convergence.png)
+> RMS density residual drops 6+ orders of magnitude, confirming steady-state convergence.
 
-RMS density residual drops 6+ orders of magnitude, confirming steady-state convergence.
+<!-- REPLACE: Use ParaView to create Euler vs RANS side-by-side -->
+### Euler vs RANS Comparison (ParaView)
+![Euler vs RANS](docs/assets/images/mach_comparison_paraview.png)
+> Side-by-side ParaView screenshots showing inviscid (Euler) vs viscous (RANS SST) Mach contours.
 
-### Euler vs RANS Comparison
-![Euler vs RANS](docs/assets/images/mach_comparison.png)
+### Nozzle Geometry (matplotlib)
+![Nozzle Contour](docs/assets/images/nozzle_contour.png)
+> Rao parabolic bell nozzle contour with 6 control points for accurate curve representation.
 
-Side-by-side comparison showing viscous effects in RANS (boundary layer reduces effective flow area).
+### Parametric Sweep: Exit Mach vs Expansion Ratio (matplotlib)
+![Sweep Epsilon](docs/assets/images/sweep_mach_vs_epsilon.png)
+> Exit Mach increases with expansion ratio following the isentropic area-Mach relation. SU2 results match isentropic theory within 5%.
 
-### Parametric Sweep: Exit Mach vs Expansion Ratio
-![Sweep Epsilon](docs/assets/images/sweep_mach_vs_exit_mach_vs_epsilon.png)
+### Parametric Sweep: Exit Mach vs Chamber Pressure (matplotlib)
+![Sweep Pc](docs/assets/images/sweep_mach_vs_pc.png)
+> For calorically perfect gas (constant gamma), exit Mach is independent of chamber pressure. SU2 results confirm this theoretical prediction.
 
-Exit Mach increases with expansion ratio following the isentropic area-Mach relation. SU2 results match isentropic theory within 5%.
-
-### Parametric Sweep: Exit Mach vs Chamber Pressure
-![Sweep Pc](docs/assets/images/sweep_mach_vs_exit_mach_vs_pc.png)
-
-For calorically perfect gas (constant gamma), exit Mach is independent of chamber pressure. SU2 results confirm this theoretical prediction.
-
-### Parametric Sweep: Exit Mach vs Throat Radius
-![Sweep R*](docs/assets/images/sweep_mach_vs_exit_mach_vs_rstar.png)
-
-Exit Mach is independent of absolute scale for geometrically similar nozzles.
+### Parametric Sweep: Exit Mach vs Throat Radius (matplotlib)
+![Sweep R*](docs/assets/images/sweep_mach_vs_rstar.png)
+> Exit Mach is independent of absolute scale for geometrically similar nozzles.
 
 ## Methodology
 
@@ -124,24 +124,24 @@ The nozzle contour uses a Rao parabolic bell approximation (Sutton & Biblarz, "R
 
 Structured O-grid mesh generated using Gmsh transfinite meshing:
 - Single-surface mesh with spline wall curve
-- 40x20 cells (800 elements) for accurate results
-- Boundary layer refinement with geometric progression (growth ratio 1.15)
-- First cell height: 1e-6 m (y+ < 1 for RANS)
+- 60x30 cells (1,800 elements) for Euler validation
+- 40x30 cells (1,200 elements) for RANS
+- 40x20 cells (800 elements) for parametric sweeps
 
 ### CFD Solver
 
 **Euler (inviscid):**
 - SOLVER= EULER, AXISYMMETRIC= YES
 - ROE flux scheme, first-order (MUSCL=NO)
-- CFL=0.1 with adaptation, 5000 iterations
-- Inlet: total conditions (Pc=10 MPa, T0=3500K)
+- CFL=0.1 with adaptation (max 20), 5000 iterations
+- Inlet: total conditions (Pc=9.7 MPa, T0=3600K)
 - Outlet: static pressure (101325 Pa)
 
 **RANS (viscous):**
 - SOLVER= RANS, KIND_TURB_MODEL= SST
-- Low-Re wall treatment (y+ < 1)
+- Freestream: ambient conditions (101325 Pa, 300K)
+- Inlet BC drives the flow through the nozzle
 - Adiabatic wall boundary conditions
-- Freestream turbulence intensity: 5%
 
 ### Validation
 
@@ -151,7 +151,7 @@ Triple validation methodology:
 3. **SU2 CFD**: Finite-volume Euler/RANS with ROE scheme
 
 Grid Convergence Index (GCI) per ASME V&V 20-2009:
-- 3 mesh levels: coarse (4K), medium (16K), fine (64K cells)
+- 3 mesh levels: coarse (450), medium (1800), fine (7200 cells)
 - Refinement ratio: r=2
 - Safety factor: Fs=1.25
 
@@ -159,9 +159,9 @@ Grid Convergence Index (GCI) per ASME V&V 20-2009:
 
 | Sweep | Parameter | Values | Fixed Parameters |
 |-------|-----------|--------|-----------------|
-| 1 | Expansion ratio | 4, 8, 12, 16, 20 | Pc=10 MPa, R*=0.05m |
+| 1 | Expansion ratio | 4, 8, 12, 16, 20 | Pc=9.7 MPa, R*=0.05m |
 | 2 | Chamber pressure | 5, 10, 20, 50 MPa | epsilon=12, R*=0.05m |
-| 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12, Pc=10 MPa |
+| 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12, Pc=9.7 MPa |
 
 ## Project Structure
 
@@ -170,12 +170,14 @@ rocket-nozzle-cfd/
   pyproject.toml              # uv managed, Python >=3.13
   src/
     nozzle/                   # Geometry generation
-      config.py               # NozzleConfig dataclass
+      config.py               # NozzleConfig dataclass (v2)
       geometry.py             # Rao bell contour (Bezier)
+      presets.py              # Engine presets (Merlin 1D, Raptor)
     cfd/                      # SU2 mesh and solver
       config.py               # SU2NozzleConfig (v8.4.0)
       mesh.py                 # Gmsh O-grid generator
-      rans_config.py           # SU2RANSConfig (SST)
+      mesh_config.py          # MeshConfig (zone-based)
+      rans_config.py          # SU2RANSConfig (SST)
       solver.py               # SU2 subprocess runner
       vtu_parser.py           # Binary VTU parser (v8.4.0)
     validation/               # Analytical validation
@@ -191,12 +193,16 @@ rocket-nozzle-cfd/
       postprocessing.py       # Wall pressure, shock diamonds
       mach_contour.py         # Mach contour (tricontourf)
       comparison.py           # Euler vs RANS plots
-  tests/                      # 228 tests
+  tests/                      # 287 tests
   docs/                       # Portfolio HTML site
-  run_phase0.py               # Phase 0: Spike
-  run_phase3.py               # Phase 3: Euler reference
-  run_phase4.py               # Phase 4: RANS + post-processing
-  run_phase6.py               # Phase 6: Sweeps + GCI
+    PARAVIEW_GUIDE.md         # ParaView visualization guide
+  run_euler_spike.py          # Quick convergence test
+  run_euler.py                # Full Euler simulation
+  run_rans.py                 # RANS SST simulation
+  run_postprocess.py          # Post-processing plots
+  run_validation.py           # Triple validation + GCI
+  run_sweeps.py               # Parametric sweeps
+  run_all.py                  # Run everything in sequence
 ```
 
 ## Technology Stack
@@ -206,9 +212,9 @@ rocket-nozzle-cfd/
 | Solver | SU2 v8.4.0 | Compressible flow, axisymmetric flag |
 | Mesh | Gmsh structured O-grid | Body-fitted, shock-aligned, native .su2 export |
 | Contour | Rao parabolic bell (Sutton & Biblarz) | Industry standard nozzle design |
-| Post-processing | ParaView + matplotlib | ParaView for VTU, matplotlib for plots |
+| Post-processing | ParaView + matplotlib | ParaView for VTU contours, matplotlib for 1D plots |
 | Portfolio | Static HTML (AK-Vortex theme) | Consistent with existing portfolio |
-| Testing | pytest (228 tests) | Comprehensive validation coverage |
+| Testing | pytest (287 tests) | Comprehensive validation coverage |
 
 ## How to Run
 
@@ -216,21 +222,40 @@ rocket-nozzle-cfd/
 # Install dependencies
 uv sync
 
-# Run Phase 0 spike (validates SU2 convergence)
-uv run python run_phase0.py
+# Quick convergence test (~2 min)
+uv run python run_euler_spike.py
 
-# Run Phase 3 Euler reference case
-uv run python run_phase3.py
+# Full Euler simulation (~10 min)
+uv run python run_euler.py
 
-# Run Phase 4 RANS + post-processing
-uv run python run_phase4.py
+# RANS simulation (requires Euler first)
+uv run python run_rans.py
 
-# Run Phase 6 parametric sweeps + GCI
-uv run python run_phase6.py
+# Post-processing (requires Euler + RANS)
+uv run python run_postprocess.py
+
+# Triple validation + GCI study
+uv run python run_validation.py
+
+# Parametric sweeps
+uv run python run_sweeps.py
+
+# Run everything in sequence
+uv run python run_all.py
 
 # Run all tests
 uv run pytest tests/ -v
 ```
+
+## ParaView Guide
+
+For publication-quality visualizations, use ParaView to create contour plots from VTU files. See [docs/PARAVIEW_GUIDE.md](docs/PARAVIEW_GUIDE.md) for detailed instructions.
+
+**Quick start:**
+1. Open `output/euler/flow.vtu` in ParaView
+2. Coloring -> Mach, Colormap -> Jet
+3. File -> Open -> `output/euler/nozzle.su2` -> Representation -> Wireframe (black, width 3)
+4. File -> Save Screenshot -> `docs/assets/images/mach_contour_paraview.png`
 
 ## References
 

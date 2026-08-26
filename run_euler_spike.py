@@ -111,7 +111,7 @@ def main() -> int:
     vtu_path = workdir / "flow.vtu"
     if vtu_path.exists():
         mach_path = images_dir / "mach_contour.png"
-        plot_mach_contour(vtu_path, mach_path)
+        plot_mach_contour(vtu_path, mach_path, nozzle_config=nozzle_config)
         print(f"  Saved: {mach_path}")
 
     # Summary
