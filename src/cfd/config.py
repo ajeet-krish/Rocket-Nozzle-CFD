@@ -69,7 +69,7 @@ SYSTEM_MEASUREMENTS= SI
 
 % -------------------- BOUNDARY CONDITIONS -------------------
 MARKER_EULER= ( {self.wall_marker} )
-MARKER_SYM= ( {self.symmetry_marker} )
+MARKER_SYM= ( {self.symmetry_marker}, farfield )
 
 % Inlet: subsonic inlet with total conditions (Tt, Pt, Vx, Vy, Vz)
 MARKER_INLET= ( {self.inlet_marker}, {self.total_temperature:.1f}, {self.total_pressure:.1f}, 1.0, 0.0, 0.0 )

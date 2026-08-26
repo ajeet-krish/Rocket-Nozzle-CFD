@@ -59,13 +59,14 @@ def main() -> int:
     plot_contour(x, y, "Euler Spike - Nozzle Contour")
     print("  Saved: docs/assets/images/nozzle_contour.png")
 
-    # Step 2: Generate mesh (coarse: 40x20)
+    # Step 2: Generate mesh (coarse: 40x20, no plume for quick test)
     print("\n[2/6] Generating Gmsh mesh (40x20)...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
         n_axial=40,
         n_normal=20,
         output_file=str(workdir / "nozzle.su2"),
+        plume_extension=False,
     )
     print(f"  Mesh: {mesh_path}")
 

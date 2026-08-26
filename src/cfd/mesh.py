@@ -177,17 +177,15 @@ def generate_nozzle_mesh(
     # --- Physical groups ---
 
     if plume_extension:
-        # Nozzle + plume: exit_line is nozzle outlet, plume_left is plume inlet
-        # SU2 treats coincident boundaries as an interface
+        # Nozzle + plume: exit_line is internal interface (no BC needed)
+        # plume_outlet is the actual outlet, farfield is symmetry
         gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
-        gmsh.model.geo.addPhysicalGroup(1, [exit_line], name="outlet")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="outlet")
         gmsh.model.geo.addPhysicalGroup(1, [wall_spline], name="wall")
         gmsh.model.geo.addPhysicalGroup(
             1, [axis_line, plume_axis], name="symmetry",
         )
-        gmsh.model.geo.addPhysicalGroup(1, [plume_left], name="plume_inlet")
         gmsh.model.geo.addPhysicalGroup(1, [plume_top], name="farfield")
-        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="plume_outlet")
         gmsh.model.geo.addPhysicalGroup(
             2, [nozzle_surface, plume_surface], name="fluid",
         )
