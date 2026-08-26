@@ -69,30 +69,29 @@ The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and thro
 
 ## Visualizations
 
-<!-- REPLACE: Use ParaView to create Mach contour with nozzle wall overlay -->
-<!-- See docs/PARAVIEW_GUIDE.md for instructions -->
 ### Mach Number Contour (ParaView)
-![Mach Contour](docs/assets/images/mach_contour_paraview.png)
-> ParaView screenshot of Euler Mach contour with nozzle wireframe overlay. Shows flow acceleration from subsonic inlet through sonic throat to supersonic exit.
+![Mach Contour](docs/assets/images/euler/mach_contour_euler.png)
+> Mach number distribution showing flow acceleration from subsonic inlet through sonic throat (M=1) to supersonic exit (M~4.5). Color scale: blue (subsonic) to red (supersonic).
 
-<!-- REPLACE: Use ParaView to create pressure contour -->
+### Mach Contour with Mesh
+![Mach Contour Mesh](docs/assets/images/euler/mach_contour_euler_mesh.png)
+> Mach contour overlaid with computational mesh showing cell density and boundary layer refinement near the throat.
+
 ### Pressure Contour (ParaView)
-![Pressure Contour](docs/assets/images/pressure_contour_paraview.png)
-> ParaView screenshot of static pressure distribution. Blue = low pressure (exit), Red = high pressure (chamber).
+![Pressure Contour](docs/assets/images/euler/pressure_contour_euler.png)
+> Static pressure distribution through the nozzle. High pressure in chamber (red) drops to low pressure at exit (blue). Pressure ratio ~95:1.
 
-<!-- REPLACE: Use ParaView to create shock diamond visualization -->
 ### Shock Diamonds (ParaView)
-![Shock Diamonds](docs/assets/images/shock_diamonds_paraview.png)
-> ParaView screenshot using Gradient Of Unstructured Data filter on density. Shows compression and expansion waves in exhaust plume.
+![Shock Diamonds](docs/assets/images/euler/shock_diamond_euler.png)
+> Density gradient visualization showing shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions.
+
+### Mach vs Pressure (ParaView)
+![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
+> Mach number and static pressure along the nozzle axis. Pressure drops monotonically as Mach increases through the diverging section.
 
 ### Convergence History (matplotlib)
 ![Convergence](docs/assets/images/convergence.png)
 > RMS density residual drops 6+ orders of magnitude, confirming steady-state convergence.
-
-<!-- REPLACE: Use ParaView to create Euler vs RANS side-by-side -->
-### Euler vs RANS Comparison (ParaView)
-![Euler vs RANS](docs/assets/images/mach_comparison_paraview.png)
-> Side-by-side ParaView screenshots showing inviscid (Euler) vs viscous (RANS SST) Mach contours.
 
 ### Nozzle Geometry (matplotlib)
 ![Nozzle Contour](docs/assets/images/nozzle_contour.png)
@@ -196,6 +195,7 @@ rocket-nozzle-cfd/
   tests/                      # 287 tests
   docs/                       # Portfolio HTML site
     PARAVIEW_GUIDE.md         # ParaView visualization guide
+    assets/images/euler/      # ParaView screenshots
   run_euler_spike.py          # Quick convergence test
   run_euler.py                # Full Euler simulation
   run_rans.py                 # RANS SST simulation
@@ -250,12 +250,6 @@ uv run pytest tests/ -v
 ## ParaView Guide
 
 For publication-quality visualizations, use ParaView to create contour plots from VTU files. See [docs/PARAVIEW_GUIDE.md](docs/PARAVIEW_GUIDE.md) for detailed instructions.
-
-**Quick start:**
-1. Open `output/euler/flow.vtu` in ParaView
-2. Coloring -> Mach, Colormap -> Jet
-3. File -> Open -> `output/euler/nozzle.su2` -> Representation -> Wireframe (black, width 3)
-4. File -> Save Screenshot -> `docs/assets/images/mach_contour_paraview.png`
 
 ## References
 

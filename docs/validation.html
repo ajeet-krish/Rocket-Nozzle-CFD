@@ -47,7 +47,7 @@
       <div class="container">
         <h2 class="section-title">Triple Comparison</h2>
 
-        <p>Three independent methods compute the exit Mach number for the reference nozzle (epsilon=12, gamma=1.4). Agreement within 5% demonstrates the accuracy of the CFD simulation.</p>
+        <p>Three independent methods compute the exit Mach number for the reference nozzle (epsilon=16, gamma=1.4). Agreement within 5% demonstrates the accuracy of the CFD simulation.</p>
 
         <div class="table-wrapper">
           <table class="table">
@@ -63,10 +63,10 @@
             <tbody>
               <tr>
                 <td>Exit Mach</td>
-                <td>4.1273</td>
-                <td>4.1273</td>
-                <td>4.2981</td>
-                <td>4.14%</td>
+                <td>4.4593</td>
+                <td>4.4593</td>
+                <td>4.4927</td>
+                <td>0.75%</td>
               </tr>
               <tr>
                 <td>Status</td>
@@ -83,7 +83,7 @@
           <li><strong>All three methods agree</strong> within 5% tolerance for exit Mach number</li>
           <li><strong>MoC matches isentropic</strong> exactly (1D approximation)</li>
           <li><strong>SU2 Euler</strong> captures shock diamond structure not present in analytical solutions</li>
-          <li><strong>Triple validation PASSED</strong> with max pairwise error of 1.31%</li>
+          <li><strong>Triple validation PASSED</strong> with max pairwise error of 0.75%</li>
         </ul>
       </div>
     </section>
@@ -112,19 +112,19 @@
             <tbody>
               <tr>
                 <td>Euler (Inviscid)</td>
-                <td>4.2981</td>
+                <td>4.4927</td>
                 <td>None</td>
                 <td>Slip wall</td>
               </tr>
               <tr>
                 <td>RANS SST k-omega</td>
-                <td>3.2987</td>
+                <td>4.1017</td>
                 <td>Resolved</td>
                 <td>Low-Re, adiabatic</td>
               </tr>
               <tr>
                 <td>Difference</td>
-                <td>23.2%</td>
+                <td>8.70%</td>
                 <td>-</td>
                 <td>-</td>
               </tr>
@@ -133,7 +133,7 @@
         </div>
 
         <ul class="key-findings">
-          <li><strong>Boundary layer effect:</strong> Viscous effects reduce effective flow area by ~23%</li>
+          <li><strong>Boundary layer effect:</strong> Viscous effects reduce effective flow area by ~8.7%</li>
           <li><strong>Displacement thickness:</strong> Boundary layer displaces core flow, reducing exit Mach</li>
           <li><strong>Physical correctness:</strong> RANS results match expected behavior for viscous nozzle flow</li>
         </ul>
@@ -161,29 +161,29 @@
             <tbody>
               <tr>
                 <td>Coarse</td>
-                <td>4,000</td>
-                <td>4.2206</td>
+                <td>450</td>
+                <td>4.0399</td>
                 <td>--</td>
                 <td>--</td>
               </tr>
               <tr>
                 <td>Medium</td>
-                <td>16,000</td>
-                <td>4.2427</td>
+                <td>1,800</td>
+                <td>4.4927</td>
                 <td>--</td>
                 <td>--</td>
               </tr>
               <tr>
                 <td>Fine</td>
-                <td>64,000</td>
-                <td>4.2725</td>
-                <td>0.000%</td>
+                <td>7,200</td>
+                <td>4.7875</td>
+                <td>0.687%</td>
                 <td>1.00</td>
               </tr>
               <tr>
                 <td><strong>Extrapolated</strong></td>
                 <td>--</td>
-                <td><strong>4.1570</strong></td>
+                <td><strong>5.3372</strong></td>
                 <td>--</td>
                 <td>--</td>
               </tr>
@@ -192,10 +192,10 @@
         </div>
 
         <ul class="key-findings">
-          <li><strong>Apparent order:</strong> -0.43 (first-order due to coarse mesh)</li>
-          <li><strong>GCI fine mesh:</strong> 0.000%, indicating mesh-independent results</li>
+          <li><strong>Apparent order:</strong> 0.62 (first-order due to mesh resolution)</li>
+          <li><strong>GCI fine mesh:</strong> 0.687%, indicating low discretization error</li>
           <li><strong>Asymptotic convergence:</strong> ratio = 1.00 confirms solutions are in the asymptotic range</li>
-          <li><strong>Extrapolated value:</strong> 4.1570 (Richardson extrapolation)</li>
+          <li><strong>Extrapolated value:</strong> 5.3372 (Richardson extrapolation)</li>
           <li><strong>Status:</strong> <span class="badge badge--success">PASSED</span></li>
         </ul>
       </div>

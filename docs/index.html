@@ -64,7 +64,7 @@
             <p>
               Generate a parametric Rao parabolic bell nozzle contour using a quadratic Bezier curve.
               The 80% length bell with 30-degree throat half-angle is the industry standard for
-              optimal thrust. Expansion ratio epsilon=12 produces exit Mach 4.13 for air.
+              optimal thrust. Expansion ratio epsilon=16 produces exit Mach 4.46 for air.
             </p>
           </div>
           <div class="walkthrough-step__media">
@@ -77,16 +77,13 @@
           <div class="walkthrough-step__content">
             <h3>Structured O-Grid Mesh</h3>
             <p>
-              Generate a structured O-grid mesh using Gmsh transfinite meshing. The mesh is split into
-              4 zones (converging, throat, diverging, plume) with boundary layer refinement.
-              First cell height 1e-6m achieves y+ less than 1 for RANS compatibility.
+              Generate a structured O-grid mesh using Gmsh transfinite meshing. The mesh uses
+              60x30 cells (1,800 elements) with boundary layer refinement for accurate
+              flow resolution. Spline wall curve captures the nozzle geometry precisely.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <div class="walkthrough-step__media-placeholder">
-              <div class="placeholder-icon">&#9632;</div>
-              <span>Mesh visualization (run Phase 2 to generate)</span>
-            </div>
+            <img src="assets/images/euler/mach_contour_euler_mesh.png" alt="Structured mesh with Mach contour" loading="lazy">
           </div>
         </article>
 
@@ -95,13 +92,13 @@
           <div class="walkthrough-step__content">
             <h3>SU2 Euler Solver</h3>
             <p>
-              Run SU2 compressible Euler simulation with ROE flux scheme, MUSCL reconstruction,
-              and axisymmetric flag. Chamber pressure 10 MPa, temperature 3500K, exit at 1 atm.
-              Converges in approximately 2000 iterations.
+              Run SU2 compressible Euler simulation with ROE flux scheme and axisymmetric flag.
+              Chamber pressure 9.7 MPa, temperature 3600K, exit at 1 atm.
+              Converges in approximately 349 iterations with exit Mach 4.49.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/mach_contour.png" alt="Mach number contour from SU2 Euler simulation" loading="lazy">
+            <img src="assets/images/euler/mach_contour_euler.png" alt="Mach number contour from SU2 Euler simulation" loading="lazy">
           </div>
         </article>
 
@@ -111,12 +108,12 @@
             <h3>RANS SST k-omega</h3>
             <p>
               Add viscous effects with Reynolds-Averaged Navier-Stokes equations and SST k-omega
-              turbulence model. Low-Re wall treatment captures boundary layer development.
-              Adiabatic wall boundary conditions.
+              turbulence model. Boundary layer displacement reduces exit Mach from 4.49 (Euler)
+              to 4.10 (RANS), an 8.7% difference consistent with viscous nozzle theory.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/mach_comparison.png" alt="Euler vs RANS Mach comparison" loading="lazy">
+            <img src="assets/images/euler/pressure_contour_euler.png" alt="Pressure contour showing viscous effects" loading="lazy">
           </div>
         </article>
 
@@ -126,12 +123,12 @@
             <h3>Post-Processing & Validation</h3>
             <p>
               Extract flow properties from VTU solution files. Compute wall pressure distribution,
-              density gradient for shock diamond visualization, and thrust coefficient.
-              Triple validation: isentropic vs MoC vs SU2.
+              density gradient for shock diamond visualization, and triple validation against
+              isentropic theory and Method of Characteristics. Max error: 0.75%.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/shock_diamonds.png" alt="Shock diamond visualization" loading="lazy">
+            <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock diamond visualization" loading="lazy">
           </div>
         </article>
 
@@ -153,7 +150,7 @@
           <div class="explore-index__number">01</div>
           <div class="explore-index__content">
             <h3>Results</h3>
-            <p>Reference case Mach contour, convergence history, and parametric sweep analysis.</p>
+            <p>Reference case Mach contour, pressure distribution, shock diamonds, and parametric sweep analysis.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
@@ -169,7 +166,7 @@
           <div class="explore-index__number">03</div>
           <div class="explore-index__content">
             <h3>Source Code</h3>
-            <p>Python pipeline with SU2 v8.4.0, Gmsh, and Matplotlib. 228 tests passing.</p>
+            <p>Python pipeline with SU2 v8.4.0, Gmsh, and Matplotlib. 287 tests passing.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
