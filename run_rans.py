@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-"""RANS SST simulation of SpaceX Merlin 1D nozzle.
+"""RANS SST simulation of converging-diverging rocket nozzle.
 
-Uses fine mesh (120x100) with boundary layer refinement.
+Uses medium mesh (40x30) without aggressive BL refinement.
 Requires Euler solution for comparison (run run_euler.py first).
 """
 import sys
-import shutil
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.presets import merlin_1d
-from cfd.config import SU2NozzleConfig
+from nozzle.config import NozzleConfig
 from cfd.rans_config import SU2RANSConfig
 from cfd.mesh import generate_nozzle_mesh
 from cfd.solver import SU2Solver
@@ -25,16 +23,24 @@ def main() -> int:
         0 on success, 1 on failure.
     """
     print("=" * 60)
-    print("RANS SST Simulation: SpaceX Merlin 1D")
+    print("RANS SST Simulation: Rocket Nozzle")
     print("=" * 60)
 
-    # Configuration
-    nozzle_config = merlin_1d()
+    # Configuration: epsilon=16, same as Euler
+    nozzle_config = NozzleConfig(
+        throat_radius=0.05,
+        expansion_ratio=16.0,
+        converging_length=0.1,
+        diverging_length=0.5,
+        num_points=200,
+    )
 
     rans_config = SU2RANSConfig(
-        total_pressure=10e6,
-        total_temperature=3500.0,
-        cfl_number=0.1,
+        total_pressure=9.7e6,
+        total_temperature=3600.0,
+        static_pressure=101325.0,
+        cfl_number=0.05,
+        iterations=10000,
     )
 
     # Setup directories
@@ -43,21 +49,20 @@ def main() -> int:
 
     euler_dir = Path("output/euler")
 
-    # Check if Euler solution exists (needed for reference)
+    # Check if Euler solution exists
     if not (euler_dir / "flow.vtu").exists():
         print("\nWARNING: Euler solution not found at output/euler/flow.vtu")
         print("  Run 'uv run python run_euler.py' first for comparison.")
-        print("  Continuing with RANS-only simulation.\n")
 
-    # Step 1: Generate RANS mesh
-    print("\n[1/4] Generating RANS mesh (120x100 + BL refinement)...")
+    # Step 1: Generate RANS mesh (no aggressive BL for stability)
+    print("\n[1/4] Generating RANS mesh (40x30)...")
     rans_mesh = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=120,
-        n_normal=100,
+        n_axial=40,
+        n_normal=30,
         output_file=str(workdir / "nozzle.su2"),
-        rans_mode=True,
-        plume_extension=False,  # TODO: enable after conformal plume is fixed
+        rans_mode=False,
+        plume_extension=False,
     )
     print(f"  RANS mesh: {rans_mesh}")
 
@@ -76,8 +81,6 @@ def main() -> int:
     # Step 4: Report results
     print("\n[4/4] RANS Results Summary...")
     if (euler_dir / "flow.vtu").exists():
-        # Compare with Euler if available
-        euler_config = SU2NozzleConfig()
         euler_solver = SU2Solver()
         euler_results = euler_solver.parse_results(euler_dir)
         print(f"  Euler exit Mach: {euler_results.exit_mach:.4f}")

@@ -55,9 +55,9 @@ REYNOLDS_NUMBER= 1e6
 REYNOLDS_LENGTH= 0.1
 
 % -------------------- FREESTREAM CONDITIONS -------------------
-% Set to inlet conditions for proper initialization
-FREESTREAM_PRESSURE= {self.total_pressure:.1f}
-FREESTREAM_TEMPERATURE= {self.total_temperature:.1f}
+% Set to ambient conditions (inlet BC drives the flow)
+FREESTREAM_PRESSURE= {self.static_pressure:.1f}
+FREESTREAM_TEMPERATURE= 300.0
 FREESTREAM_OPTION= TEMPERATURE_FS
 MACH_NUMBER= 0.01
 
@@ -78,6 +78,7 @@ TIME_DISCRE_FLOW= EULER_IMPLICIT
 
 % Turbulence initialization
 FREESTREAM_TURBULENCEINTENSITY= {self.freestream_turbulence_intensity}
+FREESTREAM_TURB2LAMVISCRATIO= {self.freestream_viscosity_ratio}
 
 % Turbulence numerics
 CONV_NUM_METHOD_TURB= {self.conv_num_method_turb}

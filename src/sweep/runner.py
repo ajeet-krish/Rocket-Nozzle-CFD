@@ -45,10 +45,13 @@ class SweepRunner:
                 expansion_ratio=case.expansion_ratio,
             )
 
-            # Generate mesh
+            # Generate mesh (coarser for sweep speed)
             mesh_path = generate_nozzle_mesh(
                 nozzle_config,
+                n_axial=40,
+                n_normal=20,
                 output_file=str(case_dir / "nozzle.su2"),
+                plume_extension=False,
             )
 
             # Create SU2 config

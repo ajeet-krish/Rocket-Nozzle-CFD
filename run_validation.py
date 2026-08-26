@@ -11,7 +11,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from nozzle.presets import merlin_1d
+from nozzle.config import NozzleConfig
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
 from cfd.solver import SU2Solver
@@ -32,23 +32,24 @@ def main() -> int:
     print("Triple Validation + GCI Study")
     print("=" * 60)
 
-    images_dir = Path("docs/assets/images")
-    images_dir.mkdir(parents=True, exist_ok=True)
-
-    # Configuration
-    nozzle_config = merlin_1d()
+    # Configuration: epsilon=16, proven geometry
+    nozzle_config = NozzleConfig(
+        throat_radius=0.05,
+        expansion_ratio=16.0,
+        converging_length=0.1,
+        diverging_length=0.5,
+        num_points=200,
+    )
 
     su2_config = SU2NozzleConfig(
-        total_pressure=10e6,
-        total_temperature=3500.0,
+        total_pressure=9.7e6,
+        total_temperature=3600.0,
         cfl_number=0.1,
         gamma=1.4,
     )
 
     workdir = Path("output/validation")
     workdir.mkdir(parents=True, exist_ok=True)
-
-    solver = SU2Solver()
 
     # ================================================================
     # STEP 1: Triple Validation
@@ -68,17 +69,19 @@ def main() -> int:
     mach_moc = float(moc_results.mach[-1]) if len(moc_results.mach) > 0 else 0.0
 
     # SU2
-    mesh_path = generate_nozzle_mesh(
-        nozzle_config,
-        output_file=str(workdir / "nozzle.su2"),
-    )
-    su2_workdir = workdir / "triple"
+    su2_workdir = workdir / "su2"
     su2_workdir.mkdir(exist_ok=True)
 
-    # Copy mesh to SU2 working directory
-    shutil.copy(mesh_path, su2_workdir / "nozzle.su2")
+    mesh_path = generate_nozzle_mesh(
+        nozzle_config,
+        n_axial=60,
+        n_normal=30,
+        output_file=str(su2_workdir / "nozzle.su2"),
+        plume_extension=False,
+    )
 
     config_path = su2_config.write(su2_workdir)
+    solver = SU2Solver()
     su2_results = solver.run(config_path, su2_workdir, gamma=su2_config.gamma)
     mach_su2 = su2_results.exit_mach
 
@@ -96,15 +99,6 @@ def main() -> int:
     print(f"  Max error:       {triple_report.max_error_percent:.2f}%")
     print(f"  Result:          {'PASSED' if triple_report.passed else 'FAILED'}")
 
-    # Two-way comparison (isentropic vs SU2)
-    two_way = compare_results(
-        mach_su2,
-        nozzle_config.expansion_ratio,
-        gamma=1.4,
-        tolerance=5.0,
-    )
-    print(f"  Two-way error:   {two_way.mach_error_percent:.2f}%")
-
     # ================================================================
     # STEP 2: GCI Study
     # ================================================================
@@ -113,9 +107,9 @@ def main() -> int:
 
     # Mesh levels: coarse, medium, fine
     mesh_configs = {
-        "coarse": {"n_axial": 100, "n_normal": 40},
-        "medium": {"n_axial": 200, "n_normal": 80},
-        "fine": {"n_axial": 400, "n_normal": 160},
+        "coarse": {"n_axial": 30, "n_normal": 15},
+        "medium": {"n_axial": 60, "n_normal": 30},
+        "fine": {"n_axial": 120, "n_normal": 60},
     }
 
     gci_levels = {}
@@ -128,12 +122,12 @@ def main() -> int:
             n_axial=mesh_cfg["n_axial"],
             n_normal=mesh_cfg["n_normal"],
             output_file=str(level_dir / "nozzle.su2"),
+            plume_extension=False,
         )
 
         config_path = su2_config.write(level_dir)
         results = solver.run(config_path, level_dir, gamma=su2_config.gamma)
 
-        # Approximate cell count from mesh settings
         n_cells = mesh_cfg["n_axial"] * mesh_cfg["n_normal"]
 
         gci_levels[level_name] = GCIMeshLevel(

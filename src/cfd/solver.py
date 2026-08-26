@@ -174,7 +174,3 @@ class SU2Solver:
         except Exception as e:
             logger.warning(f"Failed to extract exit Mach: {e}")
             return 0.0
-
-        except Exception as e:
-            logger.warning(f"Failed to extract exit Mach: {e}")
-            return 0.0
