@@ -57,7 +57,7 @@ def main() -> int:
         n_normal=100,
         output_file=str(workdir / "nozzle.su2"),
         rans_mode=True,
-        plume_extension=True,
+        plume_extension=False,  # TODO: enable after conformal plume is fixed
     )
     print(f"  RANS mesh: {rans_mesh}")
 

@@ -147,7 +147,7 @@ class TestMeshPlumeExtension:
                 f"Missing marker: {marker}"
             )
         # Plume markers
-        for marker in ["farfield", "outlet"]:
+        for marker in ["farfield", "plume_outlet"]:
             assert f"MARKER_TAG= {marker}" in content, (
                 f"Missing marker: {marker}"
             )

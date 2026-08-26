@@ -118,14 +118,11 @@ def generate_nozzle_mesh(
         plume_width = plume_radius_ratio * config.exit_radius
 
         # Plume corner points
-        #   exit_top is wall_pts[-1] at (x_exit, exit_radius)
-        #   exit_bot is axis_pts[-1] at (x_exit, 0)
         plume_top_left = gmsh.model.geo.addPoint(x_exit, plume_width, 0)
         plume_top_right = gmsh.model.geo.addPoint(x_plume_end, plume_width, 0)
         plume_bot_right = gmsh.model.geo.addPoint(x_plume_end, 0, 0)
 
         # Plume boundary curves (4 curves for transfinite surface)
-        # Left: from axis at exit up to plume top (single line, independent of nozzle exit)
         plume_left = gmsh.model.geo.addLine(axis_pts[-1], plume_top_left)
         plume_top = gmsh.model.geo.addLine(plume_top_left, plume_top_right)
         plume_outlet = gmsh.model.geo.addLine(plume_top_right, plume_bot_right)
@@ -163,9 +160,7 @@ def generate_nozzle_mesh(
 
     # Plume transfinite meshing
     if plume_extension and plume_surface is not None:
-        # Plume left boundary: from axis to plume_width (covers exit + gap)
-        # Plume outlet: from plume_width to axis (must match left node count)
-        plume_normal_nodes = n_normal + 6  # extra nodes for gap region
+        plume_normal_nodes = n_normal + 6
         gmsh.model.geo.mesh.setTransfiniteCurve(plume_left, plume_normal_nodes)
         gmsh.model.geo.mesh.setTransfiniteCurve(plume_top, n_axial + 1)
         gmsh.model.geo.mesh.setTransfiniteCurve(plume_outlet, plume_normal_nodes)
@@ -177,15 +172,17 @@ def generate_nozzle_mesh(
     # --- Physical groups ---
 
     if plume_extension:
-        # Nozzle + plume: exit_line is internal interface (no BC needed)
-        # plume_outlet is the actual outlet, farfield is symmetry
+        # Nozzle + plume: exit_line is nozzle outlet, plume_left is plume inlet
+        # SU2 treats coincident boundaries as an interface
         gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
-        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="outlet")
+        gmsh.model.geo.addPhysicalGroup(1, [exit_line], name="outlet")
         gmsh.model.geo.addPhysicalGroup(1, [wall_spline], name="wall")
         gmsh.model.geo.addPhysicalGroup(
             1, [axis_line, plume_axis], name="symmetry",
         )
+        gmsh.model.geo.addPhysicalGroup(1, [plume_left], name="plume_inlet")
         gmsh.model.geo.addPhysicalGroup(1, [plume_top], name="farfield")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="plume_outlet")
         gmsh.model.geo.addPhysicalGroup(
             2, [nozzle_surface, plume_surface], name="fluid",
         )
