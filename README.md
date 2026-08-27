@@ -40,12 +40,12 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 
 ## Validation Summary
 
-| Method | Exit Mach | Error | Status |
-|--------|-----------|-------|--------|
-| Isentropic (analytical) | 4.4593 | - | Reference |
-| MoC (1D) | 4.4593 | 0.00% | Reference |
-| SU2 Euler (60x30) | 4.4927 | 0.75% | PASSED |
-| SU2 RANS SST (40x30) | 4.1017 | 8.7% vs Euler | Converged |
+| Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | RANS Exit Mach | Euler vs RANS |
+|--------|---------------------|-----------------|-------------|----------------|---------------|
+| Generic | 4.4593 | 4.4927 | 0.73% | 4.1017 | 8.70% |
+| Merlin 1D | 4.4593 | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> |
+| RS-25 | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> |
+| RL10B-2 | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> | <!-- TBD --> |
 
 ---
 
@@ -71,29 +71,28 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Pressure Contour](docs/assets/images/euler/pressure_contour_euler.png)
 > Static pressure drops from 9.7 MPa (chamber) to 101 kPa (ambient) through the nozzle.
 
-### Shock Diamonds
-
-![Shock Diamonds](docs/assets/images/euler/shock_diamond_euler.png)
-> Density gradient magnitude reveals shock diamond pattern in exhaust plume.
-
 ### Mach vs Pressure Distribution
 
 ![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
 > Mach number and static pressure along nozzle axis following isentropic relations.
 
-### Plume Extension
+### Shock Diamonds & Plume Extension
+
+The plume domain extends downstream of the nozzle exit to capture external shock diamond structure. The conformal mesh uses Gmsh's negative curve index technique to create a shared boundary between nozzle and plume zones.
 
 | Euler Plume | RANS Plume |
 |-------------|------------|
 | ![Euler Plume](output/plume/plots/mach_contour.png) | ![RANS Plume](output/rans_plume/plots/mach_contour_rans_plume.png) |
 
-> Conformal plume mesh captures shock diamond structure downstream of nozzle exit.
+> **Left:** Euler plume shows inviscid shock diamond pattern with Mach oscillation in the exhaust. **Right:** RANS plume includes viscous shear layer effects that dissipate the shock structure downstream.
 
 ---
 
 ## SpaceX Merlin 1D
 
-*Falcon 9 first stage: epsilon=16, R*=82.5mm, Pc=9.7 MPa*
+<!-- PLACEHOLDER: Add real photo of Merlin 1D engine -->
+<!-- Save as: docs/assets/images/merlin/photo_merlin.png -->
+> *The Merlin 1D powers SpaceX Falcon 9 first stage, producing 845 kN of thrust at sea level. With 16:1 expansion ratio and 9.7 MPa chamber pressure, it generates visible shock diamonds during ascent.*
 
 ### Nozzle Geometry & Mesh
 
@@ -109,7 +108,7 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 <!-- Save ParaView screenshots as: docs/assets/images/merlin/mach_euler_merlin.png and mach_rans_merlin.png -->
 | Euler (Inviscid) | RANS SST (Viscous) |
 |------------------|---------------------|
-| ![Euler Mach Merin](docs/assets/images/merlin/mach_euler_merlin.png) | ![RANS Mach Merlin](docs/assets/images/merlin/mach_rans_merlin.png) |
+| ![Euler Mach Merlin](docs/assets/images/merlin/mach_euler_merlin.png) | ![RANS Mach Merlin](docs/assets/images/merlin/mach_rans_merlin.png) |
 
 > *Merlin 1D Mach distribution. Same expansion ratio as generic nozzle but with chamber section affecting inlet flow profile.*
 
@@ -120,13 +119,6 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Pressure Merlin](docs/assets/images/merlin/pressure_merlin.png)
 > *Static pressure distribution through Merlin 1D nozzle geometry.*
 
-### Shock Diamonds
-
-<!-- PLACEHOLDER: Merlin 1D shock diamonds -->
-<!-- Save as: docs/assets/images/merlin/shock_diamonds_merlin.png -->
-![Shock Diamonds Merlin](docs/assets/images/merlin/shock_diamonds_merlin.png)
-> *Density gradient showing shock diamond pattern in Merlin 1D exhaust plume.*
-
 ### Mach vs Pressure Distribution
 
 <!-- PLACEHOLDER: Merlin 1D mach vs pressure -->
@@ -134,7 +126,7 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Mach vs Pressure Merlin](docs/assets/images/merlin/mach_vs_pressure_merlin.png)
 > *Mach and pressure along Merlin 1D nozzle axis.*
 
-### Plume Extension
+### Shock Diamonds & Plume Extension
 
 <!-- PLACEHOLDER: Merlin 1D plume -->
 <!-- Run: uv run python run_plume.py -->
@@ -149,12 +141,14 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 
 ## RS-25 (Space Shuttle Main Engine)
 
-*Space Shuttle / SLS core stage: epsilon=78, R*=130mm, Pc=20.6 MPa*
+<!-- PLACEHOLDER: Add real photo of RS-25 engine -->
+<!-- Save as: docs/assets/images/rs25/photo_rs25.png -->
+> *The RS-25 powered the Space Shuttle and now serves as the SLS core stage engine. With 78:1 expansion ratio and 20.6 MPa chamber pressure, it produces 1860 kN thrust. The high expansion ratio causes flow separation at sea level.*
 
 ### Nozzle Geometry & Mesh
 
 <!-- PLACEHOLDER: RS-25 mesh -->
-<!-- Run: uv run python run_euler.py with rs_25() preset -->
+<!-- Run: generate mesh with rs_25() preset -->
 <!-- Save ParaView screenshot as: docs/assets/images/rs25/mesh_rs25.png -->
 > *RS-25 nozzle mesh. High expansion ratio (78:1) produces very low exit pressure at sea level, causing flow separation. The nozzle length is significantly longer than Merlin 1D.*
 
@@ -175,13 +169,6 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Pressure RS25](docs/assets/images/rs25/pressure_rs25.png)
 > *Static pressure distribution. Pressure drops from 20.6 MPa (chamber) through the long diverging section.*
 
-### Shock Diamonds
-
-<!-- PLACEHOLDER: RS-25 shock diamonds -->
-<!-- Save as: docs/assets/images/rs25/shock_diamonds_rs25.png -->
-![Shock Diamonds RS25](docs/assets/images/rs25/shock_diamonds_rs25.png)
-> *RS-25 exhaust plume visualization. Shock structure differs from Merlin 1D due to higher expansion ratio.*
-
 ### Mach vs Pressure Distribution
 
 <!-- PLACEHOLDER: RS-25 mach vs pressure -->
@@ -189,7 +176,7 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Mach vs Pressure RS25](docs/assets/images/rs25/mach_vs_pressure_rs25.png)
 > *Mach and pressure along RS-25 nozzle axis.*
 
-### Plume Extension
+### Shock Diamonds & Plume Extension
 
 <!-- PLACEHOLDER: RS-25 plume -->
 <!-- Save as: docs/assets/images/rs25/plume_euler_rs25.png and plume_rans_rs25.png -->
@@ -203,7 +190,9 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 
 ## RL10B-2 (Delta IV Upper Stage)
 
-*Delta IV upper stage: epsilon=285, R*=140mm, Pc=4.2 MPa*
+<!-- PLACEHOLDER: Add real photo of RL10B-2 engine -->
+<!-- Save as: docs/assets/images/rl10b2/photo_rl10b2.png -->
+> *The RL10B-2 powers the Delta IV upper stage, achieving 465.5 seconds Isp (vacuum) with 285:1 expansion ratio - the highest of any operational engine. The carbon-carbon nozzle extension deploys after staging.*
 
 ### Nozzle Geometry & Mesh
 
@@ -229,13 +218,6 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Pressure RL10B2](docs/assets/images/rl10b2/pressure_rl10b2.png)
 > *Static pressure distribution. Very low exit pressure due to high expansion ratio.*
 
-### Shock Diamonds
-
-<!-- PLACEHOLDER: RL10B-2 shock diamonds -->
-<!-- Save as: docs/assets/images/rl10b2/shock_diamonds_rl10b2.png -->
-![Shock Diamonds RL10B2](docs/assets/images/rl10b2/shock_diamonds_rl10b2.png)
-> *RL10B-2 exhaust plume. Minimal shock diamond structure at sea level due to extreme overexpansion.*
-
 ### Mach vs Pressure Distribution
 
 <!-- PLACEHOLDER: RL10B-2 mach vs pressure -->
@@ -243,7 +225,7 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ![Mach vs Pressure RL10B2](docs/assets/images/rl10b2/mach_vs_pressure_rl10b2.png)
 > *Mach and pressure along RL10B-2 nozzle axis.*
 
-### Plume Extension
+### Shock Diamonds & Plume Extension
 
 <!-- PLACEHOLDER: RL10B-2 plume -->
 <!-- Save as: docs/assets/images/rl10b2/plume_euler_rl10b2.png and plume_rans_rl10b2.png -->
@@ -256,6 +238,14 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 ---
 
 ## Parametric Sweeps
+
+Parametric sweeps explore the design space by varying one parameter while holding others constant. This enables understanding of how nozzle geometry and operating conditions affect performance. The sweeps are performed on the **generic nozzle** (epsilon=16, R*=50mm) to establish baseline behavior before examining real engine geometries.
+
+| Sweep | Parameter | Values | Fixed Parameters |
+|-------|-----------|--------|-----------------|
+| 1 | Expansion ratio | 4, 8, 12, 16, 20 | Pc=9.7 MPa, R*=0.05m |
+| 2 | Chamber pressure | 5, 10, 20, 50 MPa | epsilon=12, R*=0.05m |
+| 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12, Pc=9.7 MPa |
 
 ### Exit Mach vs Expansion Ratio
 
@@ -320,14 +310,6 @@ Grid Convergence Index (GCI) per ASME V&V 20-2009:
 - 3 mesh levels: coarse (450), medium (1800), fine (7200 cells)
 - Refinement ratio: r=2
 - Safety factor: Fs=1.25
-
-### Parametric Sweeps
-
-| Sweep | Parameter | Values | Fixed Parameters |
-|-------|-----------|--------|-----------------|
-| 1 | Expansion ratio | 4, 8, 12, 16, 20 | Pc=9.7 MPa, R*=0.05m |
-| 2 | Chamber pressure | 5, 10, 20, 50 MPa | epsilon=12, R*=0.05m |
-| 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12, Pc=9.7 MPa |
 
 ---
 
