@@ -7,7 +7,7 @@ Creates 2D annotated contour and 3D revolved surface plots for:
 - RS-25 (Space Shuttle / SLS)
 - RL10B-2 (Delta IV / Vulcan Centaur)
 
-Output: docs/assets/images/{engine_name}/
+Output: docs/assets/images/{engine_name}/geometry/
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def main() -> int:
         config = preset_fn()
 
         # Output directory for this engine
-        engine_dir = IMAGES_DIR / engine_name
+        engine_dir = IMAGES_DIR / engine_name / "geometry"
         engine_dir.mkdir(parents=True, exist_ok=True)
 
         # 2D annotated contour
