@@ -315,45 +315,45 @@ class TestNozzleConfigPresets:
     def test_rs_25(self):
         """RS-25 preset should have correct geometry."""
         config = rs_25()
-        assert config.throat_radius == 0.130
+        assert config.throat_radius == 0.136
         assert config.expansion_ratio == 77.5
         assert config.chamber_length == 0.50
-        assert config.chamber_radius == 0.195
+        assert config.chamber_radius == 0.204
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.065
+        assert config.throat_radius_of_curvature == 0.068
         assert config.theta_n == 25.0
         assert config.num_points == 400
         assert config.exit_radius == pytest.approx(
-            0.130 * math.sqrt(77.5), rel=1e-10
+            0.136 * math.sqrt(77.5), rel=1e-10
         )
 
     def test_rl10b_2(self):
         """RL10B-2 preset should have correct geometry."""
         config = rl10b_2()
-        assert config.throat_radius == 0.140
+        assert config.throat_radius == 0.077
         assert config.expansion_ratio == 285.0
         assert config.chamber_length == 0.60
-        assert config.chamber_radius == 0.210
+        assert config.chamber_radius == 0.1155
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.070
+        assert config.throat_radius_of_curvature == 0.0385
         assert config.theta_n == 20.0
         assert config.num_points == 500
         assert config.exit_radius == pytest.approx(
-            0.140 * math.sqrt(285.0), rel=1e-10
+            0.077 * math.sqrt(285.0), rel=1e-10
         )
 
     def test_rs_25_validation(self):
         """RS-25 preset should pass NozzleConfig.validate()."""
         config = rs_25()
         validated = NozzleConfig.validate(**config.__dict__)
-        assert validated.throat_radius == 0.130
+        assert validated.throat_radius == 0.136
         assert validated.expansion_ratio == 77.5
 
     def test_rl10b_2_validation(self):
         """RL10B-2 preset should pass NozzleConfig.validate()."""
         config = rl10b_2()
         validated = NozzleConfig.validate(**config.__dict__)
-        assert validated.throat_radius == 0.140
+        assert validated.throat_radius == 0.077
         assert validated.expansion_ratio == 285.0
 
     def test_presets_pass_validation(self):

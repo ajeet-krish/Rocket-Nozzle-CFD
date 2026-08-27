@@ -92,6 +92,13 @@ class NozzleConfig:
             math.sqrt(self.expansion_ratio) - 1
         ) * self.throat_radius / math.tan(math.radians(15))
 
+    @property
+    def computed_diverging_length(self) -> float:
+        """Diverging length from Rao bell formula if nozzle_length_fraction is set."""
+        if self.nozzle_length_fraction > 0:
+            return self.ideal_diverging_length
+        return self.diverging_length
+
     @classmethod
     def validate(cls, **kwargs: Any) -> "NozzleConfig":
         """Create and validate NozzleConfig.

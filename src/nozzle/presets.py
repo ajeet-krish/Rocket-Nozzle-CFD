@@ -17,7 +17,6 @@ def merlin_1d() -> NozzleConfig:
         throat_radius=0.0825,
         expansion_ratio=16.0,
         converging_length=0.083,
-        diverging_length=0.4,
         chamber_length=0.30,
         chamber_radius=0.124,
         convergent_half_angle=45.0,
@@ -41,7 +40,6 @@ def raptor_sl() -> NozzleConfig:
         throat_radius=0.0825,
         expansion_ratio=34.0,
         converging_length=0.083,
-        diverging_length=0.6,
         chamber_length=0.30,
         chamber_radius=0.124,
         convergent_half_angle=45.0,
@@ -57,20 +55,19 @@ def rs_25() -> NozzleConfig:
     """Space Shuttle Main Engine (RS-25).
 
     - Chamber pressure: 20.6 MPa
-    - Throat diameter: 260mm (R=130mm)
-    - Exit diameter: 2400mm (R=1200mm)
+    - Throat diameter: 272mm (R=136mm)
+    - Exit diameter: ~2400mm (R=1200mm)
     - Expansion ratio: 77.5:1
     - Flow separation at sea level (overexpanded)
     """
     return NozzleConfig(
-        throat_radius=0.130,
+        throat_radius=0.136,
         expansion_ratio=77.5,
-        converging_length=0.13,
-        diverging_length=2.0,
+        converging_length=0.136,
         chamber_length=0.50,
-        chamber_radius=0.195,
+        chamber_radius=0.204,
         convergent_half_angle=45.0,
-        throat_radius_of_curvature=0.065,
+        throat_radius_of_curvature=0.068,
         theta_n=25.0,
         theta_e=0.0,
         nozzle_length_fraction=0.8,
@@ -82,20 +79,19 @@ def rl10b_2() -> NozzleConfig:
     """RL10B-2 (Delta IV upper stage).
 
     - Chamber pressure: 4.2 MPa
-    - Throat diameter: 280mm (R=140mm)
-    - Exit diameter: 2600mm (R=1300mm)
+    - Throat diameter: 154mm (R=77mm)
+    - Exit diameter: ~2600mm (R=1300mm)
     - Expansion ratio: 285:1 (highest of any operational engine)
     - Vacuum optimized (no flow separation concern)
     """
     return NozzleConfig(
-        throat_radius=0.140,
+        throat_radius=0.077,
         expansion_ratio=285.0,
-        converging_length=0.14,
-        diverging_length=2.5,
+        converging_length=0.077,
         chamber_length=0.60,
-        chamber_radius=0.210,
+        chamber_radius=0.1155,
         convergent_half_angle=45.0,
-        throat_radius_of_curvature=0.070,
+        throat_radius_of_curvature=0.0385,
         theta_n=20.0,
         theta_e=0.0,
         nozzle_length_fraction=0.8,

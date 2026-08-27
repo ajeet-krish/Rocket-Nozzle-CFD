@@ -8,8 +8,10 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
 
     Sections (if chamber_length > 0):
       1. Chamber: straight cylinder at chamber_radius
-      2. Convergent: curved or linear transition to throat_radius
-      3. Divergent: Rao parabolic bell from throat_radius to exit_radius
+      2. Convergent: curved or linear transition to entrant arc start
+      3a. Entrant arc: 1.5*Rt radius, smooth throat transition
+      3b. Exit arc: throat_radius_of_curvature or 0.382*Rt, steep initial divergence
+      3c. Bell: quadratic Bezier from end of exit arc to exit
 
     If chamber_length == 0: skip chamber section (v1 behavior).
     If throat_radius_of_curvature == 0: use linear convergent (v1 behavior).
@@ -22,6 +24,9 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
         y: radial coordinates (m), shape (num_points,)
     """
     n = config.num_points
+
+    # Use computed diverging length (from ideal formula if nozzle_length_fraction set)
+    div_length = config.computed_diverging_length
 
     # Determine section lengths and point counts
     if config.chamber_length > 0:
@@ -47,53 +52,90 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
         y_chamber = np.full_like(x_chamber, config.effective_inlet_radius)
         sections.append((x_chamber, y_chamber))
 
-    # Section 2: Convergent
-    x_converge = np.linspace(-config.converging_length, 0, n_converge)
+    # Compute entrant arc parameters (Fix 1)
+    entrant_radius = 1.5 * config.throat_radius
+    center_y = 2.5 * config.throat_radius
+    angle_end = -np.pi / 2  # -90 deg (horizontal at throat, slope=0)
 
-    if config.throat_radius_of_curvature > 0:
-        # Curved convergent using cubic polynomial with C1 continuity
-        y_converge = _curved_convergent(
-            config.effective_inlet_radius,
-            config.throat_radius,
-            config.convergent_half_angle,
-            x_converge,
-            config.converging_length,
-        )
+    # Start angle: -135 deg (C1 continuous with 45 deg convergent half-angle)
+    angle_start_target = np.radians(-135)
+    x_arc_start_target = entrant_radius * np.cos(angle_start_target)
+
+    # Clip to convergent range so arc starts within the convergent section
+    x_converge_end = max(x_arc_start_target, -config.converging_length)
+
+    if abs(x_converge_end - x_arc_start_target) > 1e-12:
+        # Compute angle from clipped x coordinate
+        cos_angle = np.clip(x_converge_end / entrant_radius, -1, 1)
+        angle_start = -np.arccos(cos_angle)
     else:
-        # Linear convergent (v1 behavior)
-        y_converge = np.linspace(config.effective_inlet_radius, config.throat_radius, n_converge)
+        angle_start = angle_start_target
 
-    sections.append((x_converge, y_converge))
+    y_arc_start = entrant_radius * np.sin(angle_start) + center_y
+    slope_arc_start = -np.cos(angle_start) / (np.sin(angle_start) + 1e-20)
 
-    # Section 3a: Exit arc (0.382*Rt radius, steep initial divergence)
-    # Matches the Bell-Nozzle reference: circular arc from -90 deg to (theta_n - 90 deg)
-    exit_arc_radius = 0.382 * config.throat_radius
+    # Section 2: Convergent (ends at entrant arc start point)
+    if x_converge_end > -config.converging_length + 1e-12:
+        x_converge = np.linspace(-config.converging_length, x_converge_end, n_converge)
+
+        if config.throat_radius_of_curvature > 0:
+            # Curved convergent with C1 continuity to entrant arc
+            y_converge = _curved_convergent_to_arc(
+                config.effective_inlet_radius,
+                y_arc_start,
+                x_converge,
+                slope_arc_start,
+            )
+        else:
+            # Linear convergent (v1 behavior)
+            y_converge = np.linspace(
+                config.effective_inlet_radius, y_arc_start, n_converge
+            )
+
+        sections.append((x_converge, y_converge))
+
+    # Section 3a: Entrant arc (1.5*Rt radius, smooth throat transition)
+    n_entrant = min(max(n_diverge // 5, 20), n_diverge - 2)
+    x_entrant, y_entrant = _entrant_arc(
+        config.throat_radius, angle_start, angle_end, n_entrant
+    )
+    sections.append((x_entrant, y_entrant))
+
+    # Section 3b: Exit arc (Fix 2: use throat_radius_of_curvature if set)
+    exit_arc_radius = (
+        config.throat_radius_of_curvature
+        if config.throat_radius_of_curvature > 0
+        else 0.382 * config.throat_radius
+    )
     theta_n_rad = np.radians(config.theta_n)
-    n_exit_arc = max(n_diverge // 5, 20)
-    angle_start = -np.pi / 2  # -90 deg (vertical at throat)
-    angle_end = theta_n_rad - np.pi / 2  # (theta_n - 90) deg
-    angles = np.linspace(angle_start, angle_end, n_exit_arc)
-    x_exit_arc = exit_arc_radius * np.cos(angles)
-    y_exit_arc = exit_arc_radius * np.sin(angles) + exit_arc_radius + config.throat_radius
+    n_exit_arc = min(max(n_diverge // 5, 20), n_diverge - n_entrant - 1)
+    angle_start_exit = -np.pi / 2  # -90 deg (vertical at throat)
+    angle_end_exit = theta_n_rad - np.pi / 2  # (theta_n - 90) deg
+    angles_exit = np.linspace(angle_start_exit, angle_end_exit, n_exit_arc)
+    x_exit_arc = exit_arc_radius * np.cos(angles_exit)
+    y_exit_arc = (
+        exit_arc_radius * np.sin(angles_exit)
+        + exit_arc_radius
+        + config.throat_radius
+    )
+    sections.append((x_exit_arc, y_exit_arc))
 
-    # Section 3b: Bell (cubic polynomial from end of exit arc to exit)
+    # Section 3c: Bell (Fix 6: quadratic Bezier instead of cubic)
     x_arc_end = x_exit_arc[-1]
     y_arc_end = y_exit_arc[-1]
     # Slope at end of exit arc: dy/dx = -cot(angle_end) = tan(theta_n)
     slope_arc_end = np.tan(theta_n_rad)
-    nBell = n_diverge - n_exit_arc
-    x_bell = np.linspace(x_arc_end, config.diverging_length, nBell)
-    y_bell = _rao_bell_segment(
-        y_arc_end, config.exit_radius,
-        config.diverging_length - x_arc_end,
+    n_bell = max(n_diverge - n_entrant - n_exit_arc, 1)
+    x_bell = np.linspace(x_arc_end, div_length, n_bell)
+    y_bell = _rao_bell_bezier(
+        y_arc_end,
+        config.exit_radius,
+        div_length - x_arc_end,
         x_bell - x_arc_end,
         slope_start=slope_arc_end,
         slope_end=np.tan(np.radians(config.theta_e)),
     )
-
-    x_diverge = np.concatenate([x_exit_arc, x_bell])
-    y_diverge = np.concatenate([y_exit_arc, y_bell])
-    sections.append((x_diverge, y_diverge))
+    sections.append((x_bell, y_bell))
 
     # Concatenate all sections (exclude duplicate points at boundaries)
     x_parts: list[np.ndarray] = []
@@ -111,6 +153,103 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
     y = np.concatenate(y_parts)
 
     return x, y
+
+
+def _entrant_arc(
+    throat_radius: float,
+    angle_start: float,
+    angle_end: float,
+    n_points: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Generate entrant arc (circular arc before throat).
+
+    The arc has radius 1.5*Rt and center at (0, 2.5*Rt).
+    It provides a smooth C1 transition from convergent to throat.
+
+    At angle_end = -90 deg (throat): x=0, y=Rt, slope=0 (horizontal).
+    At angle_start (typically -135 deg): connects to convergent section.
+
+    Args:
+        throat_radius: Throat radius (m)
+        angle_start: Start angle (radians, typically -135 deg)
+        angle_end: End angle (radians, -90 deg = throat)
+        n_points: Number of points
+
+    Returns:
+        (x, y) coordinate arrays
+    """
+    radius = 1.5 * throat_radius
+    center_y = 2.5 * throat_radius
+
+    angles = np.linspace(angle_start, angle_end, n_points)
+    x = radius * np.cos(angles)
+    y = radius * np.sin(angles) + center_y
+
+    # Clamp last point to exact throat location (avoids floating-point drift)
+    x[-1] = 0.0
+    y[-1] = throat_radius
+
+    return x, y
+
+
+def _curved_convergent_to_arc(
+    r_inlet: float,
+    r_end: float,
+    x: np.ndarray,
+    slope_end: float,
+) -> np.ndarray:
+    """Compute curved convergent section ending at entrant arc start.
+
+    Uses C1 continuity: tangent to cylinder at inlet (slope=0),
+    tangent to entrant arc at end (slope=slope_end).
+
+    Cubic polynomial: y(t) = a*t^3 + b*t^2 + c*t + d
+    with boundary conditions:
+      y(0) = r_inlet,  y'(0) = 0
+      y(1) = r_end,    y'(1) = slope_end * dx_dt
+
+    The slope is clamped to ensure monotonic decrease (no overshoot below throat).
+
+    Args:
+        r_inlet: Inlet (chamber) radius (m)
+        r_end: End radius at entrant arc start (m)
+        x: Axial coordinates in [-length, x_arc_start]
+        slope_end: Actual slope (dy/dx) at end of convergent
+
+    Returns:
+        Radial coordinates (m) at each x location
+    """
+    if x.max() - x.min() < 1e-12:
+        return np.full_like(x, r_inlet)
+
+    # Normalize x to [0, 1] where t=0 is inlet and t=1 is arc start
+    t = (x - x.min()) / (x.max() - x.min())
+
+    # End slope in normalized space: dy/dt = dy/dx * dx/dt
+    dx_dt = x.max() - x.min()
+    slope_exit = slope_end * dx_dt
+
+    # Clamp slope to ensure monotonic decrease.
+    # For a cubic with y'(0)=0, monotonicity requires slope_exit >= 3*(r_end - r_inlet).
+    max_monotonic_slope = 3.0 * (r_end - r_inlet)  # negative value
+    if slope_exit < max_monotonic_slope:
+        slope_exit = max_monotonic_slope
+
+    # Cubic: y(t) = a*t^3 + b*t^2 + c*t + d
+    # y(0) = d = r_inlet
+    # y'(0) = c = 0
+    # y(1) = a + b + c + d = r_end
+    # y'(1) = 3a + 2b + c = slope_exit
+    d = r_inlet
+    c = 0.0
+    # a + b = r_end - d
+    # 3a + 2b = slope_exit
+    a = slope_exit - 2.0 * (r_end - d)
+    b = 3.0 * (r_end - d) - slope_exit
+
+    y = a * t**3 + b * t**2 + c * t + d
+
+    return y
 
 
 def _curved_convergent(
@@ -254,6 +393,59 @@ def _rao_bell_segment(
     return a * x**3 + b * x**2 + c * x + d
 
 
+def _rao_bell_bezier(
+    r_start: float,
+    r_end: float,
+    length: float,
+    x: np.ndarray,
+    slope_start: float = 0.577,
+    slope_end: float = 0.0,
+) -> np.ndarray:
+    """Quadratic Bezier bell contour.
+
+    P0 = (0, r_start), P2 = (length, r_end)
+    Control point P1 from slope constraints.
+
+    Uses Newton-Raphson to solve for parameter t from x coordinate,
+    then evaluates the Bezier curve for y.
+
+    Args:
+        r_start: Radius at start of segment
+        r_end: Radius at end of segment
+        length: Axial length of segment
+        x: Axial coordinates (local, starting from 0)
+        slope_start: Wall slope at start
+        slope_end: Wall slope at end
+
+    Returns:
+        Radial coordinates
+    """
+    if abs(length) < 1e-12:
+        return np.full_like(x, r_start)
+
+    # Control point from slope intersection
+    # At P0: slope = slope_start -> line: y = r_start + slope_start * x
+    # At P2: slope = slope_end -> line: y = r_end + slope_end * (x - length)
+    # Intersection: r_start + slope_start * cx = r_end + slope_end * (cx - length)
+    # cx * (slope_start - slope_end) = r_end - r_start - slope_end * length
+    cx = (r_end - r_start - slope_end * length) / (slope_start - slope_end + 1e-20)
+    cy = r_start + slope_start * cx
+
+    # Quadratic Bezier: B(t) = (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2
+    # Solve t from x using Newton-Raphson
+    t = np.clip(x / length, 0, 1)
+    for _ in range(10):
+        x_bez = 2 * t * (1 - t) * cx + t**2 * length
+        dx_dt = 2 * (1 - 2 * t) * cx + 2 * t * length
+        dt = (x_bez - x) / np.where(np.abs(dx_dt) > 1e-12, dx_dt, 1e-12)
+        t = np.clip(t - dt, 0, 1)
+        if np.max(np.abs(dt)) < 1e-10:
+            break
+
+    y = (1 - t) ** 2 * r_start + 2 * (1 - t) * t * cy + t**2 * r_end
+    return y
+
+
 def plot_contour(
     x: np.ndarray,
     y: np.ndarray,
@@ -316,7 +508,7 @@ def generate_plume_contour(
         y: radial coordinates (m), shape (n_points,)
     """
     plume_length = plume_length_ratio * config.throat_radius
-    x_exit = config.diverging_length
+    x_exit = config.computed_diverging_length
     x = np.linspace(x_exit, x_exit + plume_length, n_points)
     y = np.full_like(x, config.exit_radius * plume_radius_ratio)
     return x, y
