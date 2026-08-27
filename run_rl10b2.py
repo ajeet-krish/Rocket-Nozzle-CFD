@@ -16,6 +16,7 @@ CONFIG = EngineConfig(
     preset_fn=rl10b_2,
     total_pressure=4.2e6,
     total_temperature=2200.0,
+    static_pressure=100.0,  # Near vacuum (RL10B-2 is upper stage engine)
     theta_n=25,
     ld=None,  # Use preset diverging_length (2.5m)
     euler_n_axial=120,

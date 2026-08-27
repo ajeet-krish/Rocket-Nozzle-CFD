@@ -35,7 +35,7 @@ def run_geometry_stage(config: EngineConfig) -> int:
     """
     print(f"\n[{config.label}] Geometry stage")
 
-    images_dir = Path(config.images_dir)
+    images_dir = Path(config.images_dir) / "geometry"
     images_dir.mkdir(parents=True, exist_ok=True)
 
     nozzle_config = config.nozzle_config()
@@ -127,7 +127,7 @@ def run_euler_stage(config: EngineConfig) -> int:
     su2 = SU2NozzleConfig(
         total_pressure=config.total_pressure,
         total_temperature=config.total_temperature,
-        static_pressure=101325.0,
+        static_pressure=config.static_pressure,
         gamma=config.gamma,
         iterations=config.euler_iterations,
         cfl_number=config.euler_cfl,
@@ -190,7 +190,7 @@ def run_rans_stage(config: EngineConfig) -> int:
     rans_config = SU2RANSConfig(
         total_pressure=config.total_pressure,
         total_temperature=config.total_temperature,
-        static_pressure=101325.0,
+        static_pressure=config.static_pressure,
         cfl_number=config.rans_cfl,
         iterations=config.rans_iterations,
         farfield_marker="",
@@ -252,7 +252,7 @@ def run_plume_stage(config: EngineConfig) -> int:
     su2 = SU2NozzleConfig(
         total_pressure=config.total_pressure,
         total_temperature=config.total_temperature,
-        static_pressure=101325.0,
+        static_pressure=config.static_pressure,
         gamma=config.gamma,
         iterations=config.euler_iterations,
         cfl_number=config.euler_cfl * 0.5,

@@ -50,6 +50,7 @@ class EngineConfig:
     preset_fn: Callable[[], NozzleConfig]
     total_pressure: float
     total_temperature: float
+    static_pressure: float = 101325.0  # Pa (sea level default)
     gamma: float = 1.4
     theta_n: float = 30.0
     ld: float = 0.7
@@ -76,8 +77,8 @@ class EngineConfig:
 
     @property
     def images_dir(self) -> str:
-        """Images directory for plots."""
-        return f"docs/assets/images/{self.name}/geometry"
+        """Images directory for plots (base)."""
+        return f"docs/assets/images/{self.name}"
 
     def nozzle_config(self) -> NozzleConfig:
         """Build NozzleConfig from engine preset and overrides.
