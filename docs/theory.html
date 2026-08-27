@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rocket Nozzle CFD Theory: Compressible flow equations, isentropic relations, and nozzle flow regimes.">
+  <title>Theory - Rocket Nozzle CFD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- MathJax for LaTeX rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+</head>
+
+<body>
+
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to content</a>
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <nav class="nav">
+    <a href="index.html" class="nav__brand">Rocket Nozzle CFD</a>
+    <button class="nav__toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links">
+      <li><a href="index.html" class="nav__link">Home</a></li>
+      <li><a href="theory.html" class="nav__link active">Theory</a></li>
+      <li><a href="results.html" class="nav__link">Results</a></li>
+      <li><a href="validation.html" class="nav__link">Validation</a></li>
+    </ul>
+  </nav>
+
+  <main class="main" id="main-content">
+
+    <!-- Hero -->
+    <section class="hero" style="min-height: 40vh;">
+      <div class="hero__content">
+        <h1 class="hero__title">Compressible Flow Theory</h1>
+        <p class="hero__description">
+          Mathematical foundations for rocket nozzle analysis: governing equations, isentropic relations, and shock wave theory.
+        </p>
+      </div>
+    </section>
+
+    <!-- Governing Equations -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Governing Equations</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          Compressible flow in rocket nozzles is governed by the conservation laws of mass, momentum, and energy. For inviscid flow (Euler equations), we neglect viscous effects. For viscous flow (Navier-Stokes), we include boundary layer effects.
+        </p>
+
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-6);">Euler Equations (Inviscid)</h3>
+
+        <div class="walkthrough-step__content" style="max-width: 800px;">
+          <p>The Euler equations describe inviscid compressible flow. In conservative form for axisymmetric flow:</p>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0; overflow-x: auto;">
+            <p style="margin-bottom: 12px;"><strong>Continuity:</strong></p>
+            $$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \mathbf{u}) = 0$$
+
+            <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Momentum:</strong></p>
+            $$\frac{\partial (\rho \mathbf{u})}{\partial t} + \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u} + p\mathbf{I}) = 0$$
+
+            <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Energy:</strong></p>
+            $$\frac{\partial E}{\partial t} + \nabla \cdot [(E + p)\mathbf{u}] = 0$$
+          </div>
+
+          <p>where $\rho$ is density, $\mathbf{u}$ is velocity, $p$ is pressure, and $E$ is total energy per unit volume.</p>
+        </div>
+
+        <h3 style="color: var(--cyan); margin-top: var(--space-8); margin-bottom: var(--space-6);">Navier-Stokes Equations (Viscous)</h3>
+
+        <div class="walkthrough-step__content" style="max-width: 800px;">
+          <p>The Navier-Stokes equations add viscous stress and heat conduction terms:</p>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0; overflow-x: auto;">
+            <p style="margin-bottom: 12px;"><strong>Momentum with viscous stress:</strong></p>
+            $$\frac{\partial (\rho \mathbf{u})}{\partial t} + \nabla \cdot (\rho \mathbf{u} \otimes \mathbf{u} + p\mathbf{I} - \boldsymbol{\tau}) = 0$$
+
+            <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Energy with heat flux:</strong></p>
+            $$\frac{\partial E}{\partial t} + \nabla \cdot [(E + p)\mathbf{u} - \boldsymbol{\tau} \cdot \mathbf{u} - q] = 0$$
+          </div>
+
+          <p>where $\boldsymbol{\tau}$ is the viscous stress tensor and $q$ is heat flux. For Newtonian fluids, $\boldsymbol{\tau} = \mu[\nabla \mathbf{u} + (\nabla \mathbf{u})^T] - \frac{2}{3}\mu(\nabla \cdot \mathbf{u})\mathbf{I}$.</p>
+        </div>
+
+        <div style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+          <p style="margin: 0; font-size: var(--text-sm);">
+            <strong style="color: var(--cyan);">Note:</strong> This project uses SU2 to solve these equations numerically. The Euler solver is used for initial design exploration, while the RANS SST k-omega model captures viscous boundary layer effects for accurate exit Mach prediction.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Isentropic Relations -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Isentropic Relations</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          For isentropic flow (adiabatic and reversible), the thermodynamic properties are related through the Mach number. These relations are fundamental to nozzle design and performance prediction.
+        </p>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Area-Mach Relation</h3>
+            <p>The most important equation for nozzle design relates the local area $A$ to the throat area $A^*$ and Mach number $M$:</p>
+
+            <div style="background: var(--background); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              $$\frac{A}{A^*} = \frac{1}{M} \left[\frac{2}{\gamma + 1}\left(1 + \frac{\gamma - 1}{2}M^2\right)\right]^{\frac{\gamma + 1}{2(\gamma - 1)}}$$
+            </div>
+
+            <p>This equation shows that for each area ratio $A/A^*$, there are two solutions: a subsonic ($M < 1$) and a supersonic ($M > 1$) branch. The throat ($A = A^*$) corresponds to $M = 1$.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/nozzle_mesh.png" alt="Nozzle mesh showing area variation from inlet to exit" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Property Ratios</h3>
+            <p>The stagnation-to-static property ratios for isentropic flow:</p>
+
+            <div style="background: var(--background); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              <p style="margin-bottom: 12px;"><strong>Pressure ratio:</strong></p>
+              $$\frac{p_0}{p} = \left(1 + \frac{\gamma - 1}{2}M^2\right)^{\frac{\gamma}{\gamma - 1}}$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Temperature ratio:</strong></p>
+              $$\frac{T_0}{T} = 1 + \frac{\gamma - 1}{2}M^2$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Density ratio:</strong></p>
+              $$\frac{\rho_0}{\rho} = \left(1 + \frac{\gamma - 1}{2}M^2\right)^{\frac{1}{\gamma - 1}}$$
+            </div>
+
+            <p>where $\gamma$ is the ratio of specific heats (1.4 for air, ~1.2 for combustion gases), subscript 0 denotes stagnation (total) conditions.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/euler/pressure_contour_euler.png" alt="Pressure contour showing pressure distribution through nozzle" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mach Number -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Mach Number</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          The Mach number is the fundamental dimensionless parameter in compressible flow, defined as the ratio of flow velocity to the local speed of sound.
+        </p>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Definition & Regimes</h3>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              $$M = \frac{u}{a}$$
+              <p style="margin-top: 12px; margin-bottom: 0;">where $a = \sqrt{\gamma R T}$ is the speed of sound, $R$ is the gas constant, and $T$ is the static temperature.</p>
+            </div>
+
+            <p>Flow regimes based on Mach number:</p>
+            <ul style="list-style: none; padding: 0;">
+              <li style="position: relative; padding-left: 20px; margin-bottom: 8px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>M &lt; 0.3:</strong> Incompressible (density changes &lt; 5%)
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 8px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>0.3 &lt; M &lt; 1:</strong> Subsonic compressible
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 8px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>M = 1:</strong> Sonic (transonic regime)
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 8px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>1 &lt; M &lt; 5:</strong> Supersonic
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 8px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>M &gt; 5:</strong> Hypersonic
+              </li>
+            </ul>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/euler/mach_contour_euler.png" alt="Mach number contour showing subsonic to supersonic transition" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Mach Angle</h3>
+            <p>For supersonic flow, disturbances propagate along Mach lines at angle $\mu$ to the flow direction:</p>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              $$\sin(\mu) = \frac{1}{M}$$
+            </div>
+
+            <p>The Mach angle defines the "cone of silence" ahead of a supersonic body. For $M = 2$, $\mu = 30°$; for $M = 4$, $\mu = 14.5°$. In nozzle flows, Mach waves coalesce to form shock waves when they intersect.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock diamond pattern showing Mach wave structure" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Method of Characteristics -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Method of Characteristics</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          The Method of Characteristics (MoC) is an exact technique for solving 2D supersonic flow problems. It traces the propagation of Mach waves (characteristics) through the flow field.
+        </p>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Principle</h3>
+            <p>In supersonic flow, disturbances propagate along characteristic lines at the Mach angle. The flow properties change across these lines according to compatibility equations.</p>
+
+            <p>For 2D irrotational flow, the characteristic relations are:</p>
+
+            <div style="background: var(--background); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              <p style="margin-bottom: 12px;"><strong>Along C+ characteristics:</strong></p>
+              $$d\theta + \frac{\sqrt{M^2 - 1}}{1 + \frac{\gamma - 1}{2}M^2} \frac{dM}{M} = 0$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Along C- characteristics:</strong></p>
+              $$d\theta - \frac{\sqrt{M^2 - 1}}{1 + \frac{\gamma - 1}{2}M^2} \frac{dM}{M} = 0$$
+            </div>
+
+            <p>where $\theta$ is the flow angle and $M$ is the local Mach number. These relations allow us to trace the flow from known conditions to unknown regions.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/nozzle_contour.png" alt="Nozzle contour used for MoC analysis" loading="lazy">
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+          <p style="margin: 0; font-size: var(--text-sm);">
+            <strong style="color: var(--cyan);">Application:</strong> MoC is used in this project to independently compute the exit Mach number for validation. For a 1D nozzle with area ratio $\epsilon = 16$ and $\gamma = 1.4$, MoC gives $M_e = 4.4593$, matching the isentropic solution exactly.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nozzle Flow Regimes -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Nozzle Flow Regimes</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          The relationship between nozzle exit pressure and ambient pressure determines the exhaust plume structure and nozzle performance. Understanding these regimes is critical for nozzle design.
+        </p>
+
+        <div class="table-wrapper" style="max-width: 900px;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Condition</th>
+                <th>Pressure Ratio</th>
+                <th>Plume Structure</th>
+                <th>Thrust Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Overexpanded</strong></td>
+                <td>$p_e < p_a$</td>
+                <td>Oblique shocks at exit, flow separation possible</td>
+                <td>Reduced thrust (negative pressure contribution)</td>
+              </tr>
+              <tr>
+                <td><strong>Perfectly Expanded</strong></td>
+                <td>$p_e = p_a$</td>
+                <td>Parallel exhaust, no shocks or fans at exit</td>
+                <td>Maximum thrust efficiency</td>
+              </tr>
+              <tr>
+                <td><strong>Underexpanded</strong></td>
+                <td>$p_e > p_a$</td>
+                <td>Expansion fans at exit, plume expands outward</td>
+                <td>Reduced thrust (unconverted pressure energy)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="walkthrough-step" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Shock Diamond Formation</h3>
+            <p>When the nozzle is overexpanded or underexpanded, the pressure mismatch creates a wave pattern in the exhaust:</p>
+
+            <ul style="list-style: none; padding: 0;">
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Overexpanded:</strong> Ambient pressure compresses exhaust, forming oblique shocks. These shocks reflect off the free shear layer (boundary between exhaust and atmosphere), creating the diamond pattern.
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Underexpanded:</strong> High exhaust pressure causes expansion fans at the exit lip. These fans reflect off the jet boundary as compression waves, which coalesce into shocks forming the diamond pattern.
+              </li>
+            </ul>
+
+            <p>The number and spacing of diamonds depends on the pressure ratio, Mach number, and gas properties. More diamonds indicate a larger pressure mismatch.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/rans/mach_contour_rans.png" alt="RANS simulation showing shock diamond structure" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Optimal Expansion</h3>
+            <p>The exit Mach number for optimal expansion can be computed from the area ratio using the isentropic relation:</p>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              <p style="margin-bottom: 12px;">For area ratio $\epsilon = A_e / A^*$:</p>
+              $$\epsilon = \frac{1}{M_e} \left[\frac{2}{\gamma + 1}\left(1 + \frac{\gamma - 1}{2}M_e^2\right)\right]^{\frac{\gamma + 1}{2(\gamma - 1)}}$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;">The optimal expansion condition is:</p>
+              $$p_e = p_a \implies M_e = f(\epsilon, \gamma)$$
+            </div>
+
+            <p>For this project's reference nozzle ($\epsilon = 16$, $\gamma = 1.4$), the isentropic exit Mach is $M_e = 4.4593$.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/convergence.png" alt="Convergence history showing solution development" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Normal Shock Relations -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Normal Shock Relations</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          Normal shocks are discontinuities that occur in supersonic flow. Across a normal shock, the flow decelerates from supersonic to subsonic, with increases in pressure, temperature, and density.
+        </p>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Rankine-Hugoniot Relations</h3>
+            <p>The conservation laws across a stationary normal shock give:</p>
+
+            <div style="background: var(--background); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0;">
+              <p style="margin-bottom: 12px;"><strong>Mach number relation:</strong></p>
+              $$M_2^2 = \frac{1 + \frac{\gamma - 1}{2}M_1^2}{\gamma M_1^2 - \frac{\gamma - 1}{2}}$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Pressure ratio:</strong></p>
+              $$\frac{p_2}{p_1} = 1 + \frac{2\gamma}{\gamma + 1}(M_1^2 - 1)$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Temperature ratio:</strong></p>
+              $$\frac{T_2}{T_1} = \left[1 + \frac{2\gamma}{\gamma + 1}(M_1^2 - 1)\right] \cdot \left[\frac{2 + (\gamma - 1)M_1^2}{(\gamma + 1)M_1^2}\right]$$
+
+              <p style="margin-top: 16px; margin-bottom: 12px;"><strong>Total pressure ratio:</strong></p>
+              $$\frac{p_{02}}{p_{01}} = \left[\frac{(\gamma + 1)M_1^2}{(\gamma - 1)M_1^2 + 2}\right]^{\frac{\gamma}{\gamma - 1}} \cdot \left[\frac{\gamma + 1}{2\gamma M_1^2 - (\gamma - 1)}\right]^{\frac{1}{\gamma - 1}}$$
+            </div>
+
+            <p>Subscript 1 denotes conditions upstream (supersonic) and subscript 2 denotes conditions downstream (subsonic). The total pressure ratio $p_{02}/p_{01}$ is always less than 1, indicating entropy increase across the shock.</p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock structure in nozzle exhaust" loading="lazy">
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+          <p style="margin: 0; font-size: var(--text-sm);">
+            <strong style="color: var(--cyan);">Practical Impact:</strong> Total pressure loss across shocks reduces nozzle efficiency. A normal shock at $M = 4$ causes a 14.5% total pressure loss. This is why shock diamonds are associated with thrust loss in overexpanded nozzles.
+          </p>
+        </div>
+
+        <h3 style="color: var(--cyan); margin-top: var(--space-8); margin-bottom: var(--space-6);">Example: Normal Shock at M = 2</h3>
+
+        <div class="table-wrapper" style="max-width: 700px;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Upstream (1)</th>
+                <th>Downstream (2)</th>
+                <th>Ratio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Mach number</td>
+                <td>2.000</td>
+                <td>0.5774</td>
+                <td>-</td>
+              </tr>
+              <tr>
+                <td>Pressure ratio ($p_2/p_1$)</td>
+                <td>1.000</td>
+                <td>4.500</td>
+                <td>4.50x</td>
+              </tr>
+              <tr>
+                <td>Temperature ratio ($T_2/T_1$)</td>
+                <td>1.000</td>
+                <td>1.6875</td>
+                <td>1.69x</td>
+              </tr>
+              <tr>
+                <td>Total pressure ratio ($p_{02}/p_{01}$)</td>
+                <td>1.000</td>
+                <td>0.7209</td>
+                <td>27.9% loss</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation to other pages -->
+    <section class="explore-section">
+      <h2>Continue Exploring</h2>
+      <div class="explore-index">
+        <a href="results.html" class="explore-index__item">
+          <div class="explore-index__number">&rarr;</div>
+          <div class="explore-index__content">
+            <h3>Results</h3>
+            <p>CFD simulation results for four rocket nozzle configurations with Mach contours and shock diamond visualization.</p>
+          </div>
+          <div class="explore-index__arrow">&rarr;</div>
+        </a>
+        <a href="validation.html" class="explore-index__item">
+          <div class="explore-index__number">&rarr;</div>
+          <div class="explore-index__content">
+            <h3>Validation</h3>
+            <p>Triple comparison against isentropic theory and Method of Characteristics with grid convergence study.</p>
+          </div>
+          <div class="explore-index__arrow">&rarr;</div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Rocket Nozzle CFD &middot; Built by Ajeet Krishnasamy &middot; <a href="https://github.com/ajeet-krish/rocket-nozzle-cfd"
+        target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/ajeetkrishnasamy/"
+        target="_blank">LinkedIn</a></p>
+  </footer>
+
+  <script src="assets/js/main.js" type="module" defer></script>
+
+</body>
+
+</html>

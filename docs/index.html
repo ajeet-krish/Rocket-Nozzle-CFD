@@ -28,6 +28,7 @@
     </button>
     <ul class="nav__links">
       <li><a href="index.html" class="nav__link active">Home</a></li>
+      <li><a href="theory.html" class="nav__link">Theory</a></li>
       <li><a href="results.html" class="nav__link">Results</a></li>
       <li><a href="validation.html" class="nav__link">Validation</a></li>
     </ul>
@@ -44,85 +45,196 @@
         <p class="hero__description">
           How does a rocket engine convert high-pressure combustion gases into thrust? The answer lies in the converging-diverging (de Laval) nozzle, a geometry that accelerates flow from subsonic to supersonic speeds. Understanding compressible flow through nozzles is fundamental to propulsion engineering.
         </p>
-        <p class="hero__description">
-          This project simulates rocket nozzle flow using SU2 compressible CFD, validated against three independent methods: isentropic analytical relations, Method of Characteristics, and grid convergence study. The pipeline sweeps expansion ratio, chamber pressure, and throat radius to build an aerodynamic database.
-        </p>
       </div>
     </section>
 
-    <!-- Walkthrough -->
-    <section class="section" id="app-walkthrough">
+    <!-- What is a CD Nozzle -->
+    <section class="section">
       <div class="container">
-        <h2 class="section-title">Pipeline Walkthrough</h2>
+        <h2 class="section-title">What is a Converging-Diverging Nozzle?</h2>
 
-        <!-- Step 1: Nozzle Geometry -->
-        <article class="walkthrough-step">
+        <div class="walkthrough-step">
           <div class="walkthrough-step__content">
-            <h3>Nozzle Geometry</h3>
             <p>
-              Generate a parametric Rao parabolic bell nozzle contour using a quadratic Bezier curve.
-              The 80% length bell with 30-degree throat half-angle is the industry standard for
-              optimal thrust. Expansion ratio epsilon=16 produces exit Mach 4.46 for air.
+              A converging-diverging (CD) nozzle, also called a de Laval nozzle, is the fundamental geometry for accelerating gas flows to supersonic speeds. Invented by Swedish engineer Gustaf de Laval in 1888 for steam turbines, it now powers virtually every modern rocket engine.
+            </p>
+            <p>
+              The nozzle has three key regions: a converging section where subsonic flow accelerates, a <strong>throat</strong> (minimum area) where the flow reaches Mach 1 (sonic condition), and a diverging section where the flow continues to accelerate to supersonic velocities.
+            </p>
+            <p>
+              The physics is governed by compressible flow theory. As the cross-sectional area decreases in the converging section, the subsonic flow speeds up (similar to putting your thumb over a garden hose). At the throat, the flow becomes choked -- it cannot go faster by further reducing back pressure. In the diverging section, the supersonic flow behaves opposite to intuition: as area increases, velocity increases further, converting thermal energy into directed kinetic energy.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/nozzle_mesh.png" alt="Rao bell nozzle geometry and mesh" loading="lazy">
+            <img src="assets/images/nozzle_contour.png" alt="Converging-diverging nozzle contour showing converging section, throat, and diverging bell" loading="lazy">
           </div>
-        </article>
+        </div>
+      </div>
+    </section>
 
-        <!-- Step 2: Mesh Generation (reverse) -->
-        <article class="walkthrough-step walkthrough-step--reverse">
+    <!-- Compressible Flow & Shock Waves -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Compressible Flow & Shock Waves</h2>
+
+        <div class="walkthrough-step walkthrough-step--reverse">
           <div class="walkthrough-step__content">
-            <h3>SU2 Euler Solver</h3>
+            <h3>Shock Diamonds</h3>
             <p>
-              Run SU2 compressible Euler simulation with ROE flux scheme and axisymmetric flag.
-              Chamber pressure 9.7 MPa, temperature 3600K, exit at 1 atm.
-              Converges in approximately 349 iterations with exit Mach 4.49.
+              Shock diamonds (also called Mach diamonds) are the bright, repeating diamond-shaped patterns visible in rocket exhaust plumes. They form when the exhaust pressure at the nozzle exit does not match the ambient atmospheric pressure.
+            </p>
+            <p>
+              In <strong>overexpanded</strong> nozzles (exit pressure below ambient), the atmosphere compresses the exhaust, creating oblique shock waves that reflect off the free boundary. In <strong>underexpanded</strong> nozzles (exit pressure above ambient), the exhaust expands outward, creating expansion fans that also reflect. These reflections produce the characteristic diamond pattern.
+            </p>
+            <p>
+              The spacing and intensity of shock diamonds depend on the pressure mismatch, Mach number, and gas properties. They are most visible in the first few diameters downstream of the nozzle exit.
             </p>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/euler/mach_contour_euler.png" alt="Euler Mach contour" loading="lazy">
+            <img src="assets/images/nasa_schlieren.jpg" alt="NASA Schlieren photograph showing shock diamond structure in rocket exhaust" loading="lazy">
           </div>
-        </article>
-
-        <!-- Step 3: Mach Comparison -->
-        <article class="walkthrough-step">
-          <div class="walkthrough-step__content">
-            <h3>Euler vs RANS: Mach Number</h3>
-            <p>
-              The primary difference between inviscid (Euler) and viscous (RANS) simulations appears
-              in the Mach number distribution. Euler reaches M=4.49 at exit, while RANS reduces this
-              to M=4.10 due to boundary layer displacement. This 8.7% difference is consistent with
-              viscous nozzle theory.
-            </p>
-          </div>
-          <div class="walkthrough-step__media">
-            <img src="assets/images/rans/mach_contour_rans.png" alt="RANS Mach contour" loading="lazy">
-          </div>
-        </article>
-
-        <!-- Step 4: Post-Processing (reverse) -->
-        <article class="walkthrough-step walkthrough-step--reverse">
-          <div class="walkthrough-step__content">
-            <h3>Post-Processing & Validation</h3>
-            <p>
-              Extract flow properties from VTU solution files. Compute wall pressure distribution,
-              density gradient for shock diamond visualization, and triple validation against
-              isentropic theory and Method of Characteristics. Max error: 0.75%.
-            </p>
-          </div>
-          <div class="walkthrough-step__media">
-            <img src="assets/images/euler/shock_diamond_euler.png" alt="Shock diamond visualization" loading="lazy">
-          </div>
-        </article>
-
-        <!-- GitHub CTA -->
-        <div style="text-align: center; margin-top: var(--space-12);">
-          <a href="https://github.com/ajeet-krish/rocket-nozzle-cfd" class="btn btn--secondary" target="_blank">
-            View full source on GitHub &nearr;
-          </a>
         </div>
 
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3>Overexpanded vs Underexpanded</h3>
+            <p>
+              The relationship between nozzle exit pressure (P<sub>e</sub>) and ambient pressure (P<sub>a</sub>) determines the exhaust plume structure:
+            </p>
+            <ul style="list-style: none; padding: 0;">
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Overexpanded (P<sub>e</sub> &lt; P<sub>a</sub>):</strong> Ambient pressure pushes inward on exhaust. Oblique shocks form inside the nozzle or at exit. Common at sea level with high-expansion-ratio nozzles.
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Underexpanded (P<sub>e</sub> &gt; P<sub>a</sub>):</strong> Exhaust pressure exceeds ambient, causing plume to expand outward. Expansion fans at exit boundary. Common at high altitude or with low-expansion-ratio nozzles.
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Perfectly expanded (P<sub>e</sub> = P<sub>a</sub>):</strong> Ideal condition with no shocks or expansion fans at exit. Maximum thrust efficiency. Difficult to achieve across all altitudes.
+              </li>
+            </ul>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/euler/shock_diamond_euler.png" alt="CFD visualization of shock diamond structure in exhaust plume" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-World Engines -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Real-World Rocket Engines</h2>
+
+        <div class="feature-grid">
+          <!-- Merlin 1D -->
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128640;</div>
+            <h3 class="feature-item__title">SpaceX Merlin 1D</h3>
+            <p class="feature-item__desc">
+              The workhorse of the Falcon 9 first stage. An open-cycle gas generator engine burning RP-1 (kerosene) and liquid oxygen. With an expansion ratio of 16:1, it produces 845 kN of thrust at sea level. The Merlin family has evolved through multiple iterations, with the 1D variant achieving the highest thrust-to-weight ratio of any rocket engine in history.
+            </p>
+            <div style="margin-top: var(--space-4);">
+              <div class="placeholder-box" style="min-height: 120px;">
+                <p>SpaceX Merlin 1D engine photo</p>
+                <p><code>Replace with real engine image</code></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- RS-25 -->
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128640;</div>
+            <h3 class="feature-item__title">RS-25 (Space Shuttle Main Engine)</h3>
+            <p class="feature-item__desc">
+              One of the most powerful and sophisticated liquid-fuel rocket engines ever built. The RS-25 uses a staged-combustion cycle with liquid hydrogen and liquid oxygen, achieving an expansion ratio of 77:1 and chamber pressure of 20.6 MPa. Originally powering the Space Shuttle, it now serves as the core stage engine for NASA's Space Launch System (SLS).
+            </p>
+            <div style="margin-top: var(--space-4);">
+              <div class="placeholder-box" style="min-height: 120px;">
+                <p>RS-25 engine photo</p>
+                <p><code>Replace with real engine image</code></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- RL10B-2 -->
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128640;</div>
+            <h3 class="feature-item__title">RL10B-2 (Delta IV Upper Stage)</h3>
+            <p class="feature-item__desc">
+              The RL10B-2 holds the record for highest specific impulse (Isp) of any operational rocket engine at 462 seconds. Its extreme expansion ratio of 285:1 is made possible by a carbon-carbon composite nozzle extension. Powered by liquid hydrogen and liquid oxygen, it is the upper stage engine for the Delta IV and now the Vulcan Centaur.
+            </p>
+            <div style="margin-top: var(--space-4);">
+              <div class="placeholder-box" style="min-height: 120px;">
+                <p>RL10B-2 engine photo</p>
+                <p><code>Replace with real engine image</code></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why CFD -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Why Computational Fluid Dynamics?</h2>
+
+        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+          Experimental testing of rocket nozzles is expensive, dangerous, and time-consuming. CFD provides a complementary approach that offers several key advantages:
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128200;</div>
+            <h3 class="feature-item__title">Cost Reduction</h3>
+            <p class="feature-item__desc">
+              A single hot-fire test of a large rocket engine costs millions of dollars. CFD simulations can explore hundreds of design variants at a fraction of the cost, narrowing the design space before physical testing.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128269;</div>
+            <h3 class="feature-item__title">Flow Visualization</h3>
+            <p class="feature-item__desc">
+              CFD provides complete flow field data -- pressure, temperature, Mach number, and density at every point. Experimental measurements are limited to probe locations or surface measurements. CFD reveals shock structures, boundary layers, and separation regions that are difficult to measure experimentally.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">&#9881;</div>
+            <h3 class="feature-item__title">Parametric Studies</h3>
+            <p class="feature-item__desc">
+              CFD enables rapid parametric sweeps across expansion ratios, chamber pressures, and throat radii. This project sweeps three parameters to build an aerodynamic database, revealing how each variable affects performance and plume structure.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128736;</div>
+            <h3 class="feature-item__title">Design Optimization</h3>
+            <p class="feature-item__desc">
+              Nozzle contour optimization (e.g., Rao bell design) requires evaluating many geometries. CFD allows rapid iteration on the Bezier control points that define the nozzle shape, optimizing for thrust coefficient, Isp, or weight.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">&#128202;</div>
+            <h3 class="feature-item__title">Validation Framework</h3>
+            <p class="feature-item__desc">
+              Modern CFD codes like SU2 are validated against analytical solutions and experimental data. This project implements triple validation (isentropic theory, Method of Characteristics, and grid convergence) to establish confidence in the computational results.
+            </p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">&#127758;</div>
+            <h3 class="feature-item__title">Altitude Effects</h3>
+            <p class="feature-item__desc">
+              CFD can simulate nozzle performance at any altitude by changing the back pressure boundary condition. This reveals how overexpansion and flow separation evolve from sea level to vacuum, informing nozzle design for specific mission profiles.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -130,8 +242,16 @@
     <section class="explore-section">
       <h2>Explore the Project</h2>
       <div class="explore-index">
-        <a href="results.html" class="explore-index__item">
+        <a href="theory.html" class="explore-index__item">
           <div class="explore-index__number">01</div>
+          <div class="explore-index__content">
+            <h3>Theory</h3>
+            <p>Compressible flow equations, isentropic relations, and nozzle flow regimes.</p>
+          </div>
+          <div class="explore-index__arrow">&rarr;</div>
+        </a>
+        <a href="results.html" class="explore-index__item">
+          <div class="explore-index__number">02</div>
           <div class="explore-index__content">
             <h3>Results</h3>
             <p>Mach contour, pressure distribution, shock diamonds, and parametric sweep analysis.</p>
@@ -139,15 +259,15 @@
           <div class="explore-index__arrow">&rarr;</div>
         </a>
         <a href="validation.html" class="explore-index__item">
-          <div class="explore-index__number">02</div>
+          <div class="explore-index__number">03</div>
           <div class="explore-index__content">
             <h3>Validation</h3>
             <p>Triple comparison (isentropic vs MoC vs SU2) and grid convergence index study.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
-        <a href="https://github.com/ajeet-krish/rocket-nozzle-cfd" class="explore-index__item" target="_blank">
-          <div class="explore-index__number">03</div>
+        <a href="https://github.com/ajeet-krish/rocket-nozzle-cfd" class="explore-index__item" target="_blank" rel="noopener noreferrer">
+          <div class="explore-index__number">04</div>
           <div class="explore-index__content">
             <h3>Source Code</h3>
             <p>Python pipeline with SU2 v8.4.0, Gmsh, and Matplotlib. 287 tests passing.</p>
