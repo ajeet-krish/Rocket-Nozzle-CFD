@@ -47,6 +47,7 @@ def main() -> int:
         gamma=1.4,
         iterations=5000,
         cfl_number=0.1,
+        farfield_marker="farfield",
     )
 
     # Setup directories

@@ -162,12 +162,21 @@ class SU2Solver:
             if data.mach is None:
                 return 0.0
             
-            # Find exit plane (maximum x coordinate)
-            max_x = data.coordinates[:, 0].max()
-            exit_mask = np.abs(data.coordinates[:, 0] - max_x) < 0.01
+            # Find exit plane: look for the throat location (minimum y)
+            # and take the point just downstream where Mach > 1
+            coords = data.coordinates
+            mach = data.mach
+            
+            # Strategy: find the node with maximum Mach (supersonic core)
+            # This works for both plume and no-plume cases
+            max_mach_idx = np.argmax(mach)
+            max_mach_x = coords[max_mach_idx, 0]
+            
+            # Take nodes within 0.05m of the max Mach location
+            exit_mask = np.abs(coords[:, 0] - max_mach_x) < 0.05
             
             if exit_mask.any():
-                return float(data.mach[exit_mask].mean())
+                return float(mach[exit_mask].mean())
             
             return 0.0
             

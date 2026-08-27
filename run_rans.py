@@ -41,6 +41,7 @@ def main() -> int:
         static_pressure=101325.0,
         cfl_number=0.05,
         iterations=10000,
+        farfield_marker="farfield",
     )
 
     # Setup directories

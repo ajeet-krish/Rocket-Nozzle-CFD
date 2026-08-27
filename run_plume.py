@@ -6,6 +6,7 @@ downstream of the nozzle exit. Generates Mach contour with shock
 diamonds and validates against isentropic theory.
 """
 import sys
+import numpy as np
 from pathlib import Path
 
 # Add src to path
@@ -41,7 +42,7 @@ def main() -> int:
         static_pressure=101325.0,
         gamma=1.4,
         iterations=5000,
-        cfl_number=0.1,
+        cfl_number=0.05,
         farfield_marker="farfield",
     )
 
@@ -56,12 +57,12 @@ def main() -> int:
     print("\n[1/6] Generating mesh with plume extension...")
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=60,
-        n_normal=30,
+        n_axial=40,
+        n_normal=20,
         output_file=str(workdir / "nozzle.su2"),
         plume_extension=True,
-        plume_length_ratio=20.0,
-        plume_radius_ratio=3.0,
+        plume_length_ratio=10.0,
+        plume_radius_ratio=2.0,
     )
     print(f"  Mesh: {mesh_path}")
 
@@ -81,14 +82,30 @@ def main() -> int:
     # Step 4: Validate
     print("\n[4/6] Validating against isentropic theory...")
     theory_exit_mach = exit_mach_from_area_ratio(nozzle_config.expansion_ratio, 1.4)
+    
+    # For plume simulation, measure Mach at nozzle exit plane (not plume outlet)
+    from cfd.vtu_parser import parse_vtu
+    vtu_path = workdir / "flow.vtu"
+    if vtu_path.exists():
+        vtu_data = parse_vtu(vtu_path)
+        # Nozzle exit at x = diverging_length
+        exit_x = nozzle_config.diverging_length
+        exit_mask = np.abs(vtu_data.coordinates[:, 0] - exit_x) < 0.05
+        if exit_mask.any():
+            sim_exit_mach = float(vtu_data.mach[exit_mask].mean())
+        else:
+            sim_exit_mach = results.exit_mach
+    else:
+        sim_exit_mach = results.exit_mach
+    
     report = compare_results(
-        results.exit_mach,
+        sim_exit_mach,
         nozzle_config.expansion_ratio,
         gamma=1.4,
         tolerance=5.0,
     )
     print(f"  Theory exit Mach: {theory_exit_mach:.4f}")
-    print(f"  Simulation exit Mach: {results.exit_mach:.4f}")
+    print(f"  Simulation exit Mach: {sim_exit_mach:.4f}")
     print(f"  Error: {report.mach_error_percent:.2f}%")
     print(f"  Result: {'PASSED' if report.passed else 'FAILED'}")
 
@@ -118,8 +135,8 @@ def main() -> int:
     print("\n" + "=" * 60)
     print("Plume Simulation Complete!")
     print("=" * 60)
-    print(f"Exit Mach (SU2): {results.exit_mach:.4f}")
-    print(f"Exit Mach (Theory): {theory_exit_mach:.4f}")
+    print(f"Exit Mach (at nozzle exit): {sim_exit_mach:.4f}")
+    print(f"Theory: {theory_exit_mach:.4f}")
     print(f"Error: {report.mach_error_percent:.2f}%")
     print(f"Validation: {'PASSED' if report.passed else 'FAILED'}")
 
