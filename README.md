@@ -1,16 +1,18 @@
-# Rocket Nozzle CFD
+# Compressible Flow Analysis of Converging-Diverging Rocket Nozzles: Triple Validation Against Analytical Methods and Parametric Design Space Exploration
 
-Compressible CFD analysis of converging-diverging (de Laval) rocket nozzles using SU2, with triple validation against isentropic theory and Method of Characteristics.
+## Abstract
 
-## Overview
+This project presents a comprehensive computational fluid dynamics (CFD) pipeline for analyzing compressible flow through converging-diverging (de Laval) rocket nozzles. The pipeline integrates parametric geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation to study the aerodynamic performance of rocket nozzle designs.
 
-This project simulates compressible flow through a converging-diverging rocket nozzle using SU2 CFD. The pipeline generates a parametric Rao parabolic bell nozzle contour, creates a structured O-grid mesh with Gmsh, runs SU2 Euler and RANS simulations, and validates results against three independent methods:
+A parametric Rao parabolic bell nozzle contour is generated using quadratic Bezier curves with configurable throat radius, expansion ratio, and convergent/divergent angles. The geometry module supports real rocket engine presets including SpaceX Merlin 1D (expansion ratio 16:1), RS-25 (78:1), and RL10B-2 (285:1). Structured O-grid meshes are generated using Gmsh transfinite meshing with conformal plume extension for external shock diamond visualization.
 
-1. **Isentropic analytical relations** (closed-form equations)
-2. **Method of Characteristics** (classical supersonic design method)
-3. **SU2 CFD** (finite-volume Euler/RANS solver)
+The CFD solver employs SU2 v8.4.0 for both inviscid Euler and Reynolds-Averaged Navier-Stokes (RANS) simulations with SST k-omega turbulence modeling. An axisymmetric formulation reduces computational cost while maintaining physical fidelity. The plume extension uses a conformal mesh interface created via Gmsh's negative curve index technique, enabling simulation of external shock diamond structure downstream of the nozzle exit.
 
-The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and throat radius (0.01-0.1 m) to build an aerodynamic database of nozzle configurations.
+Triple validation methodology compares SU2 results against two independent analytical methods: isentropic closed-form relations and the Method of Characteristics. For the reference case (expansion ratio 16, chamber pressure 9.7 MPa), the Euler simulation achieves exit Mach 4.49 with 0.73% error relative to isentropic theory. RANS simulation captures viscous boundary layer effects, reducing exit Mach to 4.10 (8.7% difference from Euler). Grid Convergence Index analysis per ASME V&V 20-2009 confirms mesh independence with 0.687% uncertainty on the finest mesh (7,200 cells).
+
+Parametric sweeps explore the design space across expansion ratios (4-20), chamber pressures (5-50 MPa), and throat radii (0.01-0.1 m), constructing an aerodynamic performance database. Results confirm theoretical predictions: exit Mach depends only on expansion ratio for calorically perfect gas, with no dependence on absolute scale or chamber pressure.
+
+The pipeline demonstrates a complete workflow from geometry definition through validated CFD results, suitable for preliminary rocket engine nozzle design and performance prediction.
 
 ## Results
 
