@@ -12,6 +12,94 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* --- Engine Carousel --- */
+    .engine-block {
+      margin-bottom: var(--space-16);
+    }
+
+    .engine-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .engine-block__title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: var(--space-3);
+    }
+
+    .engine-block__desc {
+      max-width: 800px;
+      margin-bottom: var(--space-6);
+      color: var(--fg-dim);
+      line-height: var(--leading-normal);
+      font-size: var(--text-sm);
+    }
+
+    .engine-carousel {
+      position: relative;
+      max-width: 640px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .engine-carousel__track {
+      position: relative;
+      width: 100%;
+    }
+
+    .engine-carousel__slide {
+      width: 100%;
+      height: auto;
+      display: none;
+      object-fit: cover;
+    }
+
+    .engine-carousel__slide.active {
+      display: block;
+    }
+
+    .engine-carousel__dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: var(--space-3);
+    }
+
+    .engine-carousel__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-dim);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .engine-carousel__dot:hover {
+      border-color: var(--cyan);
+    }
+
+    .engine-carousel__dot.active {
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .engine-carousel__dot:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .engine-carousel {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -128,49 +216,62 @@
       <div class="container">
         <h2 class="section-title">Real-World Rocket Engines</h2>
 
-        <div class="feature-grid">
-          <!-- Merlin 1D -->
-          <div class="feature-item">
-            <div class="feature-item__icon">&#128640;</div>
-            <h3 class="feature-item__title">SpaceX Merlin 1D</h3>
-            <p class="feature-item__desc">
-              The workhorse of the Falcon 9 first stage. An open-cycle gas generator engine burning RP-1 (kerosene) and liquid oxygen. With an expansion ratio of 16:1, it produces 845 kN of thrust at sea level. The Merlin family has evolved through multiple iterations, with the 1D variant achieving the highest thrust-to-weight ratio of any rocket engine in history.
-            </p>
-            <div style="margin-top: var(--space-4);">
-              <div class="placeholder-box" style="min-height: 120px;">
-                <p>SpaceX Merlin 1D engine photo</p>
-                <p><code>Replace with real engine image</code></p>
-              </div>
+        <!-- Merlin 1D -->
+        <div class="engine-block">
+          <h3 class="engine-block__title">SpaceX Merlin 1D</h3>
+          <p class="engine-block__desc">
+            The workhorse of the Falcon 9 first stage. An open-cycle gas generator engine burning RP-1 (kerosene) and liquid oxygen. With an expansion ratio of 16:1, it produces 845 kN of thrust at sea level. The Merlin family has evolved through multiple iterations, with the 1D variant achieving the highest thrust-to-weight ratio of any rocket engine in history.
+          </p>
+          <div class="engine-carousel" data-engine="merlin">
+            <div class="engine-carousel__track">
+              <img src="assets/images/merlin-1d/merlin-1d.jpg" alt="SpaceX Merlin 1D engine on test stand" class="engine-carousel__slide active" loading="lazy">
+              <img src="assets/images/merlin-1d/SPACEX-MERLIN-1D-TEST.jpeg" alt="SpaceX Merlin 1D hot-fire test" class="engine-carousel__slide" loading="lazy">
+            </div>
+            <div class="engine-carousel__dots">
+              <button class="engine-carousel__dot active" data-index="0" aria-label="Show image 1"></button>
+              <button class="engine-carousel__dot" data-index="1" aria-label="Show image 2"></button>
             </div>
           </div>
+        </div>
 
-          <!-- RS-25 -->
-          <div class="feature-item">
-            <div class="feature-item__icon">&#128640;</div>
-            <h3 class="feature-item__title">RS-25 (Space Shuttle Main Engine)</h3>
-            <p class="feature-item__desc">
-              One of the most powerful and sophisticated liquid-fuel rocket engines ever built. The RS-25 uses a staged-combustion cycle with liquid hydrogen and liquid oxygen, achieving an expansion ratio of 77:1 and chamber pressure of 20.6 MPa. Originally powering the Space Shuttle, it now serves as the core stage engine for NASA's Space Launch System (SLS).
-            </p>
-            <div style="margin-top: var(--space-4);">
-              <div class="placeholder-box" style="min-height: 120px;">
-                <p>RS-25 engine photo</p>
-                <p><code>Replace with real engine image</code></p>
-              </div>
+        <!-- RS-25 -->
+        <div class="engine-block">
+          <h3 class="engine-block__title">RS-25 (Space Shuttle Main Engine)</h3>
+          <p class="engine-block__desc">
+            One of the most powerful and sophisticated liquid-fuel rocket engines ever built. The RS-25 uses a staged-combustion cycle with liquid hydrogen and liquid oxygen, achieving an expansion ratio of 77:1 and chamber pressure of 20.6 MPa. Originally powering the Space Shuttle, it now serves as the core stage engine for NASA's Space Launch System (SLS).
+          </p>
+          <div class="engine-carousel" data-engine="rs25">
+            <div class="engine-carousel__track">
+              <img src="assets/images/rs-25/rs-25-single.jpg" alt="RS-25 engine single unit" class="engine-carousel__slide active" loading="lazy">
+              <img src="assets/images/rs-25/All-Four-RS-25-Engines.jpg" alt="All four RS-25 engines on SLS core stage" class="engine-carousel__slide" loading="lazy">
+              <img src="assets/images/rs-25/simplified_diagram_rs25.png" alt="Simplified diagram of RS-25 engine components" class="engine-carousel__slide" loading="lazy">
+              <img src="assets/images/rs-25/rs-25_engine_test.jpg" alt="RS-25 engine hot-fire test" class="engine-carousel__slide" loading="lazy">
+            </div>
+            <div class="engine-carousel__dots">
+              <button class="engine-carousel__dot active" data-index="0" aria-label="Show image 1"></button>
+              <button class="engine-carousel__dot" data-index="1" aria-label="Show image 2"></button>
+              <button class="engine-carousel__dot" data-index="2" aria-label="Show image 3"></button>
+              <button class="engine-carousel__dot" data-index="3" aria-label="Show image 4"></button>
             </div>
           </div>
+        </div>
 
-          <!-- RL10B-2 -->
-          <div class="feature-item">
-            <div class="feature-item__icon">&#128640;</div>
-            <h3 class="feature-item__title">RL10B-2 (Delta IV Upper Stage)</h3>
-            <p class="feature-item__desc">
-              The RL10B-2 holds the record for highest specific impulse (Isp) of any operational rocket engine at 462 seconds. Its extreme expansion ratio of 285:1 is made possible by a carbon-carbon composite nozzle extension. Powered by liquid hydrogen and liquid oxygen, it is the upper stage engine for the Delta IV and now the Vulcan Centaur.
-            </p>
-            <div style="margin-top: var(--space-4);">
-              <div class="placeholder-box" style="min-height: 120px;">
-                <p>RL10B-2 engine photo</p>
-                <p><code>Replace with real engine image</code></p>
-              </div>
+        <!-- RL10B-2 -->
+        <div class="engine-block">
+          <h3 class="engine-block__title">RL10B-2 (Delta IV Upper Stage)</h3>
+          <p class="engine-block__desc">
+            The RL10B-2 holds the record for highest specific impulse (Isp) of any operational rocket engine at 462 seconds. Its extreme expansion ratio of 285:1 is made possible by a carbon-carbon composite nozzle extension. Powered by liquid hydrogen and liquid oxygen, it is the upper stage engine for the Delta IV and now the Vulcan Centaur.
+          </p>
+          <div class="engine-carousel" data-engine="rl10">
+            <div class="engine-carousel__track">
+              <img src="assets/images/rl10B-2/rl10b-2.jpg" alt="RL10B-2 engine" class="engine-carousel__slide active" loading="lazy">
+              <img src="assets/images/rl10B-2/RL-10B-2_test.jpg" alt="RL10B-2 engine test" class="engine-carousel__slide" loading="lazy">
+              <img src="assets/images/rl10B-2/Finite-element-model-of-the-RL10B-2-in-the-deployed-second-stage-configuration.png" alt="Finite element model of RL10B-2 in deployed second stage configuration" class="engine-carousel__slide" loading="lazy">
+            </div>
+            <div class="engine-carousel__dots">
+              <button class="engine-carousel__dot active" data-index="0" aria-label="Show image 1"></button>
+              <button class="engine-carousel__dot" data-index="1" aria-label="Show image 2"></button>
+              <button class="engine-carousel__dot" data-index="2" aria-label="Show image 3"></button>
             </div>
           </div>
         </div>
@@ -285,6 +386,26 @@
         target="_blank">LinkedIn</a></p>
   </footer>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.engine-carousel').forEach(function (carousel) {
+        var slides = carousel.querySelectorAll('.engine-carousel__slide');
+        var dots = carousel.querySelectorAll('.engine-carousel__dot');
+
+        dots.forEach(function (dot) {
+          dot.addEventListener('click', function () {
+            var index = parseInt(dot.getAttribute('data-index'), 10);
+
+            slides.forEach(function (slide) { slide.classList.remove('active'); });
+            dots.forEach(function (d) { d.classList.remove('active'); });
+
+            slides[index].classList.add('active');
+            dot.classList.add('active');
+          });
+        });
+      });
+    });
+  </script>
   <script src="assets/js/main.js" type="module" defer></script>
 
 </body>
