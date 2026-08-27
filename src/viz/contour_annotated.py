@@ -16,8 +16,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from src.nozzle.config import NozzleConfig
-from src.nozzle.geometry import generate_contour
+from nozzle.config import NozzleConfig
+from nozzle.geometry import generate_contour
 
 
 @dataclass
@@ -88,6 +88,7 @@ def plot_annotated_contour(
     show_dimensions: bool = True,
     show_angles: bool = True,
     show_arc_labels: bool = True,
+    engine_name: str = "Nozzle",
 ) -> Path:
     """Plot annotated 2D nozzle contour with dimension callouts.
 
@@ -137,7 +138,13 @@ def plot_annotated_contour(
     if show_dimensions:
         r_exit = config.exit_radius
         r_throat = config.throat_radius
-        ln = config.diverging_length
+        ln = config.computed_diverging_length
+        x_start = -config.converging_length - config.chamber_length
+        r_inlet = config.effective_inlet_radius
+
+        # Relative offsets based on nozzle dimensions
+        h_offset = 0.02 * ln  # horizontal offset for text labels
+        v_offset = 0.08 * r_exit  # vertical offset for horizontal arrows
 
         # Throat radius: vertical line at x=0
         ax.annotate(
@@ -145,7 +152,7 @@ def plot_annotated_contour(
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            0.01, r_throat / 2, f"$R_t$ = {r_throat*1000:.0f} mm",
+            h_offset, r_throat / 2, f"$R_t$ = {r_throat*1000:.0f} mm",
             fontsize=9, color="#333", va="center",
         )
 
@@ -155,29 +162,27 @@ def plot_annotated_contour(
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            ln + 0.01, r_exit / 2, f"$R_e$ = {r_exit*1000:.0f} mm",
+            ln + h_offset, r_exit / 2, f"$R_e$ = {r_exit*1000:.0f} mm",
             fontsize=9, color="#333", va="center",
         )
 
         # Nozzle length: horizontal line along axis
         ax.annotate(
-            "", xy=(ln, -r_exit * 0.08), xytext=(0, -r_exit * 0.08),
+            "", xy=(ln, -v_offset), xytext=(0, -v_offset),
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            ln / 2, -r_exit * 0.12, f"$L_n$ = {ln:.2f} m",
+            ln / 2, -1.5 * v_offset, f"$L_n$ = {ln:.2f} m",
             fontsize=9, color="#333", ha="center",
         )
 
         # Inlet radius: vertical line at chamber start
-        r_inlet = config.effective_inlet_radius
-        x_start = -config.converging_length - config.chamber_length
         ax.annotate(
             "", xy=(x_start, r_inlet), xytext=(x_start, 0),
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            x_start - 0.01, r_inlet / 2, f"$R_i$ = {r_inlet*1000:.0f} mm",
+            x_start - h_offset, r_inlet / 2, f"$R_i$ = {r_inlet*1000:.0f} mm",
             fontsize=9, color="#333", va="center", ha="right",
         )
 
@@ -204,7 +209,7 @@ def plot_annotated_contour(
     ax.set_xlabel("Axial Distance (m)", fontsize=12, color="black")
     ax.set_ylabel("Radial Distance (m)", fontsize=12, color="black")
     ax.set_title(
-        f"Nozzle Contour  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
+        f"{engine_name} 2D Geometry  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
         f",  $R_t$ = {config.throat_radius*1000:.0f} mm",
         fontsize=13, color="black", pad=12,
     )

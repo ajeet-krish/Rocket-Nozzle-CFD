@@ -94,7 +94,7 @@ def main() -> int:
         euler_data = parse_vtu(euler_plume_path)
         rans_data = parse_vtu(vtu_path)
 
-        exit_x = nozzle_config.diverging_length
+        exit_x = nozzle_config.computed_diverging_length
         euler_exit = np.abs(euler_data.coordinates[:, 0] - exit_x) < 0.05
         rans_exit = np.abs(rans_data.coordinates[:, 0] - exit_x) < 0.05
 

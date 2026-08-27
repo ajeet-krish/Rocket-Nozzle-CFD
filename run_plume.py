@@ -89,7 +89,7 @@ def main() -> int:
     if vtu_path.exists():
         vtu_data = parse_vtu(vtu_path)
         # Nozzle exit at x = diverging_length
-        exit_x = nozzle_config.diverging_length
+        exit_x = nozzle_config.computed_diverging_length
         exit_mask = np.abs(vtu_data.coordinates[:, 0] - exit_x) < 0.05
         if exit_mask.any():
             sim_exit_mach = float(vtu_data.mach[exit_mask].mean())

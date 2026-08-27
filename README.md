@@ -35,8 +35,8 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 |--------|-------------|-----------------|-------------|-----------|----------|
 | Generic (Rao Bell) | Reference case | 16:1 | 100 | 400 | 9.7 |
 | SpaceX Merlin 1D | Falcon 9 first stage | 16:1 | 165 | 660 | 9.7 |
-| RS-25 | Space Shuttle / SLS | 78:1 | 260 | 2400 | 20.6 |
-| RL10B-2 | Delta IV upper stage | 285:1 | 280 | 2600 | 4.2 |
+| RS-25 | Space Shuttle / SLS | 77.5:1 | 272 | 2400 | 20.6 |
+| RL10B-2 | Delta IV upper stage | 285:1 | 154 | 2600 | 4.2 |
 
 ## Validation Summary
 
@@ -94,6 +94,14 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 <!-- Save as: docs/assets/images/merlin/photo_merlin.png -->
 > *The Merlin 1D powers SpaceX Falcon 9 first stage, producing 845 kN of thrust at sea level. With 16:1 expansion ratio and 9.7 MPa chamber pressure, it generates visible shock diamonds during ascent.*
 
+### Nozzle Geometry
+
+| 2D Annotated Profile | 3D Revolved Surface |
+|----------------------|---------------------|
+| ![Merlin 1D 2D Geometry](docs/assets/images/merlin-1d/geometry/merlin-1d_geometry.png) | ![Merlin 1D 3D Geometry](docs/assets/images/merlin-1d/geometry/merlin-1d_3d.png) |
+
+> **Left:** 2D annotated nozzle contour with throat radius, exit radius, and nozzle length. **Right:** 3D axisymmetric revolved surface.
+
 ### Nozzle Geometry & Mesh
 
 <!-- PLACEHOLDER: Merlin 1D mesh with plume extension -->
@@ -143,7 +151,15 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 <!-- PLACEHOLDER: Add real photo of RS-25 engine -->
 <!-- Save as: docs/assets/images/rs25/photo_rs25.png -->
-> *The RS-25 powered the Space Shuttle and now serves as the SLS core stage engine. With 78:1 expansion ratio and 20.6 MPa chamber pressure, it produces 1860 kN thrust. The high expansion ratio causes flow separation at sea level.*
+> *The RS-25 powered the Space Shuttle and now serves as the SLS core stage engine. With 77.5:1 expansion ratio and 20.6 MPa chamber pressure, it produces 1860 kN thrust. The high expansion ratio causes flow separation at sea level.*
+
+### Nozzle Geometry
+
+| 2D Annotated Profile | 3D Revolved Surface |
+|----------------------|---------------------|
+| ![RS-25 2D Geometry](docs/assets/images/rs-25/geometry/rs-25_geometry.png) | ![RS-25 3D Geometry](docs/assets/images/rs-25/geometry/rs-25_3d.png) |
+
+> **Left:** 2D annotated nozzle contour with throat radius 136mm and exit radius 1200mm. **Right:** 3D axisymmetric revolved surface.
 
 ### Nozzle Geometry & Mesh
 
@@ -193,6 +209,14 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 <!-- PLACEHOLDER: Add real photo of RL10B-2 engine -->
 <!-- Save as: docs/assets/images/rl10b2/photo_rl10b2.png -->
 > *The RL10B-2 powers the Delta IV upper stage, achieving 465.5 seconds Isp (vacuum) with 285:1 expansion ratio - the highest of any operational engine. The carbon-carbon nozzle extension deploys after staging.*
+
+### Nozzle Geometry
+
+| 2D Annotated Profile | 3D Revolved Surface |
+|----------------------|---------------------|
+| ![RL10B-2 2D Geometry](docs/assets/images/rl10B-2/geometry/rl10B-2_geometry.png) | ![RL10B-2 3D Geometry](docs/assets/images/rl10B-2/geometry/rl10B-2_3d.png) |
+
+> **Left:** 2D annotated nozzle contour with throat radius 77mm and extreme 285:1 expansion ratio. **Right:** 3D axisymmetric revolved surface.
 
 ### Nozzle Geometry & Mesh
 

@@ -25,11 +25,11 @@ from viz.nozzle_3d import plot_nozzle_3d
 
 
 # Engine preset functions mapped to their display names
-ENGINES: list[tuple[str, Callable[[], NozzleConfig]]] = [
-    ("merlin-1d", merlin_1d),
-    ("raptor-sl", raptor_sl),
-    ("rs-25", rs_25),
-    ("rl10B-2", rl10b_2),
+ENGINES: list[tuple[str, str, Callable[[], NozzleConfig]]] = [
+    ("merlin-1d", "Merlin 1D", merlin_1d),
+    ("raptor-sl", "Raptor SL", raptor_sl),
+    ("rs-25", "RS-25", rs_25),
+    ("rl10B-2", "RL10B-2", rl10b_2),
 ]
 
 IMAGES_DIR = Path("docs/assets/images")
@@ -48,16 +48,16 @@ def main() -> int:
 
     generated: list[tuple[str, str, Path]] = []
 
-    for engine_name, preset_fn in ENGINES:
-        print(f"\n[{engine_name}] Generating geometry plots...")
+    for engine_slug, engine_label, preset_fn in ENGINES:
+        print(f"\n[{engine_slug}] Generating geometry plots...")
         config = preset_fn()
 
         # Output directory for this engine
-        engine_dir = IMAGES_DIR / engine_name / "geometry"
+        engine_dir = IMAGES_DIR / engine_slug / "geometry"
         engine_dir.mkdir(parents=True, exist_ok=True)
 
         # 2D annotated contour
-        contour_path = engine_dir / f"{engine_name}_geometry.png"
+        contour_path = engine_dir / f"{engine_slug}_geometry.png"
         try:
             result = plot_annotated_contour(
                 config,
@@ -66,22 +66,24 @@ def main() -> int:
                 show_dimensions=True,
                 show_angles=True,
                 show_arc_labels=True,
+                engine_name=engine_label,
             )
             print(f"  2D contour: {result}")
-            generated.append((engine_name, "2D contour", result))
+            generated.append((engine_slug, "2D contour", result))
         except Exception as exc:
             print(f"  2D contour FAILED: {exc}")
 
         # 3D revolved surface
-        surface_path = engine_dir / f"{engine_name}_3d.png"
+        surface_path = engine_dir / f"{engine_slug}_3d.png"
         try:
             result = plot_nozzle_3d(
                 config,
                 surface_path,
                 dpi=DPI,
+                engine_name=engine_label,
             )
             print(f"  3D surface: {result}")
-            generated.append((engine_name, "3D surface", result))
+            generated.append((engine_slug, "3D surface", result))
         except Exception as exc:
             print(f"  3D surface FAILED: {exc}")
 

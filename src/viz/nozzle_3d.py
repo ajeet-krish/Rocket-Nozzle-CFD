@@ -15,8 +15,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from src.nozzle.config import NozzleConfig
-from src.nozzle.geometry import generate_contour
+from nozzle.config import NozzleConfig
+from nozzle.geometry import generate_contour
 
 
 def _ring(
@@ -54,6 +54,7 @@ def plot_nozzle_3d(
     azimuth: float = -15.0,
     n_theta: int = 60,
     colormap: str = "coolwarm",
+    engine_name: str = "Nozzle",
 ) -> Path:
     """Create a 3D revolved surface plot of the nozzle contour.
 
@@ -110,7 +111,7 @@ def plot_nozzle_3d(
         pane.set_edgecolor("#cccccc")
 
     ax.set_title(
-        f"Revolved Nozzle  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
+        f"{engine_name} 3D Geometry  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
         f",  $R_t$ = {config.throat_radius*1000:.0f} mm",
         fontsize=12, color="black", pad=12,
     )

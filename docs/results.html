@@ -80,8 +80,8 @@
               <tr>
                 <td>RS-25</td>
                 <td>Space Shuttle / SLS</td>
-                <td>78:1</td>
-                <td>260</td>
+                <td>77.5:1</td>
+                <td>272</td>
                 <td>2400</td>
                 <td>20.6</td>
               </tr>
@@ -89,7 +89,7 @@
                 <td>RL10B-2</td>
                 <td>Delta IV upper stage</td>
                 <td>285:1</td>
-                <td>280</td>
+                <td>154</td>
                 <td>2600</td>
                 <td>4.2</td>
               </tr>
@@ -158,12 +158,17 @@
         <h2 class="section-title">SpaceX Merlin 1D</h2>
         <p><em>Falcon 9 first stage: epsilon=16, R*=82.5mm, Pc=9.7 MPa</em></p>
 
-        <h3>Nozzle Geometry & Mesh</h3>
-        <!-- PLACEHOLDER: Merlin 1D mesh -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>Merlin 1D nozzle mesh with chamber section and plume extension.</p>
-            <p><code>uv run python run_plume.py</code> then save ParaView screenshot.</p>
+        <h3>Nozzle Geometry</h3>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>2D Annotated Profile</h4>
+            <img src="assets/images/merlin-1d/geometry/merlin-1d_geometry.png" alt="Merlin 1D 2D nozzle geometry" loading="lazy">
+            <p>epsilon=16:1, R_t=82.5mm</p>
+          </div>
+          <div class="comparison-grid__item">
+            <h4>3D Revolved Surface</h4>
+            <img src="assets/images/merlin-1d/geometry/merlin-1d_3d.png" alt="Merlin 1D 3D nozzle geometry" loading="lazy">
+            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
@@ -231,12 +236,17 @@
         <h2 class="section-title">RS-25 (Space Shuttle Main Engine)</h2>
         <p><em>Space Shuttle / SLS core stage: epsilon=78, R*=130mm, Pc=20.6 MPa</em></p>
 
-        <h3>Nozzle Geometry & Mesh</h3>
-        <!-- PLACEHOLDER: RS-25 mesh -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RS-25 nozzle mesh. High expansion ratio (78:1) produces very low exit pressure at sea level.</p>
-            <p>Save as: <code>assets/images/rs25/mesh_rs25.png</code></p>
+        <h3>Nozzle Geometry</h3>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>2D Annotated Profile</h4>
+            <img src="assets/images/rs-25/geometry/rs-25_geometry.png" alt="RS-25 2D nozzle geometry" loading="lazy">
+            <p>epsilon=77.5:1, R_t=136mm</p>
+          </div>
+          <div class="comparison-grid__item">
+            <h4>3D Revolved Surface</h4>
+            <img src="assets/images/rs-25/geometry/rs-25_3d.png" alt="RS-25 3D nozzle geometry" loading="lazy">
+            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
@@ -304,12 +314,17 @@
         <h2 class="section-title">RL10B-2 (Delta IV Upper Stage)</h2>
         <p><em>Delta IV upper stage: epsilon=285, R*=140mm, Pc=4.2 MPa</em></p>
 
-        <h3>Nozzle Geometry & Mesh</h3>
-        <!-- PLACEHOLDER: RL10B-2 mesh -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RL10B-2 nozzle mesh. Extreme expansion ratio (285:1) produces the highest Isp of any operational engine.</p>
-            <p>Save as: <code>assets/images/rl10b2/mesh_rl10b2.png</code></p>
+        <h3>Nozzle Geometry</h3>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>2D Annotated Profile</h4>
+            <img src="assets/images/rl10B-2/geometry/rl10B-2_geometry.png" alt="RL10B-2 2D nozzle geometry" loading="lazy">
+            <p>epsilon=285:1, R_t=77mm</p>
+          </div>
+          <div class="comparison-grid__item">
+            <h4>3D Revolved Surface</h4>
+            <img src="assets/images/rl10B-2/geometry/rl10B-2_3d.png" alt="RL10B-2 3D nozzle geometry" loading="lazy">
+            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 

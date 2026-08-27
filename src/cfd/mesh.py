@@ -113,7 +113,7 @@ def generate_nozzle_mesh(
 
     if plume_extension:
         plume_length = plume_length_ratio * config.throat_radius
-        x_exit = config.diverging_length
+        x_exit = config.computed_diverging_length
         x_plume_end = x_exit + plume_length
         plume_width = plume_radius_ratio * config.exit_radius
 
