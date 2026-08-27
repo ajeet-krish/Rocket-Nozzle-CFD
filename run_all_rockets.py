@@ -21,22 +21,53 @@ from validation.compare import compare_results
 from viz.convergence import plot_convergence
 from viz.mach_contour import plot_mach_contour
 
-# Engine name -> (preset_fn, Pt_Pa, Tt_K, theta_n, diverging_length)
+# Engine name -> settings dict with preset, Pt, Tt, theta_n, ld, mesh, and solver params
 # Values found by sweeping Ld and theta_n for each engine with real conditions.
 ENGINES = {
-    "merlin-1d":  (merlin_1d,  9.7e6,  3600.0, 30, 0.7),
-    "raptor-sl":  (raptor_sl, 33.0e6, 3500.0, 25, 1.0),
-    "rs-25":      (rs_25,     20.6e6, 3570.0, 30, 0.7),
-    "rl10B-2":    (rl10b_2,   4.2e6,  2200.0, 25, 1.5),
+    "merlin-1d": {
+        "preset": merlin_1d, "Pt": 9.7e6, "Tt": 3600.0,
+        "theta_n": 30, "ld": 0.7,
+        "n_axial": 40, "n_normal": 20, "cfl": 0.1, "iterations": 5000,
+    },
+    "raptor-sl": {
+        "preset": raptor_sl, "Pt": 33.0e6, "Tt": 3500.0,
+        "theta_n": 25, "ld": 1.0,
+        "n_axial": 40, "n_normal": 20, "cfl": 0.1, "iterations": 5000,
+    },
+    "rs-25": {
+        "preset": rs_25, "Pt": 20.6e6, "Tt": 3570.0,
+        "theta_n": 30, "ld": 0.7,
+        "n_axial": 80, "n_normal": 40, "cfl": 0.05, "iterations": 10000,
+    },
+    "rl10B-2": {
+        "preset": rl10b_2, "Pt": 4.2e6, "Tt": 2200.0,
+        "theta_n": 25, "ld": 1.5,
+        "n_axial": 120, "n_normal": 60, "cfl": 0.03, "iterations": 15000,
+    },
 }
 
 
-def run_euler(name: str, config_fn, Pt: float, Tt: float,
-              theta_n: float, diverging_length: float) -> dict:
-    """Run one Euler case and return results dict."""
+def run_euler(name: str, settings: dict) -> dict:
+    """Run one Euler case and return results dict.
+
+    Args:
+        name: Engine name (e.g. 'merlin-1d')
+        settings: Dict with keys: preset, Pt, Tt, theta_n, ld,
+                  n_axial, n_normal, cfl, iterations
+    """
     workdir = Path(f"output/{name}/euler")
     workdir.mkdir(parents=True, exist_ok=True)
     (workdir / "plots").mkdir(parents=True, exist_ok=True)
+
+    config_fn = settings["preset"]
+    Pt = settings["Pt"]
+    Tt = settings["Tt"]
+    theta_n = settings["theta_n"]
+    ld = settings["ld"]
+    n_axial = settings.get("n_axial", 40)
+    n_normal = settings.get("n_normal", 20)
+    cfl = settings.get("cfl", 0.1)
+    iterations = settings.get("iterations", 5000)
 
     # Override geometry for SU2 stability
     base = config_fn()
@@ -44,7 +75,7 @@ def run_euler(name: str, config_fn, Pt: float, Tt: float,
         throat_radius=base.throat_radius,
         expansion_ratio=base.expansion_ratio,
         converging_length=base.converging_length,
-        diverging_length=diverging_length,
+        diverging_length=ld,
         chamber_length=0,
         throat_radius_of_curvature=0,
         theta_n=theta_n,
@@ -58,14 +89,14 @@ def run_euler(name: str, config_fn, Pt: float, Tt: float,
         total_temperature=Tt,
         static_pressure=101325.0,
         gamma=1.4,
-        iterations=5000,
-        cfl_number=0.1,
+        iterations=iterations,
+        cfl_number=cfl,
         farfield_marker="",
     )
 
-    # Mesh: coarse (40x20) for stability
+    # Mesh with per-engine resolution
     mesh_path = generate_nozzle_mesh(
-        config, n_axial=40, n_normal=20,
+        config, n_axial=n_axial, n_normal=n_normal,
         output_file=str(workdir / "nozzle.su2"),
         plume_extension=False,
     )
@@ -107,12 +138,12 @@ def main() -> int:
     print("=" * 65)
 
     all_results = []
-    for name, (preset_fn, Pt, Tt, theta_n, ld) in ENGINES.items():
+    for name, settings in ENGINES.items():
         print(f"\n{'─' * 65}")
-        print(f"  {name}   Pt={Pt/1e6:.1f} MPa   Tt={Tt:.0f} K   theta_n={theta_n}   Ld={ld:.1f}m")
+        print(f"  {name}   Pt={settings['Pt']/1e6:.1f} MPa   Tt={settings['Tt']:.0f} K   theta_n={settings['theta_n']}   Ld={settings['ld']:.1f}m")
         print(f"{'─' * 65}")
         try:
-            r = run_euler(name, preset_fn, Pt, Tt, theta_n, ld)
+            r = run_euler(name, settings)
             all_results.append(r)
             tag = "PASSED" if r["passed"] else "FAILED"
             print(f"  Mach (sim):  {r['mach_sim']:.4f}")

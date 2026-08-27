@@ -57,7 +57,7 @@ class SU2NozzleConfig:
 
         config_content = f"""% ------- Rocket Nozzle CFD - Phase 0 Reference Case --------
 % Converging-diverging nozzle, Euler, axisymmetric
-% Chamber: 10 MPa, 3500K (air)
+% Chamber: {self.total_pressure/1e6:.1f} MPa, {self.total_temperature:.0f}K (air)
 % Exit: 1 atm
 
 SOLVER= EULER

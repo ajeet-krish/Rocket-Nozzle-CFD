@@ -35,6 +35,7 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 |--------|-------------|-----------------|-------------|-----------|----------|
 | Generic (Rao Bell) | Reference case | 16:1 | 100 | 400 | 9.7 |
 | SpaceX Merlin 1D | Falcon 9 first stage | 16:1 | 165 | 660 | 9.7 |
+| SpaceX Raptor SL | Starship Super Heavy booster | 34:1 | 165 | 960 | 33.0 |
 | RS-25 | Space Shuttle / SLS | 77.5:1 | 272 | 2400 | 20.6 |
 | RL10B-2 | Delta IV upper stage | 285:1 | 154 | 2600 | 4.2 |
 

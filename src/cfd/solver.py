@@ -33,6 +33,7 @@ class SU2Solver:
         workdir: Path,
         timeout: int = 1800,
         gamma: float = 1.4,
+        exit_x: float | None = None,
     ) -> SU2Results:
         """Execute SU2_CFD and return parsed results.
 
@@ -41,6 +42,7 @@ class SU2Solver:
             workdir: Working directory for simulation
             timeout: Maximum runtime in seconds
             gamma: Ratio of specific heats (default 1.4 for air)
+            exit_x: Optional x-coordinate of nozzle exit plane for Mach extraction
 
         Returns:
             Parsed simulation results
@@ -64,27 +66,39 @@ class SU2Solver:
             )
 
             if result.returncode != 0:
-                logger.error(f"SU2 failed with return code {result.returncode}")
-                logger.error(f"stderr: {result.stderr}")
-                # Still try to parse output files - SU2 may have produced valid VTU
-                # before diverging
-                return self.parse_results(workdir, gamma=gamma)
+                logger.warning(
+                    f"SU2 returned non-zero exit code {result.returncode}. "
+                    f"Attempting to parse partial results for VTU extraction."
+                )
+                logger.warning(f"stderr: {result.stderr}")
+                results = self.parse_results(workdir, gamma=gamma, exit_x=exit_x)
+                if not results.converged:
+                    logger.warning(
+                        f"SU2 did not converge. Setting exit_mach=0.0 to avoid "
+                        f"returning garbage value (was {results.exit_mach:.4f})."
+                    )
+                    results.exit_mach = 0.0
+                return results
 
-            return self.parse_results(workdir, gamma=gamma)
+            return self.parse_results(workdir, gamma=gamma, exit_x=exit_x)
 
         except subprocess.TimeoutExpired:
             logger.error(f"SU2 timed out after {timeout}s")
-            return self.parse_results(workdir, gamma=gamma)
+            results = self.parse_results(workdir, gamma=gamma, exit_x=exit_x)
+            if not results.converged:
+                results.exit_mach = 0.0
+            return results
         except FileNotFoundError:
             logger.error(f"SU2 binary not found: {self.su2_cfd}")
             return SU2Results(converged=False)
 
-    def parse_results(self, workdir: Path, gamma: float = 1.4) -> SU2Results:
+    def parse_results(self, workdir: Path, gamma: float = 1.4, exit_x: float | None = None) -> SU2Results:
         """Parse history.csv and flow.vtu for exit conditions.
 
         Args:
             workdir: Directory containing SU2 output files
             gamma: Ratio of specific heats (default 1.4 for air)
+            exit_x: Optional x-coordinate of nozzle exit plane for Mach extraction
         """
         results = SU2Results()
 
@@ -105,7 +119,7 @@ class SU2Solver:
         # Parse flow.vtu for exit Mach
         vtu_path = workdir / "flow.vtu"
         if vtu_path.exists():
-            results.exit_mach = self._extract_exit_mach(vtu_path, gamma=gamma)
+            results.exit_mach = self._extract_exit_mach(vtu_path, gamma=gamma, exit_x=exit_x)
 
         return results
 
@@ -143,7 +157,7 @@ class SU2Solver:
             logger.warning(f"Failed to parse history: {e}")
         return history
 
-    def _extract_exit_mach(self, vtu_path: Path, gamma: float = 1.4) -> float:
+    def _extract_exit_mach(self, vtu_path: Path, gamma: float = 1.4, exit_x: float | None = None) -> float:
         """Extract Mach number at exit plane from VTU file.
 
         Uses the VTU parser to handle both ASCII and binary formats.
@@ -151,6 +165,9 @@ class SU2Solver:
         Args:
             vtu_path: Path to SU2 flow.vtu file
             gamma: Ratio of specific heats (default 1.4 for air)
+            exit_x: Optional x-coordinate of nozzle exit plane. When provided,
+                     uses a narrow band (0.01m) around that x-coordinate.
+                     When not provided, falls back to max-Mach heuristic.
 
         Returns:
             Area-averaged Mach number at the exit plane, or 0.0 on failure
@@ -164,13 +181,20 @@ class SU2Solver:
             if data.mach is None:
                 return 0.0
             
-            # Find exit plane: look for the throat location (minimum y)
-            # and take the point just downstream where Mach > 1
             coords = data.coordinates
             mach = data.mach
             
-            # Strategy: find the node with maximum Mach (supersonic core)
-            # This works for both plume and no-plume cases
+            if exit_x is not None:
+                # Use narrow band around the specified exit x-coordinate
+                exit_mask = np.abs(coords[:, 0] - exit_x) < 0.01
+                if exit_mask.any():
+                    return float(mach[exit_mask].mean())
+                logger.warning(
+                    f"No nodes found within 0.01m of exit_x={exit_x:.4f}. "
+                    f"Falling back to max-Mach heuristic."
+                )
+            
+            # Fallback: find the node with maximum Mach (supersonic core)
             max_mach_idx = np.argmax(mach)
             max_mach_x = coords[max_mach_idx, 0]
             
