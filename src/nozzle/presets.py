@@ -23,6 +23,8 @@ def merlin_1d() -> NozzleConfig:
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.0,
         theta_n=30.0,
+        theta_e=0.0,
+        nozzle_length_fraction=0.8,
         num_points=300,
     )
 
@@ -45,6 +47,8 @@ def raptor_sl() -> NozzleConfig:
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.0,
         theta_n=30.0,
+        theta_e=0.0,
+        nozzle_length_fraction=0.8,
         num_points=300,
     )
 
@@ -68,6 +72,8 @@ def rs_25() -> NozzleConfig:
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.065,
         theta_n=25.0,
+        theta_e=0.0,
+        nozzle_length_fraction=0.8,
         num_points=400,
     )
 
@@ -91,6 +97,8 @@ def rl10b_2() -> NozzleConfig:
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.070,
         theta_n=20.0,
+        theta_e=0.0,
+        nozzle_length_fraction=0.8,
         num_points=500,
     )
 
@@ -105,5 +113,7 @@ def generic_test() -> NozzleConfig:
         expansion_ratio=12.0,
         converging_length=0.1,
         diverging_length=0.5,
+        theta_e=0.0,
+        nozzle_length_fraction=0.8,
         num_points=200,
     )

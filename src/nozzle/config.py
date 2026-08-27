@@ -19,6 +19,8 @@ class NozzleConfig:
         convergent_half_angle: Half-angle of convergent section (degrees)
         throat_radius_of_curvature: Throat radius of curvature (m, 0 = linear convergent)
         theta_n: Wall angle at throat for Rao bell (degrees)
+        theta_e: Exit wall angle (degrees, 0 = perfectly expanded)
+        nozzle_length_fraction: Fraction of ideal bell length (0.6, 0.8, 0.9)
     """
     # Existing fields (unchanged defaults)
     throat_radius: float = 0.05          # m
@@ -33,6 +35,8 @@ class NozzleConfig:
     convergent_half_angle: float = 45.0  # degrees (half-angle of convergent section)
     throat_radius_of_curvature: float = 0.0  # m (0 = linear convergent for backward compat)
     theta_n: float = 30.0               # degrees (wall angle at throat for Rao bell)
+    theta_e: float = 0.0                  # degrees (exit wall angle, 0 = perfectly expanded)
+    nozzle_length_fraction: float = 0.8   # fraction of ideal bell length (0.6, 0.8, 0.9)
 
     @property
     def exit_radius(self) -> float:
@@ -77,6 +81,16 @@ class NozzleConfig:
         return 0.5 * (math.sqrt(self.exit_radius) - math.sqrt(self.throat_radius)) * math.sqrt(
             self.throat_radius + self.exit_radius
         )
+
+    @property
+    def ideal_diverging_length(self) -> float:
+        """Ideal diverging length from Bell-Nozzle formula.
+
+        LN = nozzle_length_fraction * (sqrt(expansion_ratio) - 1) * throat_radius / tan(15 deg)
+        """
+        return self.nozzle_length_fraction * (
+            math.sqrt(self.expansion_ratio) - 1
+        ) * self.throat_radius / math.tan(math.radians(15))
 
     @classmethod
     def validate(cls, **kwargs: Any) -> "NozzleConfig":
@@ -128,5 +142,13 @@ class NozzleConfig:
         if not (5.0 <= config.theta_n <= 60.0):
             raise ValueError(
                 f"theta_n must be between 5 and 60 degrees, got {config.theta_n}"
+            )
+        if not (-10.0 <= config.theta_e <= 30.0):
+            raise ValueError(
+                f"theta_e must be between -10 and 30 degrees, got {config.theta_e}"
+            )
+        if not (0.4 <= config.nozzle_length_fraction <= 1.0):
+            raise ValueError(
+                f"nozzle_length_fraction must be between 0.4 and 1.0, got {config.nozzle_length_fraction}"
             )
         return config

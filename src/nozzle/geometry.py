@@ -73,6 +73,7 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
         config.diverging_length,
         x_diverge,
         theta_n=config.theta_n,
+        theta_e=config.theta_e,
     )
     sections.append((x_diverge, y_diverge))
 
@@ -165,6 +166,7 @@ def _rao_bell(
     length: float,
     x: np.ndarray,
     theta_n: float = 30.0,
+    theta_e: float = 0.0,
 ) -> np.ndarray:
     """Compute Rao parabolic bell contour.
 
@@ -179,6 +181,7 @@ def _rao_bell(
         length: Diverging section length (m)
         x: Axial coordinates (m)
         theta_n: Wall angle at throat (degrees, default 30)
+        theta_e: Wall angle at exit (degrees, default 0 for perfectly expanded)
 
     Returns:
         Radial coordinates (m) at each x location
@@ -187,13 +190,13 @@ def _rao_bell(
     theta_n_rad = np.radians(theta_n)
 
     # Wall angle at exit (typically 0 degrees for perfectly expanded)
-    theta_e = np.radians(0.0)
+    theta_e_rad = np.radians(theta_e)
 
     # Control point P1 from angle constraints
     # At throat: dy/dx = tan(theta_n)
     # At exit: dy/dx = tan(theta_e)
-    cx = (r_exit - r_throat - length * np.tan(theta_e)) / (
-        np.tan(theta_n_rad) - np.tan(theta_e)
+    cx = (r_exit - r_throat - length * np.tan(theta_e_rad)) / (
+        np.tan(theta_n_rad) - np.tan(theta_e_rad)
     )
     cy = r_throat + cx * np.tan(theta_n_rad)
 
