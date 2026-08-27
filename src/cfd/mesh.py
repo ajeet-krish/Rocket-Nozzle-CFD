@@ -53,18 +53,23 @@ def generate_nozzle_mesh(
     n_points = len(x_wall)
     throat_idx = int(np.argmin(np.abs(x_wall)))  # Find actual throat location
 
-    # Select key points to capture the full curve shape
-    # Include: inlet, chamber region, before-throat, throat, after-throat,
-    #          quarter-diverge, half-diverge, 3/4-diverge, exit
+    # Geometry-aware key points at actual section transitions
+    # The nozzle contour has distinct regions:
+    #   - Chamber/inlet (flat or converging)
+    #   - Entrant arc (curved section before throat)
+    #   - Throat (minimum radius, highest curvature)
+    #   - Exit arc (curved section after throat)
+    #   - Bell (diverging section to exit)
+    # We place key points at these boundaries for best spline approximation.
+    offset = max(n_points // 8, 5)
     key_indices = [
-        0,                          # inlet
-        n_points // 10,             # early chamber
-        throat_idx - n_points // 20, # before throat
-        throat_idx,                  # throat
-        throat_idx + n_points // 20, # after throat
-        n_points // 2,              # mid-diverge
-        n_points * 3 // 4,          # 3/4 diverge
-        n_points - 1,               # exit
+        0,                                    # inlet
+        throat_idx - offset,                  # before throat (entrant arc region)
+        throat_idx,                           # throat (minimum radius)
+        throat_idx + offset,                  # after throat (exit arc region)
+        n_points // 2,                        # mid-bell
+        n_points * 3 // 4,                    # 3/4 bell
+        n_points - 1,                         # exit
     ]
     key_indices = sorted(set(
         i for i in key_indices if 0 <= i < n_points
@@ -143,6 +148,13 @@ def generate_nozzle_mesh(
 
     growth_ratio = 1.15
 
+    # Bump coefficient for wall curve clustering:
+    # < 1 clusters toward both ends (inlet + exit), > 1 toward middle.
+    # For nozzle flow, clustering near the throat improves resolution of the
+    # sonic transition. Coefficient 0.7 provides mild clustering toward the
+    # throat region from both sides.
+    bump_coeff = 0.7
+
     if rans_mode:
         # RANS: geometric progression for boundary layer refinement
         gmsh.model.geo.mesh.setTransfiniteCurve(
@@ -151,13 +163,17 @@ def generate_nozzle_mesh(
         gmsh.model.geo.mesh.setTransfiniteCurve(
             exit_line, n_normal + 1, "Progression", growth_ratio,
         )
-        gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(
+            wall_spline, n_axial + 1, "Bump", bump_coeff,
+        )
         gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
     else:
-        # Euler: uniform spacing
+        # Euler: Bump clustering on wall for throat resolution
         gmsh.model.geo.mesh.setTransfiniteCurve(inlet_line, n_normal + 1)
         gmsh.model.geo.mesh.setTransfiniteCurve(exit_line, n_normal + 1)
-        gmsh.model.geo.mesh.setTransfiniteCurve(wall_spline, n_axial + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(
+            wall_spline, n_axial + 1, "Bump", bump_coeff,
+        )
         gmsh.model.geo.mesh.setTransfiniteCurve(axis_line, n_axial + 1)
 
     gmsh.model.geo.mesh.setTransfiniteSurface(nozzle_surface, "Left")
