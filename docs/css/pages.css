@@ -277,29 +277,14 @@
    ============================================ */
 
 .walkthrough-step {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-8);
-  align-items: center;
   margin-bottom: var(--space-16);
 }
 
 .walkthrough-step:last-child {
   margin-bottom: 0;
-}
-
-@media (min-width: 768px) {
-  .walkthrough-step {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .walkthrough-step--reverse {
-    direction: rtl;
-  }
-
-  .walkthrough-step--reverse > * {
-    direction: ltr;
-  }
 }
 
 .walkthrough-step__content {

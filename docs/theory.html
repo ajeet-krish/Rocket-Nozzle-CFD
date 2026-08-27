@@ -90,7 +90,7 @@
 
         <div class="walkthrough-step">
           <div class="walkthrough-step__content">
-            <p style="max-width: 800px; margin-bottom: var(--space-8);">
+            <p style="margin-bottom: var(--space-8);">
               Compressible flow in rocket nozzles is governed by the conservation laws of mass, momentum, and energy. For
               inviscid flow (Euler equations), we neglect viscous effects. For viscous flow (Navier-Stokes), we include
               boundary layer effects.
@@ -98,7 +98,7 @@
 
             <h3 style="color: var(--cyan); margin-bottom: var(--space-6);">Euler Equations (Inviscid)</h3>
 
-            <div class="walkthrough-step__content" style="max-width: 800px;">
+            <div class="walkthrough-step__content">
               <p>The Euler equations describe inviscid compressible flow. In conservative form for axisymmetric flow:</p>
 
               <div
@@ -120,7 +120,7 @@
             <h3 style="color: var(--cyan); margin-top: var(--space-8); margin-bottom: var(--space-6);">Navier-Stokes
               Equations (Viscous)</h3>
 
-            <div class="walkthrough-step__content" style="max-width: 800px;">
+            <div class="walkthrough-step__content">
               <p>The Navier-Stokes equations add viscous stress and heat conduction terms:</p>
 
               <div
@@ -138,7 +138,7 @@
             </div>
 
             <div
-              style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+              style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0;">
               <p style="margin: 0; font-size: var(--text-sm);">
                 <strong style="color: var(--cyan);">Note:</strong> This project uses SU2 to solve these equations
                 numerically. The Euler solver is used for initial design exploration, while the RANS SST k-omega model
@@ -158,7 +158,7 @@
       <div class="container">
         <h2 class="section-title">Isentropic Relations</h2>
 
-        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+        <p style="margin-bottom: var(--space-8);">
           For isentropic flow (adiabatic and reversible), the thermodynamic properties are related through the Mach
           number. These relations are fundamental to nozzle design and performance prediction.
         </p>
@@ -214,7 +214,7 @@
       <div class="container">
         <h2 class="section-title">Mach Number</h2>
 
-        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+        <p style="margin-bottom: var(--space-8);">
           The Mach number is the fundamental dimensionless parameter in compressible flow, defined as the ratio of flow
           velocity to the local speed of sound.
         </p>
@@ -282,7 +282,7 @@
       <div class="container">
         <h2 class="section-title">Method of Characteristics</h2>
 
-        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+        <p style="margin-bottom: var(--space-8);">
           The Method of Characteristics (MoC) is an exact technique for solving 2D supersonic flow problems. It traces
           the propagation of Mach waves (characteristics) through the flow field.
         </p>
@@ -316,7 +316,7 @@
         </div>
 
         <div
-          style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+          style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0;">
           <p style="margin: 0; font-size: var(--text-sm);">
             <strong style="color: var(--cyan);">Application:</strong> MoC is used in this project to independently
             compute the exit Mach number for validation. For a 1D nozzle with area ratio $\epsilon = 16$ and $\gamma =
@@ -331,7 +331,7 @@
       <div class="container">
         <h2 class="section-title">Nozzle Flow Regimes</h2>
 
-        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+        <p style="margin-bottom: var(--space-8);">
           The relationship between nozzle exit pressure and ambient pressure determines the exhaust plume structure and
           nozzle performance. Understanding these regimes is critical for nozzle design.
         </p>
@@ -426,7 +426,7 @@
       <div class="container">
         <h2 class="section-title">Normal Shock Relations</h2>
 
-        <p style="max-width: 800px; margin-bottom: var(--space-8);">
+        <p style="margin-bottom: var(--space-8);">
           Normal shocks are discontinuities that occur in supersonic flow. Across a normal shock, the flow decelerates
           from supersonic to subsonic, with increases in pressure, temperature, and density.
         </p>
@@ -466,7 +466,7 @@
         </div>
 
         <div
-          style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0; max-width: 800px;">
+          style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 24px 0;">
           <p style="margin: 0; font-size: var(--text-sm);">
             <strong style="color: var(--cyan);">Practical Impact:</strong> Total pressure loss across shocks reduces
             nozzle efficiency. A normal shock at $M = 4$ causes a 14.5% total pressure loss. This is why shock diamonds
