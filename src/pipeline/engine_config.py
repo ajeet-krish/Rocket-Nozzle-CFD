@@ -77,20 +77,24 @@ class EngineConfig:
     @property
     def images_dir(self) -> str:
         """Images directory for plots."""
-        return f"docs/assets/images/{self.name}"
+        return f"docs/assets/images/{self.name}/geometry"
 
     def nozzle_config(self) -> NozzleConfig:
-        """Build NozzleConfig from engine preset and overrides."""
+        """Build NozzleConfig from engine preset and overrides.
+
+        Uses preset's diverging_length when ld is None, otherwise uses ld override.
+        """
         base = self.preset_fn()
+        ld = self.ld if self.ld is not None else base.diverging_length
         return NozzleConfig(
             throat_radius=base.throat_radius,
             expansion_ratio=base.expansion_ratio,
             converging_length=base.converging_length,
-            diverging_length=self.ld,
+            diverging_length=ld,
             chamber_length=0,
             throat_radius_of_curvature=0,
             theta_n=self.theta_n,
             theta_e=0.0,
             nozzle_length_fraction=0,
-            num_points=200,
+            num_points=300,
         )
