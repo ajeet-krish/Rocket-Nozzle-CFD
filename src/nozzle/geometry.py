@@ -65,16 +65,34 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
 
     sections.append((x_converge, y_converge))
 
-    # Section 3: Divergent (Rao bell)
-    x_diverge = np.linspace(0, config.diverging_length, n_diverge)
-    y_diverge = _rao_bell(
-        config.throat_radius,
-        config.exit_radius,
-        config.diverging_length,
-        x_diverge,
-        theta_n=config.theta_n,
-        theta_e=config.theta_e,
+    # Section 3a: Exit arc (0.382*Rt radius, steep initial divergence)
+    # Matches the Bell-Nozzle reference: circular arc from -90 deg to (theta_n - 90 deg)
+    exit_arc_radius = 0.382 * config.throat_radius
+    theta_n_rad = np.radians(config.theta_n)
+    n_exit_arc = max(n_diverge // 5, 20)
+    angle_start = -np.pi / 2  # -90 deg (vertical at throat)
+    angle_end = theta_n_rad - np.pi / 2  # (theta_n - 90) deg
+    angles = np.linspace(angle_start, angle_end, n_exit_arc)
+    x_exit_arc = exit_arc_radius * np.cos(angles)
+    y_exit_arc = exit_arc_radius * np.sin(angles) + exit_arc_radius + config.throat_radius
+
+    # Section 3b: Bell (cubic polynomial from end of exit arc to exit)
+    x_arc_end = x_exit_arc[-1]
+    y_arc_end = y_exit_arc[-1]
+    # Slope at end of exit arc: dy/dx = -cot(angle_end) = tan(theta_n)
+    slope_arc_end = np.tan(theta_n_rad)
+    nBell = n_diverge - n_exit_arc
+    x_bell = np.linspace(x_arc_end, config.diverging_length, nBell)
+    y_bell = _rao_bell_segment(
+        y_arc_end, config.exit_radius,
+        config.diverging_length - x_arc_end,
+        x_bell - x_arc_end,
+        slope_start=slope_arc_end,
+        slope_end=np.tan(np.radians(config.theta_e)),
     )
+
+    x_diverge = np.concatenate([x_exit_arc, x_bell])
+    y_diverge = np.concatenate([y_exit_arc, y_bell])
     sections.append((x_diverge, y_diverge))
 
     # Concatenate all sections (exclude duplicate points at boundaries)
@@ -176,9 +194,6 @@ def _rao_bell(
     - Slope at throat: tan(theta_n)
     - Slope at exit: tan(theta_e)
 
-    This avoids Bezier parameterisation issues when the control point
-    falls outside the nozzle length.
-
     Args:
         r_throat: Throat radius (m)
         r_exit: Exit radius (m)
@@ -190,32 +205,53 @@ def _rao_bell(
     Returns:
         Radial coordinates (m) at each x location
     """
-    t_n = np.tan(np.radians(theta_n))
-    t_e = np.tan(np.radians(theta_e))
+    return _rao_bell_segment(
+        r_throat, r_exit, length, x,
+        slope_start=np.tan(np.radians(theta_n)),
+        slope_end=np.tan(np.radians(theta_e)),
+    )
 
-    # Cubic: y(x) = a*x^3 + b*x^2 + c*x + d
-    # y(0) = r_throat           -> d = r_throat
-    # y'(0) = t_n               -> c = t_n
-    # y(L) = r_exit             -> a*L^3 + b*L^2 + t_n*L + r_throat = r_exit
-    # y'(L) = t_e               -> 3*a*L^2 + 2*b*L + t_n = t_e
 
-    L = length
-    d = r_throat
-    c = t_n
+def _rao_bell_segment(
+    r_start: float,
+    r_end: float,
+    length: float,
+    x: np.ndarray,
+    slope_start: float = 0.577,
+    slope_end: float = 0.0,
+) -> np.ndarray:
+    """Compute bell contour segment with explicit start/end slopes.
 
-    # Solve 2x2 system for a, b:
-    # a*L^3 + b*L^2 = r_exit - r_throat - t_n*L
-    # 3*a*L^2 + 2*b*L = t_e - t_n
-    rhs1 = r_exit - r_throat - t_n * L
-    rhs2 = t_e - t_n
+    Cubic polynomial: y(x) = a*x^3 + b*x^2 + c*x + d
+    matching radius and slope at both ends.
+
+    Args:
+        r_start: Radius at start of segment
+        r_end: Radius at end of segment
+        length: Axial length of segment
+        x: Axial coordinates (local, starting from 0)
+        slope_start: Wall slope at start
+        slope_end: Wall slope at end
+
+    Returns:
+        Radial coordinates
+    """
+    L = max(length, 1e-12)
+    c = slope_start
+    d = r_start
+
+    rhs1 = r_end - r_start - slope_start * L
+    rhs2 = slope_end - slope_start
 
     det = L**3 * 2 * L - L**2 * 3 * L**2
+    if abs(det) < 1e-20:
+        # Degenerate: fall back to linear
+        return r_start + (r_end - r_start) * x / L
+
     a = (rhs1 * 2 * L - L**2 * rhs2) / det
     b = (L**3 * rhs2 - 3 * L**2 * rhs1) / det
 
-    y = a * x**3 + b * x**2 + c * x + d
-
-    return y
+    return a * x**3 + b * x**2 + c * x + d
 
 
 def plot_contour(
