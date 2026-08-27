@@ -14,20 +14,31 @@ Parametric sweeps explore the design space across expansion ratios (4-20), chamb
 
 The pipeline demonstrates a complete workflow from geometry definition through validated CFD results, suitable for preliminary rocket engine nozzle design and performance prediction.
 
-## Results
+## Table of Contents
 
-### Reference Case
+- [Nozzle Models](#nozzle-models)
+- [Validation Summary](#validation-summary)
+- [Generic Nozzle (Rao Bell)](#generic-nozzle-rao-bell)
+- [SpaceX Merlin 1D](#spacex-merlin-1d)
+- [RS-25 (Space Shuttle Main Engine)](#rs-25-space-shuttle-main-engine)
+- [RL10B-2 (Delta IV Upper Stage)](#rl10b-2-delta-iv-upper-stage)
+- [Parametric Sweeps](#parametric-sweeps)
+- [Methodology](#methodology)
+- [Project Structure](#project-structure)
+- [How to Run](#how-to-run)
 
-| Parameter | Value |
-|-----------|-------|
-| Expansion ratio (Ae/At) | 16 |
-| Chamber pressure (Pc) | 9.7 MPa |
-| Throat radius (R*) | 0.05 m |
-| Chamber temperature (T0) | 3600 K |
-| Gas | Air (gamma=1.4, R=287.058 J/(kg*K)) |
-| Isentropic exit Mach | 4.4593 |
+---
 
-### Validation Summary
+## Nozzle Models
+
+| Engine | Application | Expansion Ratio | Throat (mm) | Exit (mm) | Pc (MPa) |
+|--------|-------------|-----------------|-------------|-----------|----------|
+| Generic (Rao Bell) | Reference case | 16:1 | 100 | 400 | 9.7 |
+| SpaceX Merlin 1D | Falcon 9 first stage | 16:1 | 165 | 660 | 9.7 |
+| RS-25 | Space Shuttle / SLS | 78:1 | 260 | 2400 | 20.6 |
+| RL10B-2 | Delta IV upper stage | 285:1 | 280 | 2600 | 4.2 |
+
+## Validation Summary
 
 | Method | Exit Mach | Error | Status |
 |--------|-----------|-------|--------|
@@ -36,20 +47,16 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 | SU2 Euler (60x30) | 4.4927 | 0.75% | PASSED |
 | SU2 RANS SST (40x30) | 4.1017 | 8.7% vs Euler | Converged |
 
-### Euler vs RANS Comparison
+---
 
-| Metric | Euler (Inviscid) | RANS SST (Viscous) | Difference |
-|--------|------------------|---------------------|------------|
-| Exit Mach | 4.4927 | 4.1017 | 8.70% |
-| Boundary Layer | None | Resolved | - |
-| Wall Treatment | Slip | No-slip, adiabatic | - |
+## Generic Nozzle (Rao Bell)
 
-## Visualizations
+*Reference case: epsilon=16, R*=50mm, Pc=9.7 MPa*
 
 ### Nozzle Geometry & Mesh
 
 ![Nozzle Mesh](docs/assets/images/nozzle_mesh.png)
-> Structured O-grid mesh generated with Gmsh transfinite meshing. The mesh captures the Rao parabolic bell nozzle contour with boundary layer refinement near the throat.
+> Structured O-grid mesh with Rao parabolic bell contour. 60x30 cells with boundary layer refinement.
 
 ### Mach Number: Euler vs RANS
 
@@ -57,46 +64,215 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 |------------------|---------------------|
 | ![Euler Mach](docs/assets/images/euler/mach_contour_euler.png) | ![RANS Mach](docs/assets/images/rans/mach_contour_rans.png) |
 
-> **Left:** Euler simulation shows inviscid flow acceleration from subsonic inlet (M~0) through sonic throat (M=1) to supersonic exit (M~4.5). **Right:** RANS SST simulation includes viscous boundary layer effects, reducing exit Mach to 4.10. The boundary layer displacement effect is clearly visible as a thinner high-Mach region near the wall.
+> **Left:** Euler simulation (M_exit=4.49). **Right:** RANS simulation (M_exit=4.10) with viscous boundary layer effects.
 
 ### Pressure Distribution
 
 ![Pressure Contour](docs/assets/images/euler/pressure_contour_euler.png)
-> Static pressure drops from chamber pressure (9.7 MPa, red) to ambient (101 kPa, blue) through the nozzle. Pressure distribution is nearly identical between Euler and RANS since pressure is primarily governed by area ratio.
+> Static pressure drops from 9.7 MPa (chamber) to 101 kPa (ambient) through the nozzle.
 
 ### Shock Diamonds
 
 ![Shock Diamonds](docs/assets/images/euler/shock_diamond_euler.png)
-> Density gradient magnitude reveals the shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions. Shock structure is similar between Euler and RANS since inviscid effects dominate the plume.
+> Density gradient magnitude reveals shock diamond pattern in exhaust plume.
 
-### Plume Extension (Shock Diamonds)
+### Mach vs Pressure Distribution
 
-The plume domain extends downstream of the nozzle exit to capture external shock diamond structure. The conformal mesh uses Gmsh's negative curve index technique to create a shared boundary between nozzle and plume zones.
+![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
+> Mach number and static pressure along nozzle axis following isentropic relations.
+
+### Plume Extension
 
 | Euler Plume | RANS Plume |
 |-------------|------------|
 | ![Euler Plume](output/plume/plots/mach_contour.png) | ![RANS Plume](output/rans_plume/plots/mach_contour_rans_plume.png) |
 
-> **Left:** Euler plume shows inviscid shock diamond pattern with Mach oscillation in the exhaust. **Right:** RANS plume includes viscous shear layer effects that dissipate the shock structure downstream.
+> Conformal plume mesh captures shock diamond structure downstream of nozzle exit.
+
+---
+
+## SpaceX Merlin 1D
+
+*Falcon 9 first stage: epsilon=16, R*=82.5mm, Pc=9.7 MPa*
+
+### Nozzle Geometry & Mesh
+
+<!-- PLACEHOLDER: Merlin 1D mesh with plume extension -->
+<!-- Run: uv run python run_plume.py (uses merlin_1d preset) -->
+<!-- Save screenshot from ParaView as: docs/assets/images/merlin/mesh_merlin.png -->
+> *Merlin 1D nozzle mesh with chamber section and plume extension. The larger throat (165mm) compared to the generic nozzle produces similar expansion ratio but different flow features.*
+
+### Mach Number: Euler vs RANS
+
+<!-- PLACEHOLDER: Merlin 1D Mach contour -->
+<!-- Run: uv run python run_plume.py -->
+<!-- Save ParaView screenshots as: docs/assets/images/merlin/mach_euler_merlin.png and mach_rans_merlin.png -->
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach Merin](docs/assets/images/merlin/mach_euler_merlin.png) | ![RANS Mach Merlin](docs/assets/images/merlin/mach_rans_merlin.png) |
+
+> *Merlin 1D Mach distribution. Same expansion ratio as generic nozzle but with chamber section affecting inlet flow profile.*
+
+### Pressure Distribution
+
+<!-- PLACEHOLDER: Merlin 1D pressure contour -->
+<!-- Save as: docs/assets/images/merlin/pressure_merlin.png -->
+![Pressure Merlin](docs/assets/images/merlin/pressure_merlin.png)
+> *Static pressure distribution through Merlin 1D nozzle geometry.*
+
+### Shock Diamonds
+
+<!-- PLACEHOLDER: Merlin 1D shock diamonds -->
+<!-- Save as: docs/assets/images/merlin/shock_diamonds_merlin.png -->
+![Shock Diamonds Merlin](docs/assets/images/merlin/shock_diamonds_merlin.png)
+> *Density gradient showing shock diamond pattern in Merlin 1D exhaust plume.*
 
 ### Mach vs Pressure Distribution
 
-![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
-> Mach number (blue) and static pressure (red) along the nozzle axis. Pressure drops monotonically as Mach increases through the diverging section. The two curves follow isentropic relations.
+<!-- PLACEHOLDER: Merlin 1D mach vs pressure -->
+<!-- Save as: docs/assets/images/merlin/mach_vs_pressure_merlin.png -->
+![Mach vs Pressure Merlin](docs/assets/images/merlin/mach_vs_pressure_merlin.png)
+> *Mach and pressure along Merlin 1D nozzle axis.*
 
-### Parametric Sweeps
+### Plume Extension
 
-#### Exit Mach vs Expansion Ratio
+<!-- PLACEHOLDER: Merlin 1D plume -->
+<!-- Run: uv run python run_plume.py -->
+<!-- Save Euler and RANS plume screenshots -->
+| Euler Plume | RANS Plume |
+|-------------|------------|
+| ![Euler Plume Merlin](docs/assets/images/merlin/plume_euler_merlin.png) | ![RANS Plume Merlin](docs/assets/images/merlin/plume_rans_merlin.png) |
+
+> *Merlin 1D plume with shock diamond structure. The conformal mesh captures external flow expansion.*
+
+---
+
+## RS-25 (Space Shuttle Main Engine)
+
+*Space Shuttle / SLS core stage: epsilon=78, R*=130mm, Pc=20.6 MPa*
+
+### Nozzle Geometry & Mesh
+
+<!-- PLACEHOLDER: RS-25 mesh -->
+<!-- Run: uv run python run_euler.py with rs_25() preset -->
+<!-- Save ParaView screenshot as: docs/assets/images/rs25/mesh_rs25.png -->
+> *RS-25 nozzle mesh. High expansion ratio (78:1) produces very low exit pressure at sea level, causing flow separation. The nozzle length is significantly longer than Merlin 1D.*
+
+### Mach Number: Euler vs RANS
+
+<!-- PLACEHOLDER: RS-25 Mach contours -->
+<!-- Save as: docs/assets/images/rs25/mach_euler_rs25.png and mach_rans_rs25.png -->
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach RS25](docs/assets/images/rs25/mach_euler_rs25.png) | ![RANS Mach RS25](docs/assets/images/rs25/mach_rans_rs25.png) |
+
+> *RS-25 Mach distribution. High expansion ratio produces supersonic flow throughout the diverging section. Flow separation may occur at sea level due to overexpansion.*
+
+### Pressure Distribution
+
+<!-- PLACEHOLDER: RS-25 pressure contour -->
+<!-- Save as: docs/assets/images/rs25/pressure_rs25.png -->
+![Pressure RS25](docs/assets/images/rs25/pressure_rs25.png)
+> *Static pressure distribution. Pressure drops from 20.6 MPa (chamber) through the long diverging section.*
+
+### Shock Diamonds
+
+<!-- PLACEHOLDER: RS-25 shock diamonds -->
+<!-- Save as: docs/assets/images/rs25/shock_diamonds_rs25.png -->
+![Shock Diamonds RS25](docs/assets/images/rs25/shock_diamonds_rs25.png)
+> *RS-25 exhaust plume visualization. Shock structure differs from Merlin 1D due to higher expansion ratio.*
+
+### Mach vs Pressure Distribution
+
+<!-- PLACEHOLDER: RS-25 mach vs pressure -->
+<!-- Save as: docs/assets/images/rs25/mach_vs_pressure_rs25.png -->
+![Mach vs Pressure RS25](docs/assets/images/rs25/mach_vs_pressure_rs25.png)
+> *Mach and pressure along RS-25 nozzle axis.*
+
+### Plume Extension
+
+<!-- PLACEHOLDER: RS-25 plume -->
+<!-- Save as: docs/assets/images/rs25/plume_euler_rs25.png and plume_rans_rs25.png -->
+| Euler Plume | RANS Plume |
+|-------------|------------|
+| ![Euler Plume RS25](docs/assets/images/rs25/plume_euler_rs25.png) | ![RANS Plume RS25](docs/assets/images/rs25/plume_rans_rs25.png) |
+
+> *RS-25 plume with extended domain. The high expansion ratio creates different shock structure compared to lower-ratio nozzles.*
+
+---
+
+## RL10B-2 (Delta IV Upper Stage)
+
+*Delta IV upper stage: epsilon=285, R*=140mm, Pc=4.2 MPa*
+
+### Nozzle Geometry & Mesh
+
+<!-- PLACEHOLDER: RL10B-2 mesh -->
+<!-- Run: generate mesh with rl10b_2() preset -->
+<!-- Save ParaView screenshot as: docs/assets/images/rl10b2/mesh_rl10b2.png -->
+> *RL10B-2 nozzle mesh. Extreme expansion ratio (285:1) produces the highest Isp of any operational engine (465.5s vacuum). The nozzle exit diameter is 2.6m.*
+
+### Mach Number: Euler vs RANS
+
+<!-- PLACEHOLDER: RL10B-2 Mach contours -->
+<!-- Save as: docs/assets/images/rl10b2/mach_euler_rl10b2.png and mach_rans_rl10b2.png -->
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach RL10B2](docs/assets/images/rl10b2/mach_euler_rl10b2.png) | ![RANS Mach RL10B2](docs/assets/images/rl10b2/mach_rans_rl10b2.png) |
+
+> *RL10B-2 Mach distribution. Extreme expansion ratio produces very high exit Mach number. Vacuum-optimized nozzle (no flow separation concern).*
+
+### Pressure Distribution
+
+<!-- PLACEHOLDER: RL10B-2 pressure contour -->
+<!-- Save as: docs/assets/images/rl10b2/pressure_rl10b2.png -->
+![Pressure RL10B2](docs/assets/images/rl10b2/pressure_rl10b2.png)
+> *Static pressure distribution. Very low exit pressure due to high expansion ratio.*
+
+### Shock Diamonds
+
+<!-- PLACEHOLDER: RL10B-2 shock diamonds -->
+<!-- Save as: docs/assets/images/rl10b2/shock_diamonds_rl10b2.png -->
+![Shock Diamonds RL10B2](docs/assets/images/rl10b2/shock_diamonds_rl10b2.png)
+> *RL10B-2 exhaust plume. Minimal shock diamond structure at sea level due to extreme overexpansion.*
+
+### Mach vs Pressure Distribution
+
+<!-- PLACEHOLDER: RL10B-2 mach vs pressure -->
+<!-- Save as: docs/assets/images/rl10b2/mach_vs_pressure_rl10b2.png -->
+![Mach vs Pressure RL10B2](docs/assets/images/rl10b2/mach_vs_pressure_rl10b2.png)
+> *Mach and pressure along RL10B-2 nozzle axis.*
+
+### Plume Extension
+
+<!-- PLACEHOLDER: RL10B-2 plume -->
+<!-- Save as: docs/assets/images/rl10b2/plume_euler_rl10b2.png and plume_rans_rl10b2.png -->
+| Euler Plume | RANS Plume |
+|-------------|------------|
+| ![Euler Plume RL10B2](docs/assets/images/rl10b2/plume_euler_rl10b2.png) | ![RANS Plume RL10B2](docs/assets/images/rl10b2/plume_rans_rl10b2.png) |
+
+> *RL10B-2 plume visualization. The extreme expansion ratio creates a very different flow structure compared to sea-level nozzles.*
+
+---
+
+## Parametric Sweeps
+
+### Exit Mach vs Expansion Ratio
+
 ![Sweep Epsilon](docs/assets/images/sweep_mach_vs_epsilon.png)
 > Exit Mach increases with expansion ratio following the isentropic area-Mach relation. SU2 results match isentropic theory within 5%.
 
-#### Exit Mach vs Chamber Pressure
+### Exit Mach vs Chamber Pressure
+
 ![Sweep Pc](docs/assets/images/sweep_mach_vs_pc.png)
 > For calorically perfect gas (constant gamma), exit Mach is independent of chamber pressure. SU2 results confirm this theoretical prediction.
 
-#### Exit Mach vs Throat Radius
+### Exit Mach vs Throat Radius
+
 ![Sweep R*](docs/assets/images/sweep_mach_vs_rstar.png)
 > Exit Mach is independent of absolute scale for geometrically similar nozzles.
+
+---
 
 ## Methodology
 
@@ -106,7 +282,7 @@ The nozzle contour uses a Rao parabolic bell approximation (Sutton & Biblarz, "R
 - Throat wall angle: 30 degrees
 - Exit wall angle: 0 degrees (parallel to axis)
 - 80% of ideal bell length
-- 6 control points for accurate curve representation
+- Configurable convergent angle (30-45 degrees) and throat radius of curvature
 
 ### Mesh Generation
 
@@ -114,7 +290,6 @@ Structured O-grid mesh generated using Gmsh transfinite meshing:
 - Single-surface mesh with spline wall curve
 - 60x30 cells (1,800 elements) for Euler validation
 - 40x30 cells (1,200 elements) for RANS
-- 40x20 cells (800 elements) for parametric sweeps
 - Conformal plume extension using negative curve index (`plume_left = -exit_line`)
 - Plume domain: 10x throat length, 2x exit radius
 
@@ -123,9 +298,10 @@ Structured O-grid mesh generated using Gmsh transfinite meshing:
 **Euler (inviscid):**
 - SOLVER= EULER, AXISYMMETRIC= YES
 - ROE flux scheme, first-order (MUSCL=NO)
-- CFL=0.1 with adaptation (max 20), 5000 iterations
-- Inlet: total conditions (Pc=9.7 MPa, T0=3600K)
+- CFL=0.05 with adaptation, 5000 iterations
+- Inlet: total conditions (Pc, T0)
 - Outlet: static pressure (101325 Pa)
+- Farfield: characteristic non-reflecting BC (plume domain)
 
 **RANS (viscous):**
 - SOLVER= RANS, KIND_TURB_MODEL= SST
@@ -153,6 +329,8 @@ Grid Convergence Index (GCI) per ASME V&V 20-2009:
 | 2 | Chamber pressure | 5, 10, 20, 50 MPa | epsilon=12, R*=0.05m |
 | 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12, Pc=9.7 MPa |
 
+---
+
 ## Project Structure
 
 ```
@@ -166,6 +344,7 @@ rocket-nozzle-cfd/
     cfd/                      # SU2 mesh and solver
       config.py               # SU2NozzleConfig (v8.4.0)
       mesh.py                 # Gmsh O-grid generator
+      mesh_quality.py         # Mesh quality computation
       rans_config.py          # SU2RANSConfig (SST)
       solver.py               # SU2 subprocess runner
       vtu_parser.py           # Binary VTU parser (v8.4.0)
@@ -182,29 +361,25 @@ rocket-nozzle-cfd/
       postprocessing.py       # Wall pressure, shock diamonds
       mach_contour.py         # Mach contour (tricontourf)
       comparison.py           # Euler vs RANS plots
-  tests/                      # 287 tests
+  tests/                      # 322 tests
   docs/                       # Portfolio HTML site
     assets/images/euler/      # ParaView Euler screenshots
     assets/images/rans/       # ParaView RANS screenshots
+    assets/images/merlin/     # Merlin 1D screenshots
+    assets/images/rs25/       # RS-25 screenshots
+    assets/images/rl10b2/     # RL10B-2 screenshots
   run_euler_spike.py          # Quick convergence test
   run_euler.py                # Full Euler simulation
+  run_plume.py                # Plume extension (shock diamonds)
   run_rans.py                 # RANS SST simulation
+  run_rans_plume.py           # RANS plume simulation
   run_postprocess.py          # Post-processing plots
   run_validation.py           # Triple validation + GCI
   run_sweeps.py               # Parametric sweeps
   run_all.py                  # Run everything in sequence
 ```
 
-## Technology Stack
-
-| Component | Choice | Rationale |
-|-----------|--------|-----------|
-| Solver | SU2 v8.4.0 | Compressible flow, axisymmetric flag |
-| Mesh | Gmsh structured O-grid | Body-fitted, shock-aligned, native .su2 export |
-| Contour | Rao parabolic bell (Sutton & Biblarz) | Industry standard nozzle design |
-| Post-processing | ParaView + matplotlib | ParaView for VTU contours, matplotlib for 1D plots |
-| Portfolio | Static HTML (AK-Vortex theme) | Consistent with existing portfolio |
-| Testing | pytest (287 tests) | Comprehensive validation coverage |
+---
 
 ## How to Run
 
@@ -242,6 +417,8 @@ uv run python run_all.py
 # Run all tests
 uv run pytest tests/ -v
 ```
+
+---
 
 ## References
 
