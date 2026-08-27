@@ -1,8 +1,8 @@
 """3D revolved surface visualization of nozzle contours.
 
-Provides a revolved 3D surface plot of a 2D nozzle contour, matching
-the orientation of the Bell-Nozzle reference project: nozzle axis along
-Z (vertical), viewed from above with inlet at top, outlet at bottom.
+Ring-based surface of revolution matching the Bell-Nozzle reference
+orientation: nozzle axis along Z (vertical), inlet at top, outlet at
+bottom.  White-background scientific styling.
 """
 from __future__ import annotations
 
@@ -26,22 +26,7 @@ def _ring(
     n_theta: int = 60,
     n_height: int = 4,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Generate a cylindrical ring surface patch.
-
-    Creates a thin cylinder of radius ``r``, height ``h``, starting at
-    axial position ``a``.  Used as the building block for the revolved
-    nozzle surface.
-
-    Args:
-        r: Ring radius.
-        h: Ring thickness (axial height).
-        a: Starting axial position.
-        n_theta: Number of angular divisions.
-        n_height: Number of axial divisions within the ring.
-
-    Returns:
-        (X, Y, Z) arrays of shape ``(n_height, n_theta)``.
-    """
+    """Generate a cylindrical ring surface patch."""
     theta = np.linspace(0, 2 * np.pi, n_theta)
     v = np.linspace(a, a + h, n_height)
     theta_mesh, v_mesh = np.meshgrid(theta, v)
@@ -64,7 +49,7 @@ def _set_axes_equal_3d(ax: plt.Axes) -> None:
 def plot_nozzle_3d(
     config: NozzleConfig,
     output_path: Path,
-    dpi: int = 150,
+    dpi: int = 200,
     elevation: float = -170.0,
     azimuth: float = -15.0,
     n_theta: int = 60,
@@ -72,76 +57,69 @@ def plot_nozzle_3d(
 ) -> Path:
     """Create a 3D revolved surface plot of the nozzle contour.
 
-    Matches the Bell-Nozzle reference orientation: nozzle axis along Z
-    (vertical), inlet at top, outlet (bell exit) at bottom, viewed from
-    above at a slight angle.
-
-    Args:
-        config: Nozzle geometry parameters.
-        output_path: Destination for the rendered PNG.
-        dpi: Image resolution (dots per inch).
-        elevation: Camera elevation (degrees, default -170 = top-down).
-        azimuth: Camera azimuth (degrees, default -15).
-        n_theta: Angular divisions for each ring.
-        colormap: Matplotlib colourmap for the surface.
-
-    Returns:
-        Path to the saved PNG file.
+    Nozzle axis along Z (vertical), inlet at top, outlet at bottom,
+    viewed from above at a slight angle.  White-background scientific
+    styling with colour mapped to axial position.
     """
     output_path = Path(output_path)
 
-    # 1. Generate 2D contour (x = axial, y = radius)
+    # 1. Generate 2D contour
     x, y = generate_contour(config)
 
-    # 2. Build the revolved surface ring-by-ring (matching Bell-Nozzle)
-    #    Nozzle axis runs along Z.  x -> Z, y -> radius in X-Y plane.
+    # 2. Ring thickness
     ring_thickness = 5.0 * abs(x[1] - x[0]) if len(x) > 1 else 0.01
 
-    # Colour each ring by its axial position for visual depth
+    # 3. Colourmap normalised to axial position
     norm = plt.Normalize(x.min(), x.max())
     cmap = plt.get_cmap(colormap)
 
-    # 3. Create figure with dark background
+    # 4. Figure
     fig = plt.figure(figsize=(10, 10))
-    fig.patch.set_facecolor("#0a1628")
+    fig.patch.set_facecolor("white")
     ax = fig.add_subplot(111, projection="3d")
-    ax.set_facecolor("#0a1628")
+    ax.set_facecolor("white")
 
-    # 4. Draw rings to build the surface
+    # 5. Draw rings
     for i in range(len(y)):
         X, Y, Z = _ring(y[i], ring_thickness, x[i], n_theta=n_theta)
         colour = cmap(norm(x[i]))
         ax.plot_surface(X, Y, Z, color=colour, alpha=0.92, shade=True)
 
-    # 5. Axis of symmetry (dashed line along Z)
+    # 6. Axis of symmetry
     z_min, z_max = float(x.min()), float(x.max())
     ax.plot(
         [0, 0], [0, 0], [z_min, z_max],
-        color="#00e5ff", linewidth=1.0, alpha=0.5, linestyle="--",
+        color="#1565C0", linewidth=1.0, alpha=0.6, linestyle="--",
     )
 
-    # 6. Equal aspect ratio
+    # 7. Equal aspect
     ax.set_box_aspect([1, 1, 1])
     _set_axes_equal_3d(ax)
 
-    # 7. View angle (matching Bell-Nozzle reference)
+    # 8. View
     ax.view_init(elev=elevation, azim=azimuth)
 
-    # 8. Style
-    ax.set_xlabel("X (m)", color="white", fontsize=9, labelpad=8)
-    ax.set_ylabel("Y (m)", color="white", fontsize=9, labelpad=8)
-    ax.set_zlabel("Axial (m)", color="white", fontsize=9, labelpad=8)
-    ax.tick_params(colors="white", labelsize=7)
+    # 9. Style
+    ax.set_xlabel("X (m)", fontsize=10, color="black", labelpad=8)
+    ax.set_ylabel("Y (m)", fontsize=10, color="black", labelpad=8)
+    ax.set_zlabel("Axial (m)", fontsize=10, color="black", labelpad=8)
+    ax.tick_params(colors="black", labelsize=8)
     ax.grid(False)
     for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
         pane.fill = False
-        pane.set_edgecolor("none")
+        pane.set_edgecolor("#cccccc")
 
-    # 9. Save
+    ax.set_title(
+        f"Revolved Nozzle  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
+        f",  $R_t$ = {config.throat_radius*1000:.0f} mm",
+        fontsize=12, color="black", pad=12,
+    )
+
+    # 10. Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(
         output_path, dpi=dpi, bbox_inches="tight",
-        facecolor=fig.get_facecolor(), pad_inches=0.05,
+        facecolor="white", pad_inches=0.05,
     )
     plt.close(fig)
 

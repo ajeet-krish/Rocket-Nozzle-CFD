@@ -10,7 +10,7 @@ def merlin_1d() -> NozzleConfig:
     - Exit diameter: 660mm (R=330mm)
     - Expansion ratio: 16:1
     - Convergent angle: 45 deg
-    - Divergent angle: 15 deg (Rao bell)
+    - Divergent angle: 30 deg (Rao bell)
     - Throat RoC: 41mm (0.5x throat radius)
     """
     return NozzleConfig(
@@ -18,14 +18,14 @@ def merlin_1d() -> NozzleConfig:
         expansion_ratio=16.0,
         converging_length=0.083,
         diverging_length=0.4,
-        chamber_length=0.05,
-        chamber_radius=0.124,        # 1.5x throat
+        chamber_length=0.30,
+        chamber_radius=0.124,
         convergent_half_angle=45.0,
-        throat_radius_of_curvature=0.0,
+        throat_radius_of_curvature=0.041,
         theta_n=30.0,
         theta_e=0.0,
         nozzle_length_fraction=0.8,
-        num_points=300,
+        num_points=400,
     )
 
 
@@ -42,14 +42,14 @@ def raptor_sl() -> NozzleConfig:
         expansion_ratio=34.0,
         converging_length=0.083,
         diverging_length=0.6,
-        chamber_length=0.05,
+        chamber_length=0.30,
         chamber_radius=0.124,
         convergent_half_angle=45.0,
-        throat_radius_of_curvature=0.0,
-        theta_n=30.0,
+        throat_radius_of_curvature=0.041,
+        theta_n=28.0,
         theta_e=0.0,
         nozzle_length_fraction=0.8,
-        num_points=300,
+        num_points=400,
     )
 
 
@@ -67,8 +67,8 @@ def rs_25() -> NozzleConfig:
         expansion_ratio=77.5,
         converging_length=0.13,
         diverging_length=2.0,
-        chamber_length=0.1,
-        chamber_radius=0.195,        # 1.5x throat
+        chamber_length=0.50,
+        chamber_radius=0.195,
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.065,
         theta_n=25.0,
@@ -92,8 +92,8 @@ def rl10b_2() -> NozzleConfig:
         expansion_ratio=285.0,
         converging_length=0.14,
         diverging_length=2.5,
-        chamber_length=0.1,
-        chamber_radius=0.210,        # 1.5x throat
+        chamber_length=0.60,
+        chamber_radius=0.210,
         convergent_half_angle=45.0,
         throat_radius_of_curvature=0.070,
         theta_n=20.0,
