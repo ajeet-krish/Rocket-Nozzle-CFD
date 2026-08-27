@@ -170,53 +170,50 @@ def _rao_bell(
 ) -> np.ndarray:
     """Compute Rao parabolic bell contour.
 
-    Uses quadratic Bezier curve with control points:
-    - P0: (0, r_throat) - throat
-    - P1: (Cx, Cy) - control point from angle constraints
-    - P2: (length, r_exit) - exit
+    Uses a cubic polynomial that exactly matches:
+    - Radius at throat (x=0): r_throat
+    - Radius at exit (x=length): r_exit
+    - Slope at throat: tan(theta_n)
+    - Slope at exit: tan(theta_e)
+
+    This avoids Bezier parameterisation issues when the control point
+    falls outside the nozzle length.
 
     Args:
         r_throat: Throat radius (m)
         r_exit: Exit radius (m)
         length: Diverging section length (m)
         x: Axial coordinates (m)
-        theta_n: Wall angle at throat (degrees, default 30)
-        theta_e: Wall angle at exit (degrees, default 0 for perfectly expanded)
+        theta_n: Wall angle at throat (degrees)
+        theta_e: Wall angle at exit (degrees)
 
     Returns:
         Radial coordinates (m) at each x location
     """
-    # Wall angle at throat
-    theta_n_rad = np.radians(theta_n)
+    t_n = np.tan(np.radians(theta_n))
+    t_e = np.tan(np.radians(theta_e))
 
-    # Wall angle at exit (typically 0 degrees for perfectly expanded)
-    theta_e_rad = np.radians(theta_e)
+    # Cubic: y(x) = a*x^3 + b*x^2 + c*x + d
+    # y(0) = r_throat           -> d = r_throat
+    # y'(0) = t_n               -> c = t_n
+    # y(L) = r_exit             -> a*L^3 + b*L^2 + t_n*L + r_throat = r_exit
+    # y'(L) = t_e               -> 3*a*L^2 + 2*b*L + t_n = t_e
 
-    # Control point P1 from angle constraints
-    # At throat: dy/dx = tan(theta_n)
-    # At exit: dy/dx = tan(theta_e)
-    cx = (r_exit - r_throat - length * np.tan(theta_e_rad)) / (
-        np.tan(theta_n_rad) - np.tan(theta_e_rad)
-    )
-    cy = r_throat + cx * np.tan(theta_n_rad)
+    L = length
+    d = r_throat
+    c = t_n
 
-    # Parametric Bezier: t in [0, 1]
-    # x(t) = (1-t)^2 * 0 + 2*t*(1-t)*cx + t^2 * length
-    # y(t) = (1-t)^2 * r_throat + 2*t*(1-t)*cy + t^2 * r_exit
+    # Solve 2x2 system for a, b:
+    # a*L^3 + b*L^2 = r_exit - r_throat - t_n*L
+    # 3*a*L^2 + 2*b*L = t_e - t_n
+    rhs1 = r_exit - r_throat - t_n * L
+    rhs2 = t_e - t_n
 
-    # Solve for t from x using Newton-Raphson
-    t = np.linspace(0, 1, len(x))
-    for _ in range(10):
-        x_bezier = 2 * t * (1 - t) * cx + t**2 * length
-        dx_dt = 2 * (1 - 2 * t) * cx + 2 * t * length
-        dt = (x_bezier - x) / np.where(np.abs(dx_dt) >= 1e-12, dx_dt, 1e-12)
-        t = t - dt
-        t = np.clip(t, 0, 1)
-        if np.max(np.abs(dt)) < 1e-10:
-            break
+    det = L**3 * 2 * L - L**2 * 3 * L**2
+    a = (rhs1 * 2 * L - L**2 * rhs2) / det
+    b = (L**3 * rhs2 - 3 * L**2 * rhs1) / det
 
-    # Compute y from t
-    y = (1 - t)**2 * r_throat + 2 * t * (1 - t) * cy + t**2 * r_exit
+    y = a * x**3 + b * x**2 + c * x + d
 
     return y
 

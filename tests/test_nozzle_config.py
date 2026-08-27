@@ -272,12 +272,12 @@ class TestNozzleConfigPresets:
         config = merlin_1d()
         assert config.throat_radius == 0.0825
         assert config.expansion_ratio == 16.0
-        assert config.chamber_length == 0.05
+        assert config.chamber_length == 0.30
         assert config.chamber_radius == 0.124
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.0
+        assert config.throat_radius_of_curvature == 0.041
         assert config.theta_n == 30.0
-        assert config.num_points == 300
+        assert config.num_points == 400
         assert config.exit_radius == pytest.approx(
             0.0825 * math.sqrt(16.0), rel=1e-10
         )
@@ -287,12 +287,12 @@ class TestNozzleConfigPresets:
         config = raptor_sl()
         assert config.throat_radius == 0.0825
         assert config.expansion_ratio == 34.0
-        assert config.chamber_length == 0.05
+        assert config.chamber_length == 0.30
         assert config.chamber_radius == 0.124
         assert config.convergent_half_angle == 45.0
-        assert config.throat_radius_of_curvature == 0.0
-        assert config.theta_n == 30.0
-        assert config.num_points == 300
+        assert config.throat_radius_of_curvature == 0.041
+        assert config.theta_n == 28.0
+        assert config.num_points == 400
         assert config.exit_radius == pytest.approx(
             0.0825 * math.sqrt(34.0), rel=1e-10
         )
@@ -317,7 +317,7 @@ class TestNozzleConfigPresets:
         config = rs_25()
         assert config.throat_radius == 0.130
         assert config.expansion_ratio == 77.5
-        assert config.chamber_length == 0.1
+        assert config.chamber_length == 0.50
         assert config.chamber_radius == 0.195
         assert config.convergent_half_angle == 45.0
         assert config.throat_radius_of_curvature == 0.065
@@ -332,7 +332,7 @@ class TestNozzleConfigPresets:
         config = rl10b_2()
         assert config.throat_radius == 0.140
         assert config.expansion_ratio == 285.0
-        assert config.chamber_length == 0.1
+        assert config.chamber_length == 0.60
         assert config.chamber_radius == 0.210
         assert config.convergent_half_angle == 45.0
         assert config.throat_radius_of_curvature == 0.070
