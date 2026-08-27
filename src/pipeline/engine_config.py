@@ -82,10 +82,10 @@ class EngineConfig:
     def nozzle_config(self) -> NozzleConfig:
         """Build NozzleConfig from engine preset and overrides.
 
-        Uses preset's diverging_length when ld is None, otherwise uses ld override.
+        Uses preset's computed_diverging_length (Rao formula) when ld is None.
         """
         base = self.preset_fn()
-        ld = self.ld if self.ld is not None else base.diverging_length
+        ld = self.ld if self.ld is not None else base.computed_diverging_length
         return NozzleConfig(
             throat_radius=base.throat_radius,
             expansion_ratio=base.expansion_ratio,
