@@ -438,3 +438,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Placeholder Box (for missing plots) --- */
+.placeholder-box {
+  background: var(--surface);
+  border: 2px dashed var(--current-line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-8);
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.placeholder-box p {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.placeholder-box code {
+  background: var(--background);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-xs);
+}
