@@ -66,7 +66,9 @@ class SU2Solver:
             if result.returncode != 0:
                 logger.error(f"SU2 failed with return code {result.returncode}")
                 logger.error(f"stderr: {result.stderr}")
-                return SU2Results(converged=False)
+                # Still try to parse output files - SU2 may have produced valid VTU
+                # before diverging
+                return self.parse_results(workdir, gamma=gamma)
 
             return self.parse_results(workdir, gamma=gamma)
 

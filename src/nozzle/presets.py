@@ -110,6 +110,6 @@ def generic_test() -> NozzleConfig:
         converging_length=0.1,
         diverging_length=0.5,
         theta_e=0.0,
-        nozzle_length_fraction=0.8,
+        nozzle_length_fraction=0,
         num_points=200,
     )

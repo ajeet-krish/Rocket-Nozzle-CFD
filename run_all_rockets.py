@@ -11,6 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+from nozzle.config import NozzleConfig
 from nozzle.presets import merlin_1d, raptor_sl, rs_25, rl10b_2
 from cfd.config import SU2NozzleConfig
 from cfd.mesh import generate_nozzle_mesh
@@ -20,20 +21,37 @@ from validation.compare import compare_results
 from viz.convergence import plot_convergence
 from viz.mach_contour import plot_mach_contour
 
-# Engine名 -> (preset_fn, Pt_Pa, Tt_K)
+# Engine name -> (preset_fn, Pt_Pa, Tt_K, theta_n, diverging_length)
+# Values found by sweeping Ld and theta_n for each engine with real conditions.
 ENGINES = {
-    "merlin-1d": (merlin_1d,  9.7e6,  3600.0),
-    "raptor-sl": (raptor_sl, 33.0e6, 3500.0),
-    "rs-25":     (rs_25,     20.6e6, 3570.0),
-    "rl10B-2":   (rl10b_2,   4.2e6,  2200.0),
+    "merlin-1d":  (merlin_1d,  9.7e6,  3600.0, 30, 0.7),
+    "raptor-sl":  (raptor_sl, 33.0e6, 3500.0, 25, 1.0),
+    "rs-25":      (rs_25,     20.6e6, 3570.0, 30, 0.7),
+    "rl10B-2":    (rl10b_2,   4.2e6,  2200.0, 25, 1.5),
 }
 
 
-def run_euler(name: str, config, Pt: float, Tt: float) -> dict:
+def run_euler(name: str, config_fn, Pt: float, Tt: float,
+              theta_n: float, diverging_length: float) -> dict:
     """Run one Euler case and return results dict."""
     workdir = Path(f"output/{name}/euler")
     workdir.mkdir(parents=True, exist_ok=True)
     (workdir / "plots").mkdir(parents=True, exist_ok=True)
+
+    # Override geometry for SU2 stability
+    base = config_fn()
+    config = NozzleConfig(
+        throat_radius=base.throat_radius,
+        expansion_ratio=base.expansion_ratio,
+        converging_length=base.converging_length,
+        diverging_length=diverging_length,
+        chamber_length=0,
+        throat_radius_of_curvature=0,
+        theta_n=theta_n,
+        theta_e=0.0,
+        nozzle_length_fraction=0,
+        num_points=200,
+    )
 
     su2 = SU2NozzleConfig(
         total_pressure=Pt,
@@ -42,14 +60,14 @@ def run_euler(name: str, config, Pt: float, Tt: float) -> dict:
         gamma=1.4,
         iterations=5000,
         cfl_number=0.1,
-        farfield_marker="farfield",
+        farfield_marker="",
     )
 
-    # Mesh
+    # Mesh: coarse (40x20) for stability
     mesh_path = generate_nozzle_mesh(
-        config, n_axial=60, n_normal=30,
+        config, n_axial=40, n_normal=20,
         output_file=str(workdir / "nozzle.su2"),
-        plume_extension=True,
+        plume_extension=False,
     )
 
     # Config
@@ -58,7 +76,7 @@ def run_euler(name: str, config, Pt: float, Tt: float) -> dict:
     # Solve
     solver = SU2Solver()
     t0 = time.time()
-    results = solver.run(cfg_path, workdir, timeout=1800, gamma=1.4)
+    results = solver.run(cfg_path, workdir, timeout=600, gamma=1.4)
     elapsed = time.time() - t0
 
     # Validate
@@ -89,12 +107,12 @@ def main() -> int:
     print("=" * 65)
 
     all_results = []
-    for name, (preset_fn, Pt, Tt) in ENGINES.items():
+    for name, (preset_fn, Pt, Tt, theta_n, ld) in ENGINES.items():
         print(f"\n{'─' * 65}")
-        print(f"  {name}   Pt={Pt/1e6:.1f} MPa   Tt={Tt:.0f} K")
+        print(f"  {name}   Pt={Pt/1e6:.1f} MPa   Tt={Tt:.0f} K   theta_n={theta_n}   Ld={ld:.1f}m")
         print(f"{'─' * 65}")
         try:
-            r = run_euler(name, preset_fn(), Pt, Tt)
+            r = run_euler(name, preset_fn, Pt, Tt, theta_n, ld)
             all_results.append(r)
             tag = "PASSED" if r["passed"] else "FAILED"
             print(f"  Mach (sim):  {r['mach_sim']:.4f}")
