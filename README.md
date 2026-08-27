@@ -67,6 +67,16 @@ The project sweeps expansion ratio (4-20), chamber pressure (5-50 MPa), and thro
 ![Shock Diamonds](docs/assets/images/euler/shock_diamond_euler.png)
 > Density gradient magnitude reveals the shock diamond pattern in the exhaust plume. Compression and expansion waves visible as alternating high-gradient regions. Shock structure is similar between Euler and RANS since inviscid effects dominate the plume.
 
+### Plume Extension (Shock Diamonds)
+
+The plume domain extends downstream of the nozzle exit to capture external shock diamond structure. The conformal mesh uses Gmsh's negative curve index technique to create a shared boundary between nozzle and plume zones.
+
+| Euler Plume | RANS Plume |
+|-------------|------------|
+| ![Euler Plume](output/plume/plots/mach_contour.png) | ![RANS Plume](output/rans_plume/plots/mach_contour_rans_plume.png) |
+
+> **Left:** Euler plume shows inviscid shock diamond pattern with Mach oscillation in the exhaust. **Right:** RANS plume includes viscous shear layer effects that dissipate the shock structure downstream.
+
 ### Mach vs Pressure Distribution
 
 ![Mach vs Pressure](docs/assets/images/euler/mach_vs_pressure_euler.png)
@@ -103,6 +113,8 @@ Structured O-grid mesh generated using Gmsh transfinite meshing:
 - 60x30 cells (1,800 elements) for Euler validation
 - 40x30 cells (1,200 elements) for RANS
 - 40x20 cells (800 elements) for parametric sweeps
+- Conformal plume extension using negative curve index (`plume_left = -exit_line`)
+- Plume domain: 10x throat length, 2x exit radius
 
 ### CFD Solver
 
@@ -148,7 +160,7 @@ rocket-nozzle-cfd/
     nozzle/                   # Geometry generation
       config.py               # NozzleConfig dataclass (v2)
       geometry.py             # Rao bell contour (Bezier)
-      presets.py              # Engine presets (Merlin 1D, Raptor)
+      presets.py              # Engine presets (Merlin 1D, RS-25, RL10B-2)
     cfd/                      # SU2 mesh and solver
       config.py               # SU2NozzleConfig (v8.4.0)
       mesh.py                 # Gmsh O-grid generator
@@ -204,8 +216,14 @@ uv run python run_euler_spike.py
 # Full Euler simulation (~10 min)
 uv run python run_euler.py
 
-# RANS simulation (requires Euler first)
+# Plume extension with shock diamonds (~10 min)
+uv run python run_plume.py
+
+# RANS simulation (requires Euler first, ~15 min)
 uv run python run_rans.py
+
+# RANS plume simulation (viscous shock diamonds, ~30 min)
+uv run python run_rans_plume.py
 
 # Post-processing (requires Euler + RANS)
 uv run python run_postprocess.py

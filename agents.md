@@ -20,6 +20,9 @@ uv run python run_plume.py
 # RANS simulation (requires Euler first, ~15 min)
 uv run python run_rans.py
 
+# RANS plume simulation (viscous shock diamonds, ~30 min)
+uv run python run_rans_plume.py
+
 # Post-processing (requires Euler + RANS)
 uv run python run_postprocess.py
 
