@@ -20,6 +20,7 @@ def generate_nozzle_mesh(
     plume_extension: bool = True,
     plume_length_ratio: float = 20.0,
     plume_radius_ratio: float = 3.0,
+    bump_coeff: float = 0.7,
 ) -> Path:
     """Generate structured O-grid mesh for converging-diverging nozzle.
 
@@ -147,13 +148,6 @@ def generate_nozzle_mesh(
     # --- Transfinite meshing ---
 
     growth_ratio = 1.15
-
-    # Bump coefficient for wall curve clustering:
-    # < 1 clusters toward both ends (inlet + exit), > 1 toward middle.
-    # For nozzle flow, clustering near the throat improves resolution of the
-    # sonic transition. Coefficient 0.7 provides mild clustering toward the
-    # throat region from both sides.
-    bump_coeff = 0.7
 
     if rans_mode:
         # RANS: geometric progression for boundary layer refinement
