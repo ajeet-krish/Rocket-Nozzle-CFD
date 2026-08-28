@@ -84,6 +84,7 @@ class EngineConfig:
         """Build NozzleConfig from engine preset and overrides.
 
         Uses preset's computed_diverging_length (Rao formula) when ld is None.
+        Preserves chamber geometry from preset.
         """
         base = self.preset_fn()
         ld = self.ld if self.ld is not None else base.computed_diverging_length
@@ -92,10 +93,12 @@ class EngineConfig:
             expansion_ratio=base.expansion_ratio,
             converging_length=base.converging_length,
             diverging_length=ld,
-            chamber_length=0,
-            throat_radius_of_curvature=0,
+            chamber_length=base.chamber_length,
+            chamber_radius=base.chamber_radius,
+            throat_radius_of_curvature=base.throat_radius_of_curvature,
+            convergent_half_angle=base.convergent_half_angle,
             theta_n=self.theta_n,
             theta_e=0.0,
             nozzle_length_fraction=0,
-            num_points=300,
+            num_points=base.num_points,
         )
