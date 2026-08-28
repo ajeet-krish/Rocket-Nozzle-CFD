@@ -8,31 +8,15 @@ Compressible CFD analysis of converging-diverging rocket nozzles using SU2, with
 # Run all tests (287 tests)
 uv run pytest tests/ -v
 
-# Quick convergence spike (coarse mesh, ~2 min)
+# Per-engine pipeline (geometry + mesh + euler + rans + plume + sweep)
+uv run python run_merlin.py                  # All steps
+uv run python run_merlin.py --step geometry  # Just geometry plots
+uv run python run_merlin.py --step euler     # Just Euler simulation
+
+# Quick convergence test (~2 min)
 uv run python run_euler_spike.py
 
-# Full Euler simulation (fine mesh, ~10 min)
-uv run python run_euler.py
-
-# Plume extension with shock diamonds (Merlin 1D, ~15 min)
-uv run python run_plume.py
-
-# RANS simulation (requires Euler first, ~15 min)
-uv run python run_rans.py
-
-# RANS plume simulation (viscous shock diamonds, ~30 min)
-uv run python run_rans_plume.py
-
-# Post-processing (requires Euler + RANS)
-uv run python run_postprocess.py
-
-# Triple validation + GCI study
-uv run python run_validation.py
-
-# Parametric sweeps
-uv run python run_sweeps.py
-
-# Run everything in sequence
+# Run all engines in sequence
 uv run python run_all.py
 ```
 
@@ -45,13 +29,15 @@ uv run python run_all.py
 | `src/validation/` | Analytical validation | Isentropic, MoC, triple comparison, GCI |
 | `src/sweep/` | Parametric sweeps | Sweep config, runner, results, plots |
 | `src/viz/` | Visualization | Mach contour, shock diamonds, comparison |
+| `src/pipeline/` | Per-engine pipeline | EngineConfig, pipeline stages orchestration |
 | `tests/` | Test suite | 287 tests, pytest |
 | `docs/` | Portfolio HTML site | AK-Vortex theme, 5 pages |
-| `run_*.py` | Single-responsibility run files | 8 scripts for different CFD tasks |
+| `run_*.py` | Per-engine run files | 4 engine scripts + orchestrator + spike test |
 
 ## Key Interfaces
 
 - `NozzleConfig` - Frozen dataclass for nozzle geometry
+- `EngineConfig` - Per-engine CFD pipeline configuration
 - `SU2NozzleConfig` - SU2 config generation (v8.4.0)
 - `SU2RANSConfig` - RANS config with SST turbulence
 - `generate_nozzle_mesh()` - Gmsh O-grid with BL refinement
@@ -86,19 +72,37 @@ CFL_NUMBER= 0.1
 
 ## Mesh Generation
 
-**Critical: Use 6+ key points for spline, not just 3.**
+**Critical: Use geometry-aware key points, not index arithmetic.**
 
-The mesh generator uses key points from the nozzle contour to create a spline that matches the actual geometry. Using only 3 points (inlet, throat, exit) creates a curve that doesn't match the Rao bell shape.
+The mesh generator places key points at actual section transitions (entrant arc start, throat, exit arc end, bell transitions). Bump distribution clusters cells near the throat where curvature is highest.
 
 ```python
-# Good: Use 6+ key points
-key_indices = [0, n_points//8, throat_idx, n_points//2, n_points - 1]
+# Good: Geometry-aware key points
+key_indices = [0, throat_idx - offset, throat_idx, throat_idx + offset, n_points//2, n_points - 1]
 
-# Bad: Only 3 points
-key_indices = [0, throat_idx, n_points - 1]
+# Bad: Index arithmetic
+key_indices = [0, n_points//10, throat_idx, n_points//2, n_points - 1]
 ```
 
-**Mesh resolution:** Use 40x20 (800 elements) for accurate results. 20x10 (200 elements) gives 13% error.
+**Mesh resolution:** Use 40x20 (800 elements) for Merlin/Raptor. Finer meshes can cause SU2 divergence for these geometries.
+
+## Per-Engine Run Files
+
+Each engine has a dedicated run file with `--step` flag:
+
+| Engine | File | Mesh | CFL | Back Pressure |
+|--------|------|------|-----|---------------|
+| Merlin 1D | `run_merlin.py` | 40x20 | 0.1 | Sea level |
+| Raptor SL | `run_raptor.py` | 40x20 | 0.1 | Sea level |
+| RS-25 | `run_rs25.py` | 60x30 | 0.05 | Vacuum (100 Pa) |
+| RL10B-2 | `run_rl10b2.py` | 80x40 | 0.03 | Vacuum (100 Pa) |
+
+**Steps:** `geometry`, `mesh`, `euler`, `rans`, `plume`, `sweep`, `all`
+
+## Output Structure
+
+- **Plots** -> `docs/assets/images/{engine}/{step}/`
+- **Artifacts** (VTU, mesh, config) -> `output/{engine}/{step}/`
 
 ## VTU Parsing
 
@@ -113,9 +117,9 @@ Use `parse_vtu()` from `src/cfd/vtu_parser.py` - it handles both ASCII and binar
 
 | Setting | Euler | RANS |
 |---------|-------|------|
-| CFL | 0.1 | 0.1 |
+| CFL | 0.1 (Merlin/Raptor), 0.05 (RS-25), 0.03 (RL10B-2) | 0.05 (Merlin/Raptor), 0.03 (RS-25), 0.02 (RL10B-2) |
 | MUSCL | NO | NO |
-| Iterations | 5000 | 5000 |
+| Iterations | 5000 (Merlin/Raptor), 10000 (RS-25), 15000 (RL10B-2) | 10000 (Merlin/Raptor), 15000 (RS-25), 20000 (RL10B-2) |
 | Convergence | RMS_DENSITY < -6 | RMS_DENSITY + RMS_TKE < -6 |
 
 **RANS requires proper freestream initialization:**
@@ -124,6 +128,15 @@ FREESTREAM_PRESSURE= 10000000.0
 FREESTREAM_TEMPERATURE= 3500.0
 MACH_NUMBER= 0.01
 ```
+
+## Validation Results
+
+| Engine | Isentropic Mach | Euler Mach | Euler Error | RANS Mach | Notes |
+|--------|----------------|------------|-------------|-----------|-------|
+| Merlin 1D | 4.4593 | 4.4717 | 0.28% | 4.2547 | Sea level |
+| Raptor SL | 5.3933 | 5.1431 | 4.64% | 4.8180 | Sea level |
+| RS-25 | 6.5463 | 6.4055 | 2.15% | 5.2510 | Vacuum (100 Pa) |
+| RL10B-2 | 8.7362 | 7.4913 | 14.25% | -- | Vacuum, extreme 285:1 ratio |
 
 ## Matplotlib Plotting
 
@@ -140,15 +153,6 @@ ax.tricontour(triang, mach, levels=20, colors='k', linewidths=0.3, alpha=0.5)
 ## Axisymmetric Simulation
 
 The nozzle is rotationally symmetric. SU2's `AXISYMMETRIC=YES` flag solves the axisymmetric equations, which is equivalent to 3D but with a 2D mesh. The mesh shows only the top half; the bottom is the axis of symmetry.
-
-## Validation Targets
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| Exit Mach error | < 5% | 4.14% (Euler) |
-| Triple validation | < 5% | 1.31% |
-| GCI | < 5% | PASSED |
-| RANS vs Euler | ~20% | 21% |
 
 ## Conventions
 

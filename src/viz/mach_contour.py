@@ -45,15 +45,19 @@ def plot_mach_contour(
         coords = data.coordinates
         mach = data.mach
 
+        # Clamp Mach to reasonable range for color scale
+        # (diverged solutions can produce garbage values like Mach 400+)
+        mach_clamped = np.clip(mach, 0, 20)
+
         # Create triangulation for filled contour plot
         triang = Triangulation(coords[:, 0], coords[:, 1])
 
         # Create figure
         fig, ax = plt.subplots(1, 1, figsize=(12, 4))
 
-        # Filled contour plot
+        # Filled contour plot with consistent scale
         contour = ax.tricontourf(
-            triang, mach, levels=20, cmap='jet', vmin=0, vmax=mach.max(),
+            triang, mach_clamped, levels=20, cmap='jet', vmin=0, vmax=15,
         )
 
         # Add contour lines for better visualization
