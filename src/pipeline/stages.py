@@ -38,7 +38,7 @@ def run_geometry_stage(config: EngineConfig) -> int:
     images_dir = Path(config.images_dir) / "geometry"
     images_dir.mkdir(parents=True, exist_ok=True)
 
-    nozzle_config = config.nozzle_config()
+    nozzle_config = config.viz_config  # Full preset for viz (includes chamber)
 
     from viz.contour_annotated import plot_annotated_contour
     from viz.nozzle_3d import plot_nozzle_3d

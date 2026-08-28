@@ -80,11 +80,17 @@ class EngineConfig:
         """Images directory for plots (base)."""
         return f"docs/assets/images/{self.name}"
 
+    @property
+    def viz_config(self) -> NozzleConfig:
+        """Full preset config for visualization (includes chamber)."""
+        return self.preset_fn()
+
     def nozzle_config(self) -> NozzleConfig:
         """Build NozzleConfig from engine preset and overrides.
 
         Uses preset's computed_diverging_length (Rao formula) when ld is None.
-        Preserves chamber geometry from preset.
+        For CFD: chamber_length=0 (chamber causes SU2 divergence).
+        For viz: use preset's full geometry (chamber included).
         """
         base = self.preset_fn()
         ld = self.ld if self.ld is not None else base.computed_diverging_length
@@ -93,7 +99,7 @@ class EngineConfig:
             expansion_ratio=base.expansion_ratio,
             converging_length=base.converging_length,
             diverging_length=ld,
-            chamber_length=base.chamber_length,
+            chamber_length=0,  # Chamber causes SU2 divergence
             chamber_radius=base.chamber_radius,
             throat_radius_of_curvature=base.throat_radius_of_curvature,
             convergent_half_angle=base.convergent_half_angle,
