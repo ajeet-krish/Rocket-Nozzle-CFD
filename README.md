@@ -44,10 +44,10 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 | Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | RANS Exit Mach | Euler vs RANS | Back Pressure |
 |--------|---------------------|-----------------|-------------|----------------|---------------|---------------|
 | Generic | 4.4593 | 4.4927 | 0.73% | 4.1017 | 8.70% | Sea level |
-| Merlin 1D | 4.4593 | 4.4717 | 0.28% | 4.2547 | 4.85% | Sea level |
-| Raptor SL | 5.3933 | 5.1431 | 4.64% | 4.8180 | 6.32% | Sea level |
-| RS-25 | 6.5463 | 6.4055 | 2.15% | 5.2510 | 12.1% | Vacuum |
-| RL10B-2 | 8.7362 | 7.4913 | 14.25% | -- | -- | Vacuum |
+| Merlin 1D | 4.4593 | 4.3716 | 1.97% | 4.3869 | 0.35% | Sea level |
+| Raptor SL | 5.3933 | 5.4130 | 0.36% | 4.8624 | 10.2% | Sea level |
+| RS-25 | 6.5463 | 6.4063 | 2.14% | 5.0242 | 21.6% | Vacuum |
+| RL10B-2 | 8.7362 | 7.5012 | 14.14% | 6.4027 | 14.6% | Vacuum |
 
 ---
 
@@ -329,26 +329,32 @@ The nozzle contour uses a Rao parabolic bell approximation (Sutton & Biblarz, "R
 
 ### Mesh Generation
 
-Structured O-grid mesh generated using Gmsh transfinite meshing:
-- Single-surface mesh with spline wall curve
-- 60x30 cells (1,800 elements) for Euler validation
-- 40x30 cells (1,200 elements) for RANS
+Structured O-grid mesh generated using Gmsh transfinite meshing with geometry-aware key points and Bump distribution for throat clustering:
+
+| Engine | Mesh | Bump | CFL | Back Pressure | Key Settings |
+|--------|------|------|-----|---------------|--------------|
+| Merlin 1D | 40x20 | 0.7 | 0.1 | Sea level | theta_n=30, ld=0.7m |
+| Raptor SL | 50x25 | 0.7 | 0.1 | Sea level | theta_n=28, ld=computed |
+| RS-25 | 60x30 | 0.7 | 0.05 | Vacuum (100 Pa) | theta_n=25, ld=computed |
+| RL10B-2 | 80x40 | 0.7 | 0.03 | Vacuum (100 Pa) | theta_n=20, ld=computed |
+
 - Conformal plume extension using negative curve index (`plume_left = -exit_line`)
 - Plume domain: 10x throat length, 2x exit radius
+- RANS mode: Progression 1.15 for boundary layer refinement
+- Euler mode: Progression 1.05 for mild wall refinement
 
 ### CFD Solver
 
 **Euler (inviscid):**
 - SOLVER= EULER, AXISYMMETRIC= YES
 - ROE flux scheme, first-order (MUSCL=NO)
-- CFL=0.05 with adaptation, 5000 iterations
 - Inlet: total conditions (Pc, T0)
-- Outlet: static pressure (101325 Pa)
+- Outlet: static pressure (101325 Pa or 100 Pa for vacuum engines)
 - Farfield: characteristic non-reflecting BC (plume domain)
 
 **RANS (viscous):**
 - SOLVER= RANS, KIND_TURB_MODEL= SST
-- Freestream: ambient conditions (101325 Pa, 300K)
+- Freestream: ambient conditions
 - Inlet BC drives the flow through the nozzle
 - Adiabatic wall boundary conditions
 
