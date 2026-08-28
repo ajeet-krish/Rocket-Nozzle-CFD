@@ -93,7 +93,12 @@ def plot_nozzle_3d(
         color="#1565C0", linewidth=1.0, alpha=0.6, linestyle="--",
     )
 
-    # 7. Remove axis panes for cleaner look
+    # 7. Set aspect ratio matching actual nozzle proportions
+    z_range = float(x.max() - x.min())
+    xy_diameter = float(y.max()) * 2
+    ax.set_box_aspect([1.0, 1.0, z_range / xy_diameter])
+
+    # Clean axis panes
     ax.xaxis.pane.fill = False
     ax.yaxis.pane.fill = False
     ax.zaxis.pane.fill = False
