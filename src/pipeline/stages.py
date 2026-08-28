@@ -101,6 +101,7 @@ def run_mesh_stage(config: EngineConfig, plume: bool = False) -> int:
         plume_extension=plume,
         plume_length_ratio=config.plume_length_ratio,
         plume_radius_ratio=config.plume_radius_ratio,
+        multi_curve=config.multi_curve,
     )
     print(f"  Mesh: {mesh_path}")
     return 0
@@ -140,6 +141,7 @@ def run_euler_stage(config: EngineConfig) -> int:
         n_normal=config.euler_n_normal,
         output_file=str(workdir / "nozzle.su2"),
         plume_extension=False,
+        multi_curve=config.multi_curve,
     )
 
     cfg_path = su2.write(workdir)
@@ -203,6 +205,7 @@ def run_rans_stage(config: EngineConfig) -> int:
         output_file=str(workdir / "nozzle.su2"),
         rans_mode=False,
         plume_extension=False,
+        multi_curve=config.multi_curve,
     )
 
     cfg_path = rans_config.write(workdir)
@@ -267,6 +270,7 @@ def run_plume_stage(config: EngineConfig) -> int:
         plume_extension=True,
         plume_length_ratio=config.plume_length_ratio,
         plume_radius_ratio=config.plume_radius_ratio,
+        multi_curve=config.multi_curve,
     )
 
     cfg_path = su2.write(workdir)

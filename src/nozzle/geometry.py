@@ -1,6 +1,34 @@
 """Nozzle contour generation (conical and Rao bell)."""
+from dataclasses import dataclass
 import numpy as np
 from .config import NozzleConfig
+
+
+@dataclass
+class ContourSection:
+    """A section of the nozzle contour.
+
+    Attributes:
+        name: Section identifier ("chamber", "convergent", "entrant_arc",
+              "exit_arc", "bell")
+        x: Axial coordinates (m)
+        y: Radial coordinates (m)
+        curve_type: Gmsh curve type ("line", "spline", "circle_arc")
+        center_x: Circle arc center x (only for circle_arc)
+        center_y: Circle arc center y (only for circle_arc)
+        radius: Circle arc radius (only for circle_arc)
+        start_angle: Circle arc start angle in radians (only for circle_arc)
+        end_angle: Circle arc end angle in radians (only for circle_arc)
+    """
+    name: str
+    x: np.ndarray
+    y: np.ndarray
+    curve_type: str  # "line", "spline", "circle_arc"
+    center_x: float = 0.0
+    center_y: float = 0.0
+    radius: float = 0.0
+    start_angle: float = 0.0
+    end_angle: float = 0.0
 
 
 def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
@@ -153,6 +181,162 @@ def generate_contour(config: NozzleConfig) -> tuple[np.ndarray, np.ndarray]:
     y = np.concatenate(y_parts)
 
     return x, y
+
+
+def generate_contour_sections(config: NozzleConfig) -> list[ContourSection]:
+    """Generate nozzle contour as a list of geometric sections.
+
+    Returns sections in order: chamber, convergent, entrant_arc, exit_arc, bell.
+    Each section has the curve type needed for Gmsh mesh generation.
+
+    The section boundaries are shared points (no gaps) suitable for creating
+    separate Gmsh curves that meet at section transitions.
+
+    Args:
+        config: Nozzle geometry parameters
+
+    Returns:
+        List of ContourSection objects, one per geometric section.
+        Empty sections (zero-length) are omitted.
+    """
+    # Use computed diverging length (from ideal formula if nozzle_length_fraction set)
+    div_length = config.computed_diverging_length
+
+    # Determine section point counts
+    if config.chamber_length > 0:
+        n_chamber = max(config.num_points // 5, 10)
+        n_converge = max(config.num_points // 4, 10)
+        n_diverge = config.num_points - n_chamber - n_converge
+    else:
+        n_chamber = 0
+        n_converge = config.num_points // 4
+        n_diverge = config.num_points - n_converge
+
+    sections: list[ContourSection] = []
+
+    # Compute entrant arc parameters
+    entrant_radius = 1.5 * config.throat_radius
+    center_y_entrant = 2.5 * config.throat_radius
+    angle_end_entrant = -np.pi / 2  # -90 deg (horizontal at throat)
+
+    angle_start_target = np.radians(-135)
+    x_arc_start_target = entrant_radius * np.cos(angle_start_target)
+
+    x_converge_end = max(x_arc_start_target, -config.converging_length)
+
+    if abs(x_converge_end - x_arc_start_target) > 1e-12:
+        cos_angle = np.clip(x_converge_end / entrant_radius, -1, 1)
+        angle_start_entrant = -np.arccos(cos_angle)
+    else:
+        angle_start_entrant = angle_start_target
+
+    y_arc_start = entrant_radius * np.sin(angle_start_entrant) + center_y_entrant
+    slope_arc_start = -np.cos(angle_start_entrant) / (
+        np.sin(angle_start_entrant) + 1e-20
+    )
+
+    # Section 1: Chamber (straight cylinder)
+    if config.chamber_length > 0:
+        x_start = -(config.converging_length + config.chamber_length)
+        x_chamber_end = -config.converging_length
+        x_chamber = np.linspace(x_start, x_chamber_end, n_chamber)
+        y_chamber = np.full_like(x_chamber, config.effective_inlet_radius)
+        sections.append(ContourSection(
+            name="chamber",
+            x=x_chamber, y=y_chamber,
+            curve_type="line",
+        ))
+
+    # Section 2: Convergent (ends at entrant arc start point)
+    if x_converge_end > -config.converging_length + 1e-12:
+        x_converge = np.linspace(-config.converging_length, x_converge_end, n_converge)
+
+        if config.throat_radius_of_curvature > 0:
+            y_converge = _curved_convergent_to_arc(
+                config.effective_inlet_radius,
+                y_arc_start,
+                x_converge,
+                slope_arc_start,
+            )
+            curve_type = "spline"
+        else:
+            y_converge = np.linspace(
+                config.effective_inlet_radius, y_arc_start, n_converge
+            )
+            curve_type = "line"
+
+        sections.append(ContourSection(
+            name="convergent",
+            x=x_converge, y=y_converge,
+            curve_type=curve_type,
+        ))
+
+    # Section 3a: Entrant arc (1.5*Rt radius, smooth throat transition)
+    n_entrant = min(max(n_diverge // 5, 20), n_diverge - 2)
+    x_entrant, y_entrant = _entrant_arc(
+        config.throat_radius, angle_start_entrant, angle_end_entrant, n_entrant
+    )
+    sections.append(ContourSection(
+        name="entrant_arc",
+        x=x_entrant, y=y_entrant,
+        curve_type="circle_arc",
+        center_x=0.0,
+        center_y=center_y_entrant,
+        radius=entrant_radius,
+        start_angle=angle_start_entrant,
+        end_angle=angle_end_entrant,
+    ))
+
+    # Section 3b: Exit arc
+    exit_arc_radius = (
+        config.throat_radius_of_curvature
+        if config.throat_radius_of_curvature > 0
+        else 0.382 * config.throat_radius
+    )
+    theta_n_rad = np.radians(config.theta_n)
+    n_exit_arc = min(max(n_diverge // 5, 20), n_diverge - n_entrant - 1)
+    angle_start_exit = -np.pi / 2
+    angle_end_exit = theta_n_rad - np.pi / 2
+    angles_exit = np.linspace(angle_start_exit, angle_end_exit, n_exit_arc)
+    x_exit_arc = exit_arc_radius * np.cos(angles_exit)
+    y_exit_arc = (
+        exit_arc_radius * np.sin(angles_exit)
+        + exit_arc_radius
+        + config.throat_radius
+    )
+    center_y_exit = exit_arc_radius + config.throat_radius
+    sections.append(ContourSection(
+        name="exit_arc",
+        x=x_exit_arc, y=y_exit_arc,
+        curve_type="circle_arc",
+        center_x=0.0,
+        center_y=center_y_exit,
+        radius=exit_arc_radius,
+        start_angle=angle_start_exit,
+        end_angle=angle_end_exit,
+    ))
+
+    # Section 3c: Bell (quadratic Bezier)
+    x_arc_end = x_exit_arc[-1]
+    y_arc_end = y_exit_arc[-1]
+    slope_arc_end = np.tan(theta_n_rad)
+    n_bell = max(n_diverge - n_entrant - n_exit_arc, 1)
+    x_bell = np.linspace(x_arc_end, div_length, n_bell)
+    y_bell = _rao_bell_bezier(
+        y_arc_end,
+        config.exit_radius,
+        div_length - x_arc_end,
+        x_bell - x_arc_end,
+        slope_start=slope_arc_end,
+        slope_end=np.tan(np.radians(config.theta_e)),
+    )
+    sections.append(ContourSection(
+        name="bell",
+        x=x_bell, y=y_bell,
+        curve_type="spline",
+    ))
+
+    return sections
 
 
 def _entrant_arc(

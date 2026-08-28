@@ -29,6 +29,7 @@ CONFIG = EngineConfig(
     sweep_expansion_ratios=(8.0, 12.0, 16.0, 20.0, 24.0),
     sweep_chamber_pressures=(5e6, 9.7e6, 15e6, 20e6),
     sweep_throat_radii=(0.05, 0.0825, 0.1, 0.15),
+    multi_curve=True,  # Merlin has small expansion ratio; multi-curve works
 )
 
 
