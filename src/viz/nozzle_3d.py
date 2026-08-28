@@ -93,9 +93,10 @@ def plot_nozzle_3d(
         color="#1565C0", linewidth=1.0, alpha=0.6, linestyle="--",
     )
 
-    # 7. Equal aspect
-    ax.set_box_aspect([1, 1, 1])
-    _set_axes_equal_3d(ax)
+    # 7. Remove axis panes for cleaner look
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
 
     # 8. View
     ax.view_init(elev=elevation, azim=azimuth)
