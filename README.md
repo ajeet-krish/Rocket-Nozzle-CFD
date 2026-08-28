@@ -44,10 +44,10 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 | Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | RANS Exit Mach | Euler vs RANS | Back Pressure |
 |--------|---------------------|-----------------|-------------|----------------|---------------|---------------|
 | Generic | 4.4593 | 4.4927 | 0.73% | 4.1017 | 8.70% | Sea level |
-| Merlin 1D | 4.4593 | 4.3716 | 1.97% | 4.3869 | 0.35% | Sea level |
-| Raptor SL | 5.3933 | 5.4130 | 0.36% | 4.8624 | 10.2% | Sea level |
-| RS-25 | 6.5463 | 6.4063 | 2.14% | 5.0242 | 21.6% | Vacuum |
-| RL10B-2 | 8.7362 | 7.5012 | 14.14% | 6.4027 | 14.6% | Vacuum |
+| Merlin 1D | 4.4593 | 4.4416 | 0.40% | 4.4501 | 0.19% | Sea level |
+| Raptor SL | 5.3933 | 5.4761 | 1.54% | 4.8830 | 10.8% | Sea level |
+| RS-25 | 6.5463 | 6.4442 | 1.56% | 5.8567 | 9.1% | Vacuum |
+| RL10B-2 | 8.7362 | 7.7090 | 11.76% | 6.5617 | 14.9% | Vacuum |
 
 ---
 
@@ -379,12 +379,12 @@ rocket-nozzle-cfd/
   pyproject.toml              # uv managed, Python >=3.13
   src/
     nozzle/                   # Geometry generation
-      config.py               # NozzleConfig dataclass (v2)
-      geometry.py             # Rao bell contour (Bezier)
-      presets.py              # Engine presets (Merlin 1D, RS-25, RL10B-2)
+      config.py               # NozzleConfig dataclass
+      geometry.py             # Rao bell contour (Bezier + arcs)
+      presets.py              # Engine presets (Merlin 1D, Raptor, RS-25, RL10B-2)
     cfd/                      # SU2 mesh and solver
       config.py               # SU2NozzleConfig (v8.4.0)
-      mesh.py                 # Gmsh O-grid generator
+      mesh.py                 # Gmsh O-grid (multi-curve option)
       mesh_quality.py         # Mesh quality computation
       rans_config.py          # SU2RANSConfig (SST)
       solver.py               # SU2 subprocess runner
@@ -399,25 +399,24 @@ rocket-nozzle-cfd/
       runner.py               # Sweep orchestration
       plotter.py              # Parametric plots
     viz/                      # Visualization
-      postprocessing.py       # Wall pressure, shock diamonds
       mach_contour.py         # Mach contour (tricontourf)
+      convergence.py          # Residual convergence plots
+      contour_annotated.py    # Annotated 2D geometry
+      nozzle_3d.py            # 3D revolved surface
       comparison.py           # Euler vs RANS plots
-  tests/                      # 322 tests
+      postprocessing.py       # Wall pressure, shock diamonds
+    pipeline/                 # Per-engine pipeline
+      engine_config.py        # EngineConfig dataclass
+      stages.py               # Pipeline stages
+  tests/                      # 324 tests
   docs/                       # Portfolio HTML site
-    assets/images/euler/      # ParaView Euler screenshots
-    assets/images/rans/       # ParaView RANS screenshots
-    assets/images/merlin/     # Merlin 1D screenshots
-    assets/images/rs25/       # RS-25 screenshots
-    assets/images/rl10b2/     # RL10B-2 screenshots
+    assets/images/{engine}/   # Per-engine geometry, euler, rans, plume, sweeps
+  run_merlin.py               # Merlin 1D pipeline
+  run_raptor.py               # Raptor SL pipeline
+  run_rs25.py                 # RS-25 pipeline
+  run_rl10b2.py               # RL10B-2 pipeline
+  run_all.py                  # Run all engines
   run_euler_spike.py          # Quick convergence test
-  run_euler.py                # Full Euler simulation
-  run_plume.py                # Plume extension (shock diamonds)
-  run_rans.py                 # RANS SST simulation
-  run_rans_plume.py           # RANS plume simulation
-  run_postprocess.py          # Post-processing plots
-  run_validation.py           # Triple validation + GCI
-  run_sweeps.py               # Parametric sweeps
-  run_all.py                  # Run everything in sequence
 ```
 
 ---
@@ -428,31 +427,15 @@ rocket-nozzle-cfd/
 # Install dependencies
 uv sync
 
+# Per-engine pipeline (geometry + mesh + euler + rans + plume + sweep)
+uv run python run_merlin.py                  # All steps
+uv run python run_merlin.py --step geometry  # Just geometry plots
+uv run python run_merlin.py --step euler     # Just Euler simulation
+
 # Quick convergence test (~2 min)
 uv run python run_euler_spike.py
 
-# Full Euler simulation (~10 min)
-uv run python run_euler.py
-
-# Plume extension with shock diamonds (~10 min)
-uv run python run_plume.py
-
-# RANS simulation (requires Euler first, ~15 min)
-uv run python run_rans.py
-
-# RANS plume simulation (viscous shock diamonds, ~30 min)
-uv run python run_rans_plume.py
-
-# Post-processing (requires Euler + RANS)
-uv run python run_postprocess.py
-
-# Triple validation + GCI study
-uv run python run_validation.py
-
-# Parametric sweeps
-uv run python run_sweeps.py
-
-# Run everything in sequence
+# Run all engines in sequence
 uv run python run_all.py
 
 # Run all tests
