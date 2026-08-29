@@ -248,8 +248,19 @@ def run_rans_stage(config: EngineConfig) -> int:
 
     vtu = workdir / "flow.vtu"
     if vtu.exists():
-        from viz.mach_contour import plot_mach_contour
+        from viz.mach_contour import (
+            plot_mach_contour,
+            plot_pressure_contour,
+            plot_velocity_contour,
+        )
         plot_mach_contour(vtu, images_dir / "mach_contour_rans.png", nozzle_config=nozzle_config)
+        plot_pressure_contour(vtu, images_dir / "pressure_contour_rans.png", nozzle_config=nozzle_config)
+        plot_velocity_contour(vtu, images_dir / "velocity_contour_rans.png", nozzle_config=nozzle_config)
+
+    history = workdir / "history.csv"
+    if history.exists():
+        from viz.convergence import plot_convergence
+        plot_convergence(history, images_dir / "convergence_rans.png")
 
     print(f"  Exit Mach: {results.exit_mach:.4f}, Time: {elapsed:.1f}s")
 

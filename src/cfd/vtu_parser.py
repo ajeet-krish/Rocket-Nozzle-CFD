@@ -77,14 +77,26 @@ def _parse_vtu_ascii(vtu_path: Path) -> VTUData:
     
     coordinates = np.vstack(coords_list)
     
+    # Handle combined Velocity field (3-component) vs separate Velocity_x/Velocity_y
+    velocity_x = fields.get("Velocity_x")
+    velocity_y = fields.get("Velocity_y")
+    if velocity_x is None and "Velocity" in fields:
+        vel = fields["Velocity"]
+        if vel.ndim == 2 and vel.shape[1] >= 2:
+            velocity_x = vel[:, 0]
+            velocity_y = vel[:, 1]
+        elif vel.ndim == 1:
+            # Single-component velocity (shouldn't happen, but be safe)
+            velocity_x = vel
+    
     return VTUData(
         coordinates=coordinates,
         mach=fields.get("Mach"),
         pressure=fields.get("Pressure"),
         temperature=fields.get("Temperature"),
         density=fields.get("Density"),
-        velocity_x=fields.get("Velocity_x"),
-        velocity_y=fields.get("Velocity_y"),
+        velocity_x=velocity_x,
+        velocity_y=velocity_y,
         tke=fields.get("TKE"),
     )
 
@@ -168,6 +180,12 @@ def _parse_vtu_appended(vtu_path: Path) -> VTUData:
                     
                     data = np.frombuffer(binary_content[data_start_offset:data_start_offset + n_bytes],
                                         dtype=dtype)
+                    # Handle multi-component fields (e.g., Velocity with NumberOfComponents=3)
+                    n_components_str = data_array.get('NumberOfComponents')
+                    if n_components_str is not None:
+                        n_components = int(n_components_str)
+                        if n_components > 1 and len(data) % n_components == 0:
+                            data = data.reshape(-1, n_components)
                     fields[name] = data
     
     if not coords_list:
@@ -175,13 +193,24 @@ def _parse_vtu_appended(vtu_path: Path) -> VTUData:
     
     coordinates = np.vstack(coords_list)
     
+    # Handle combined Velocity field (3-component) vs separate Velocity_x/Velocity_y
+    velocity_x = fields.get("Velocity_x")
+    velocity_y = fields.get("Velocity_y")
+    if velocity_x is None and "Velocity" in fields:
+        vel = fields["Velocity"]
+        if vel.ndim == 2 and vel.shape[1] >= 2:
+            velocity_x = vel[:, 0]
+            velocity_y = vel[:, 1]
+        elif vel.ndim == 1:
+            velocity_x = vel
+    
     return VTUData(
         coordinates=coordinates,
         mach=fields.get("Mach"),
         pressure=fields.get("Pressure"),
         temperature=fields.get("Temperature"),
         density=fields.get("Density"),
-        velocity_x=fields.get("Velocity_x"),
-        velocity_y=fields.get("Velocity_y"),
+        velocity_x=velocity_x,
+        velocity_y=velocity_y,
         tke=fields.get("TKE"),
     )
