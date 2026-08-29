@@ -121,16 +121,12 @@ def plot_multi_3d(
     # Global axial extent: minimum shifted z across all nozzles (exit at z=0)
     global_z_min = min(float(c[0].min() - c[0].max()) for c in contours)
 
-    # Figure
-    fig = plt.figure(figsize=(14, 12))
+    # Figure: single row, 4 columns
+    fig = plt.figure(figsize=(20, 6))
     fig.patch.set_facecolor("white")
 
-    positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
-
-    for idx, ((name, cfg), (row, col)) in enumerate(
-        zip(engines, positions)
-    ):
-        ax = fig.add_subplot(2, 2, idx + 1, projection="3d")
+    for idx, (name, cfg) in enumerate(engines):
+        ax = fig.add_subplot(1, 4, idx + 1, projection="3d")
         ax.set_facecolor("white")
 
         _draw_nozzle_on_ax(ax, cfg, z_offset=0.0, n_theta=n_theta, colormap=colormap)
@@ -148,7 +144,9 @@ def plot_multi_3d(
 
         ax.view_init(elev=elevation, azim=azimuth)
 
-        ax.set_title(name, fontsize=14, fontweight="bold", color="black", pad=10)
+        # Engine name below the plot
+        ax.set_xlabel(name, fontsize=12, fontweight="bold", color="black",
+                       labelpad=12)
 
     plt.tight_layout(pad=2.0)
 
