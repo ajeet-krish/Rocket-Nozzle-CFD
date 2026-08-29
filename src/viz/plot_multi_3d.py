@@ -149,11 +149,11 @@ def plot_multi_3d(
         # Center x-position for each subplot in a 1x4 layout
         x_center = (idx + 0.5) / 4
         fig.text(x_center, 0.02, name, ha="center", va="bottom",
-                 fontsize=12, fontweight="bold", color="black")
+                 fontsize=16, fontweight="bold", color="black")
 
     plt.tight_layout(pad=1.5)
     # Shift subplots up to make room for labels below
-    fig.subplots_adjust(bottom=0.12)
+    fig.subplots_adjust(bottom=0.15)
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
