@@ -144,11 +144,16 @@ def plot_multi_3d(
 
         ax.view_init(elev=elevation, azim=azimuth)
 
-        # Engine name below the plot
-        ax.set_xlabel(name, fontsize=12, fontweight="bold", color="black",
-                       labelpad=12)
+    # Add engine names below each subplot in figure coordinates
+    for idx, (name, _) in enumerate(engines):
+        # Center x-position for each subplot in a 1x4 layout
+        x_center = (idx + 0.5) / 4
+        fig.text(x_center, 0.02, name, ha="center", va="bottom",
+                 fontsize=12, fontweight="bold", color="black")
 
-    plt.tight_layout(pad=2.0)
+    plt.tight_layout(pad=1.5)
+    # Shift subplots up to make room for labels below
+    fig.subplots_adjust(bottom=0.12)
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
