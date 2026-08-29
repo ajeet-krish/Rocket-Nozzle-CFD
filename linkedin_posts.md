@@ -10,13 +10,11 @@ A collection of post ideas for sharing compressible CFD rocket nozzle analysis o
 Why does a rocket engine have an hourglass shape? The answer is one of the most elegant tricks in fluid dynamics.
 
 **Body:**
-A converging-diverging nozzle (de Laval nozzle) accelerates gas from subsonic to supersonic speeds using nothing but geometry. In the converging section, the flow speeds up as the cross-section shrinks. But here is the counterintuitive part: in the diverging section, the flow accelerates further even though the area is expanding.
+A converging-diverging nozzle (de Laval nozzle) accelerates gas from subsonic to supersonic speeds using nothing but geometry. In the converging section, flow speeds up as the area shrinks. At the throat, the gas hits Mach 1. Then the physics flip: compressibility takes over. Density drops faster than the area increases, so velocity must rise to conserve mass. The diverging section becomes a supersonic accelerator.
 
-The key is compressibility. At low speeds, a smaller pipe means faster flow (think garden hose). But once the gas reaches Mach 1 at the throat, the physics flip. Density drops faster than the area increases, so velocity must go up to conserve mass. The diverging section becomes a supersonic accelerator.
+I modeled this using the SpaceX Merlin 1D, the engine powering every Falcon 9 first stage. It burns LOX/RP-1 at 9.7 MPa with a 16:1 expansion ratio. The Merlin is the most-flown rocket engine in history, driven by a gas-generator cycle and pintle injector design that keeps it simple, reliable, and cheap to produce.
 
-I modeled this using the SpaceX Merlin 1D, the engine that powers every Falcon 9 first stage. It burns LOX/RP-1 at 9.7 MPa chamber pressure with a 16:1 expansion ratio. The Merlin is the most-flown rocket engine in history, and its gas-generator cycle with a pintle injector keeps the design simple and reliable. SpaceX produces hundreds per year at roughly $1M per unit, which is a fraction of what comparable engines cost.
-
-Using SU2, a compressible CFD solver, I ran RANS simulations with the SST k-omega turbulence model to capture viscous effects. The Mach contours show the flow accelerating from near-zero in the chamber to supersonic speeds at the exit. You can see the boundary layer developing along the nozzle wall -- a thin region where viscous friction slows the gas. The pressure contours show the monotonic decay from chamber to exit, and the velocity field confirms the core flow reaching over 2000 m/s while the near-wall region lags behind.
+Using SU2 and RANS with the SST k-omega model, I captured the full viscous flow field. The Mach contours show acceleration from near-zero in the chamber to supersonic at the exit, with a thin boundary layer developing along the wall where friction slows the gas. Pressure decays monotonically through the nozzle, and the velocity field confirms the core flow reaching over 2000 m/s while the near-wall region lags behind.
 
 **Key takeaway:**
 The nozzle shape is not arbitrary. It is the physical embodiment of compressible flow physics, and the Merlin 1D is a masterclass in optimizing it for real-world missions.
