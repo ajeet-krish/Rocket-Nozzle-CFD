@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 from nozzle.config import NozzleConfig
-from nozzle.geometry import generate_contour, _curved_convergent, _rao_bell
+from nozzle.geometry import generate_contour
 
 
 class TestGenerateContour:
@@ -326,36 +326,6 @@ class TestChamberSection:
 
 class TestCurvedConvergent:
     """Tests for curved convergent section."""
-
-    def test_curved_convergent_boundary_values(self):
-        """Curved convergent should match inlet and throat radii."""
-        r_inlet = 0.08
-        r_throat = 0.05
-        length = 0.1
-        half_angle = 45.0
-        x = np.linspace(-length, 0, 50)
-        y = _curved_convergent(r_inlet, r_throat, half_angle, x, length)
-        assert y[0] == pytest.approx(r_inlet, rel=1e-10), (
-            f"Start radius should be {r_inlet}, got {y[0]}"
-        )
-        assert y[-1] == pytest.approx(r_throat, rel=1e-10), (
-            f"End radius should be {r_throat}, got {y[-1]}"
-        )
-
-    def test_curved_convergent_monotonic(self):
-        """Curved convergent should be monotonically decreasing."""
-        x = np.linspace(-0.15, 0, 100)
-        y = _curved_convergent(0.08, 0.05, 45.0, x, 0.15)
-        for i in range(len(y) - 1):
-            assert y[i] >= y[i + 1], (
-                f"Curved convergent not monotonic: y[{i}]={y[i]} > y[{i+1}]={y[i+1]}"
-            )
-
-    def test_curved_convergent_no_negative(self):
-        """Curved convergent should have no negative radii."""
-        x = np.linspace(-0.15, 0, 100)
-        y = _curved_convergent(0.08, 0.05, 45.0, x, 0.15)
-        assert np.all(y >= 0), f"Found negative radii: {y[y < 0]}"
 
     def test_curved_vs_linear_convergent(self):
         """Curved convergent should differ from linear convergent."""

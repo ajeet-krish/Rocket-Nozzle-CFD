@@ -123,7 +123,7 @@
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/merlin-1d/euler/mach_contour_euler.png" alt="Euler Mach contour" loading="lazy">
+            <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Euler Mach contour" loading="lazy">
             <p>Exit Mach: 4.44 (0.40% error)</p>
           </div>
           <div class="comparison-grid__item">
@@ -133,28 +133,15 @@
           </div>
         </div>
 
-        <h3>Pressure Distribution</h3>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/merlin-1d/euler/pressure_contour_euler.png" alt="Pressure contour" loading="lazy">
-        </div>
-        <p>Static pressure drops from 9.7 MPa (chamber) to 101 kPa (ambient) through the nozzle.</p>
-
         <h3>Shock Diamonds</h3>
         <div class="walkthrough-step__media">
-          <img src="assets/images/merlin-1d/euler/shock_diamond_euler.png" alt="Shock diamonds" loading="lazy">
+          <img src="assets/images/merlin-1d/plume/shock_diamonds.png" alt="Shock diamonds" loading="lazy">
         </div>
         <p>Density gradient magnitude reveals shock diamond pattern in exhaust plume.</p>
 
         <h3>Plume Extension</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler Plume</h4>
-            <img src="assets/images/merlin-1d/euler/plume_euler_generic.png" alt="Euler plume" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS Plume</h4>
-            <img src="assets/images/merlin-1d/rans/plume_rans_generic.png" alt="RANS plume" loading="lazy">
-          </div>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/merlin-1d/plume/mach_contour_plume.png" alt="Plume Mach contour" loading="lazy">
         </div>
         <p>Conformal plume mesh captures shock diamond structure downstream of nozzle exit.</p>
       </div>
@@ -181,65 +168,80 @@
         </div>
 
         <h3>Mach Number: Euler vs RANS</h3>
-        <!-- PLACEHOLDER: Merlin 1D Mach contours -->
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>Euler (Inviscid)</h4>
-            <div class="placeholder-box">
-              <p>Merlin 1D Euler Mach contour.</p>
-              <p>Save as: <code>assets/images/merlin/mach_euler_merlin.png</code></p>
-            </div>
+            <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Merlin 1D Euler Mach contour" loading="lazy">
           </div>
           <div class="comparison-grid__item">
             <h4>RANS SST (Viscous)</h4>
-            <div class="placeholder-box">
-              <p>Merlin 1D RANS Mach contour.</p>
-              <p>Save as: <code>assets/images/merlin/mach_rans_merlin.png</code></p>
-            </div>
-          </div>
-        </div>
-
-        <h3>Pressure Distribution</h3>
-        <!-- PLACEHOLDER: Merlin 1D pressure -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>Merlin 1D pressure contour.</p>
-            <p>Save as: <code>assets/images/merlin/pressure_merlin.png</code></p>
+            <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="Merlin 1D RANS Mach contour" loading="lazy">
           </div>
         </div>
 
         <h3>Shock Diamonds</h3>
-        <!-- PLACEHOLDER: Merlin 1D shock diamonds -->
         <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>Merlin 1D shock diamond visualization.</p>
-            <p>Save as: <code>assets/images/merlin/shock_diamonds_merlin.png</code></p>
-          </div>
+          <img src="assets/images/merlin-1d/plume/shock_diamonds.png" alt="Merlin 1D shock diamond visualization" loading="lazy">
         </div>
 
         <h3>Plume Extension</h3>
-        <!-- PLACEHOLDER: Merlin 1D plume -->
+        <div class="walkthrough-step__media">
+          <img src="assets/images/merlin-1d/plume/mach_contour_plume.png" alt="Merlin 1D plume Mach contour" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- Raptor SL -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">SpaceX Raptor SL</h2>
+        <p><em>Starship Super Heavy booster: epsilon=34, R*=82.5mm, Pc=33.0 MPa</em></p>
+
+        <h3>Nozzle Geometry</h3>
         <div class="comparison-grid">
           <div class="comparison-grid__item">
-            <h4>Euler Plume</h4>
-            <div class="placeholder-box">
-              <p>Merlin 1D Euler plume.</p>
-              <p>Save as: <code>assets/images/merlin/plume_euler_merlin.png</code></p>
-            </div>
+            <h4>2D Annotated Profile</h4>
+            <img src="assets/images/raptor-sl/geometry/raptor-sl_geometry.png" alt="Raptor SL 2D nozzle geometry" loading="lazy">
+            <p>epsilon=34:1, R_t=82.5mm</p>
           </div>
           <div class="comparison-grid__item">
-            <h4>RANS Plume</h4>
-            <div class="placeholder-box">
-              <p>Merlin 1D RANS plume.</p>
-              <p>Save as: <code>assets/images/merlin/plume_rans_merlin.png</code></p>
-            </div>
+            <h4>3D Revolved Surface</h4>
+            <img src="assets/images/raptor-sl/geometry/raptor-sl_3d.png" alt="Raptor SL 3D nozzle geometry" loading="lazy">
+            <p>Axisymmetric surface of revolution</p>
           </div>
+        </div>
+
+        <h3>Mach Number: Euler vs RANS</h3>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/raptor-sl/euler/mach_contour.png" alt="Raptor SL Euler Mach contour" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/raptor-sl/rans/mach_contour_rans.png" alt="Raptor SL RANS Mach contour" loading="lazy">
+          </div>
+        </div>
+
+        <h3>Convergence</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/raptor-sl/euler/convergence.png" alt="Raptor SL convergence history" loading="lazy">
+        </div>
+
+        <h3>Shock Diamonds</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/raptor-sl/plume/shock_diamonds.png" alt="Raptor SL shock diamond visualization" loading="lazy">
+        </div>
+
+        <h3>Plume Extension</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/raptor-sl/plume/mach_contour_plume.png" alt="Raptor SL plume Mach contour" loading="lazy">
         </div>
       </div>
     </section>
 
     <!-- RS-25 -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section">
       <div class="container">
         <h2 class="section-title">RS-25 (Space Shuttle Main Engine)</h2>
         <p><em>Space Shuttle / SLS core stage: epsilon=77.5, R*=136mm, Pc=20.6 MPa</em></p>
@@ -259,59 +261,25 @@
         </div>
 
         <h3>Mach Number: Euler vs RANS</h3>
-        <!-- PLACEHOLDER: RS-25 Mach contours -->
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>Euler (Inviscid)</h4>
-            <div class="placeholder-box">
-              <p>RS-25 Euler Mach contour.</p>
-              <p>Save as: <code>assets/images/rs25/mach_euler_rs25.png</code></p>
-            </div>
+            <img src="assets/images/rs-25/euler/mach_contour.png" alt="RS-25 Euler Mach contour" loading="lazy">
           </div>
           <div class="comparison-grid__item">
             <h4>RANS SST (Viscous)</h4>
-            <div class="placeholder-box">
-              <p>RS-25 RANS Mach contour.</p>
-              <p>Save as: <code>assets/images/rs25/mach_rans_rs25.png</code></p>
-            </div>
-          </div>
-        </div>
-
-        <h3>Pressure Distribution</h3>
-        <!-- PLACEHOLDER: RS-25 pressure -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RS-25 pressure contour. Pressure drops from 20.6 MPa through the long diverging section.</p>
-            <p>Save as: <code>assets/images/rs25/pressure_rs25.png</code></p>
+            <img src="assets/images/rs-25/rans/mach_contour_rans.png" alt="RS-25 RANS Mach contour" loading="lazy">
           </div>
         </div>
 
         <h3>Shock Diamonds</h3>
-        <!-- PLACEHOLDER: RS-25 shock diamonds -->
         <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RS-25 exhaust plume visualization. Flow separation may occur at sea level due to overexpansion.</p>
-            <p>Save as: <code>assets/images/rs25/shock_diamonds_rs25.png</code></p>
-          </div>
+          <img src="assets/images/rs-25/plume/shock_diamonds.png" alt="RS-25 shock diamond visualization" loading="lazy">
         </div>
 
         <h3>Plume Extension</h3>
-        <!-- PLACEHOLDER: RS-25 plume -->
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler Plume</h4>
-            <div class="placeholder-box">
-              <p>RS-25 Euler plume.</p>
-              <p>Save as: <code>assets/images/rs25/plume_euler_rs25.png</code></p>
-            </div>
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS Plume</h4>
-            <div class="placeholder-box">
-              <p>RS-25 RANS plume.</p>
-              <p>Save as: <code>assets/images/rs25/plume_rans_rs25.png</code></p>
-            </div>
-          </div>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/rs-25/plume/mach_contour_plume.png" alt="RS-25 plume Mach contour" loading="lazy">
         </div>
       </div>
     </section>
@@ -337,58 +305,55 @@
         </div>
 
         <h3>Mach Number: Euler vs RANS</h3>
-        <!-- PLACEHOLDER: RL10B-2 Mach contours -->
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>Euler (Inviscid)</h4>
-            <div class="placeholder-box">
-              <p>RL10B-2 Euler Mach contour.</p>
-              <p>Save as: <code>assets/images/rl10b2/mach_euler_rl10b2.png</code></p>
-            </div>
+            <img src="assets/images/rl10B-2/euler/mach_contour.png" alt="RL10B-2 Euler Mach contour" loading="lazy">
           </div>
           <div class="comparison-grid__item">
             <h4>RANS SST (Viscous)</h4>
-            <div class="placeholder-box">
-              <p>RL10B-2 RANS Mach contour.</p>
-              <p>Save as: <code>assets/images/rl10b2/mach_rans_rl10b2.png</code></p>
-            </div>
-          </div>
-        </div>
-
-        <h3>Pressure Distribution</h3>
-        <!-- PLACEHOLDER: RL10B-2 pressure -->
-        <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RL10B-2 pressure contour. Very low exit pressure due to extreme expansion ratio.</p>
-            <p>Save as: <code>assets/images/rl10b2/pressure_rl10b2.png</code></p>
+            <img src="assets/images/rl10B-2/rans/mach_contour_rans.png" alt="RL10B-2 RANS Mach contour" loading="lazy">
           </div>
         </div>
 
         <h3>Shock Diamonds</h3>
-        <!-- PLACEHOLDER: RL10B-2 shock diamonds -->
         <div class="walkthrough-step__media">
-          <div class="placeholder-box">
-            <p>RL10B-2 exhaust plume. Minimal shock diamond structure at sea level due to extreme overexpansion.</p>
-            <p>Save as: <code>assets/images/rl10b2/shock_diamonds_rl10b2.png</code></p>
-          </div>
+          <img src="assets/images/rl10B-2/plume/shock_diamonds.png" alt="RL10B-2 shock diamond visualization" loading="lazy">
         </div>
 
         <h3>Plume Extension</h3>
-        <!-- PLACEHOLDER: RL10B-2 plume -->
+        <div class="walkthrough-step__media">
+          <img src="assets/images/rl10B-2/plume/mach_contour_plume.png" alt="RL10B-2 plume Mach contour" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- Convergence Analysis -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Convergence Analysis</h2>
+        <p>Convergence history for all four nozzle configurations, showing RMS density residual reduction over solver iterations.</p>
+
         <div class="comparison-grid">
           <div class="comparison-grid__item">
-            <h4>Euler Plume</h4>
-            <div class="placeholder-box">
-              <p>RL10B-2 Euler plume.</p>
-              <p>Save as: <code>assets/images/rl10b2/plume_euler_rl10b2.png</code></p>
-            </div>
+            <h4>Generic (Rao Bell)</h4>
+            <img src="assets/images/merlin-1d/euler/convergence.png" alt="Generic nozzle convergence" loading="lazy">
           </div>
           <div class="comparison-grid__item">
-            <h4>RANS Plume</h4>
-            <div class="placeholder-box">
-              <p>RL10B-2 RANS plume.</p>
-              <p>Save as: <code>assets/images/rl10b2/plume_rans_rl10b2.png</code></p>
-            </div>
+            <h4>SpaceX Merlin 1D</h4>
+            <img src="assets/images/merlin-1d/euler/convergence.png" alt="Merlin 1D convergence" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>SpaceX Raptor SL</h4>
+            <img src="assets/images/raptor-sl/euler/convergence.png" alt="Raptor SL convergence" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RS-25</h4>
+            <img src="assets/images/rs-25/euler/convergence.png" alt="RS-25 convergence" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RL10B-2</h4>
+            <img src="assets/images/rl10B-2/euler/convergence.png" alt="RL10B-2 convergence" loading="lazy">
           </div>
         </div>
       </div>

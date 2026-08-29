@@ -203,7 +203,7 @@ def run_rans_stage(config: EngineConfig) -> int:
         n_axial=config.rans_n_axial,
         n_normal=config.rans_n_normal,
         output_file=str(workdir / "nozzle.su2"),
-        rans_mode=False,
+        rans_mode=True,
         plume_extension=False,
         multi_curve=config.multi_curve,
     )
