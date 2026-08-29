@@ -159,16 +159,7 @@ def run_euler_stage(config: EngineConfig) -> int:
         from viz.convergence import plot_convergence
         plot_convergence(history, images_dir / "convergence.png")
 
-    vtu = workdir / "flow.vtu"
-    if vtu.exists():
-        from viz.mach_contour import (
-            plot_mach_contour,
-            plot_pressure_contour,
-            plot_velocity_contour,
-        )
-        plot_mach_contour(vtu, images_dir / "mach_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
-        plot_pressure_contour(vtu, images_dir / "pressure_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
-        plot_velocity_contour(vtu, images_dir / "velocity_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
+    # Contour generation removed - user extracts from ParaView
 
     print(f"  Mach (sim): {results.exit_mach:.4f}, Mach (theory): {theory_mach:.4f}")
     print(f"  Error: {report.mach_error_percent:.2f}%, Time: {elapsed:.1f}s")
@@ -253,20 +244,13 @@ def run_rans_stage(config: EngineConfig) -> int:
     elapsed = time.time() - t0
 
     vtu = workdir / "flow.vtu"
-    if vtu.exists():
-        from viz.mach_contour import (
-            plot_mach_contour,
-            plot_pressure_contour,
-            plot_velocity_contour,
-        )
-        plot_mach_contour(vtu, images_dir / "mach_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
-        plot_pressure_contour(vtu, images_dir / "pressure_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
-        plot_velocity_contour(vtu, images_dir / "velocity_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
 
     history = workdir / "history.csv"
     if history.exists():
         from viz.convergence import plot_convergence
         plot_convergence(history, images_dir / "convergence_rans.png")
+
+    # Contour generation removed - user extracts from ParaView
 
     print(f"  Exit Mach: {results.exit_mach:.4f}, Time: {elapsed:.1f}s")
 
