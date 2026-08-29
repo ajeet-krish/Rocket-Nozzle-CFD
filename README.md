@@ -300,7 +300,7 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 ### Nozzle Mesh
 
-![RL10B-2 Mesh](docs/assets/images/rs-25/mesh/rs25-mesh.png)
+![RL10B-2 Mesh](docs/assets/images/rl10B-2/mesh/rl10b2-mesh.png)
 > *RL10B-2 nozzle mesh. Extreme expansion ratio (285:1) produces the highest Isp of any operational engine (465.5s vacuum). The nozzle exit diameter is 2.6m.*
 
 ### Mach Number: Euler vs RANS
