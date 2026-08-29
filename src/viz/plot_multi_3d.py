@@ -41,23 +41,34 @@ def _ring(
 def _draw_nozzle_on_ax(
     ax: plt.Axes,
     config: NozzleConfig,
+    z_offset: float = 0.0,
     n_theta: int = 60,
-    colormap: str = "coolwarm",
+    colormap: str = "plasma",
 ) -> None:
-    """Draw a single nozzle surface on a 3D axes."""
+    """Draw a single nozzle surface on a 3D axes.
+
+    Args:
+        ax: 3D axes to draw on.
+        config: Nozzle geometry configuration.
+        z_offset: Vertical shift so the nozzle base sits at z=0.
+        n_theta: Circumferential resolution for ring generation.
+        colormap: Matplotlib colormap name.
+    """
     x, y = generate_contour(config)
+    # Shift so base (minimum x) sits at z=0
+    x_shifted = x - x.min() + z_offset
     ring_thickness = 5.0 * abs(x[1] - x[0]) if len(x) > 1 else 0.01
 
-    norm = plt.Normalize(x.min(), x.max())
+    norm = plt.Normalize(x_shifted.min(), x_shifted.max())
     cmap = plt.get_cmap(colormap)
 
     for i in range(len(y)):
-        X, Y, Z = _ring(y[i], ring_thickness, x[i], n_theta=n_theta)
-        colour = cmap(norm(x[i]))
+        X, Y, Z = _ring(y[i], ring_thickness, x_shifted[i], n_theta=n_theta)
+        colour = cmap(norm(x_shifted[i]))
         ax.plot_surface(X, Y, Z, color=colour, alpha=0.92, shade=True)
 
     # Axis of symmetry
-    z_min, z_max = float(x.min()), float(x.max())
+    z_min, z_max = float(x_shifted.min()), float(x_shifted.max())
     ax.plot(
         [0, 0], [0, 0], [z_min, z_max],
         color="#1565C0", linewidth=1.0, alpha=0.6, linestyle="--",
@@ -70,12 +81,12 @@ def plot_multi_3d(
     elevation: float = -170.0,
     azimuth: float = -15.0,
     n_theta: int = 60,
-    colormap: str = "coolwarm",
+    colormap: str = "plasma",
 ) -> Path:
     """Create a 2x2 subplot grid comparing all four nozzle geometries.
 
-    All subplots share unified axis limits computed from the global
-    min/max across all four nozzle contours.
+    All nozzles are base-aligned (chamber inlet at z=0) with unified
+    axis limits so relative height/size is immediately visible.
 
     Args:
         output_path: Where to save the PNG.
@@ -98,17 +109,17 @@ def plot_multi_3d(
         ("RL10B-2", rl10b_2()),
     ]
 
-    # Generate all contours first to compute global axis limits
+    # Generate all contours to compute global axis limits
     contours: list[tuple[np.ndarray, np.ndarray]] = []
     for _, cfg in engines:
         contours.append(generate_contour(cfg))
 
-    # Global min/max across all contours
-    all_x = np.concatenate([c[0] for c in contours])
+    # Global radial limit (y-axis) across all contours
     all_y = np.concatenate([c[1] for c in contours])
-    global_x_min, global_x_max = float(all_x.min()), float(all_x.max())
-    global_y_min = -float(all_y.max())
     global_y_max = float(all_y.max())
+
+    # Global axial extent: max height across all nozzles (base-aligned at z=0)
+    global_z_max = max(float(c[0].max() - c[0].min()) for c in contours)
 
     # Figure
     fig = plt.figure(figsize=(14, 12))
@@ -122,18 +133,15 @@ def plot_multi_3d(
         ax = fig.add_subplot(2, 2, idx + 1, projection="3d")
         ax.set_facecolor("white")
 
-        _draw_nozzle_on_ax(ax, cfg, n_theta=n_theta, colormap=colormap)
+        _draw_nozzle_on_ax(ax, cfg, z_offset=0.0, n_theta=n_theta, colormap=colormap)
 
-        # Unified axes
-        x_range = global_x_max - global_x_min
-        y_range = global_y_max - global_y_min
-        z_dim = max(x_range, y_range)
+        # Unified axes: base at z=0, radial symmetric
         xy_diameter = global_y_max * 2
-        ax.set_box_aspect([1.0, 1.0, x_range / xy_diameter])
+        ax.set_box_aspect([1.0, 1.0, global_z_max / xy_diameter])
 
-        ax.set_xlim3d([global_x_min, global_x_max])
-        ax.set_ylim3d([global_y_min, global_y_max])
-        ax.set_zlim3d([global_x_min, global_x_max])
+        ax.set_xlim3d([-global_y_max, global_y_max])
+        ax.set_ylim3d([-global_y_max, global_y_max])
+        ax.set_zlim3d([0.0, global_z_max])
 
         # Clean axis panes
         ax.xaxis.pane.fill = False

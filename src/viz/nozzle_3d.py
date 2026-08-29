@@ -53,7 +53,7 @@ def plot_nozzle_3d(
     elevation: float = -170.0,
     azimuth: float = -15.0,
     n_theta: int = 60,
-    colormap: str = "coolwarm",
+    colormap: str = "plasma",
     engine_name: str = "Nozzle",
 ) -> Path:
     """Create a 3D revolved surface plot of the nozzle contour.
