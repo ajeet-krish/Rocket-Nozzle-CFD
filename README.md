@@ -41,13 +41,12 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 
 ## Validation Summary
 
-| Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | RANS Exit Mach | Euler vs RANS | Back Pressure |
-|--------|---------------------|-----------------|-------------|----------------|---------------|---------------|
-| Generic | 4.4593 | 4.4927 | 0.73% | 4.1017 | 8.70% | Sea level |
-| Merlin 1D | 4.4593 | 4.4416 | 0.40% | 4.4501 | 0.19% | Sea level |
-| Raptor SL | 5.3933 | 5.4761 | 1.54% | 4.8830 | 10.8% | Sea level |
-| RS-25 | 6.5463 | 6.4442 | 1.56% | 5.8567 | 9.1% | Vacuum |
-| RL10B-2 | 8.7362 | 7.7090 | 11.76% | 6.5617 | 14.9% | Vacuum |
+| Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | CF (Euler) | Isp (Euler) | Thrust | Back Pressure |
+|--------|---------------------|-----------------|-------------|------------|-------------|--------|---------------|
+| Merlin 1D | 4.4593 | 4.4416 | 0.40% | 1.5105 | 228.7s | 313 kN | Sea level |
+| Raptor SL | 5.3933 | 5.4761 | 1.54% | 1.6103 | 240.4s | 1136 kN | Sea level |
+| RS-25 | 6.5463 | 6.4442 | 1.56% | 1.7427 | 262.7s | 2086 kN | Vacuum |
+| RL10B-2 | 8.7362 | 7.7090 | 11.76% | 1.7702 | 209.5s | 139 kN | Vacuum |
 
 ---
 

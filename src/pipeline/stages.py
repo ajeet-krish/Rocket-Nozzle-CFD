@@ -168,6 +168,37 @@ def run_euler_stage(config: EngineConfig) -> int:
     print(f"  Error: {report.mach_error_percent:.2f}%, Time: {elapsed:.1f}s")
     print(f"  Result: {'PASSED' if report.passed else 'FAILED'}")
 
+    # Performance metrics
+    from validation.performance import compute_performance
+    theory_perf = compute_performance(
+        nozzle_config, config.total_pressure, config.total_temperature,
+        theory_mach, config.gamma, ambient_pressure=config.static_pressure,
+    )
+    sim_perf = compute_performance(
+        nozzle_config, config.total_pressure, config.total_temperature,
+        results.exit_mach, config.gamma, ambient_pressure=config.static_pressure,
+    )
+    print(f"  CF: {sim_perf.thrust_coefficient:.4f} (theory: {theory_perf.thrust_coefficient:.4f})")
+    print(f"  Isp: {sim_perf.specific_impulse:.1f}s (theory: {theory_perf.specific_impulse:.1f}s)")
+    print(f"  Ve: {sim_perf.exit_velocity:.0f} m/s, Thrust: {sim_perf.thrust_force/1000:.1f} kN")
+
+    # Save performance data
+    import json
+    perf_data = {
+        "engine": config.label,
+        "exit_mach_sim": results.exit_mach,
+        "exit_mach_theory": theory_mach,
+        "thrust_coefficient_sim": sim_perf.thrust_coefficient,
+        "thrust_coefficient_theory": theory_perf.thrust_coefficient,
+        "specific_impulse_sim": sim_perf.specific_impulse,
+        "specific_impulse_theory": theory_perf.specific_impulse,
+        "exit_velocity": sim_perf.exit_velocity,
+        "thrust_force_kN": sim_perf.thrust_force / 1000,
+        "mass_flow_rate": sim_perf.mass_flow_rate,
+    }
+    with open(workdir / "performance.json", "w") as f:
+        json.dump(perf_data, f, indent=2)
+
     return 0 if report.passed else 1
 
 
