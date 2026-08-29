@@ -55,8 +55,8 @@ def _draw_nozzle_on_ax(
         colormap: Matplotlib colormap name.
     """
     x, y = generate_contour(config)
-    # Shift so exit (maximum x) sits at z=0, inlet extends upward
-    x_shifted = x.max() - x + z_offset
+    # Shift so exit (maximum x) sits at z=0, inlet extends downward (negative z)
+    x_shifted = x - x.max() + z_offset
     ring_thickness = 5.0 * abs(x[1] - x[0]) if len(x) > 1 else 0.01
 
     norm = plt.Normalize(x_shifted.min(), x_shifted.max())
@@ -85,8 +85,8 @@ def plot_multi_3d(
 ) -> Path:
     """Create a 2x2 subplot grid comparing all four nozzle geometries.
 
-    All nozzles are base-aligned (chamber inlet at z=0) with unified
-    axis limits so relative height/size is immediately visible.
+    All nozzles have their exit plane at z=0 with the inlet extending
+    downward, keeping the original orientation while aligning outlets.
 
     Args:
         output_path: Where to save the PNG.
@@ -118,8 +118,8 @@ def plot_multi_3d(
     all_y = np.concatenate([c[1] for c in contours])
     global_y_max = float(all_y.max())
 
-    # Global axial extent: max height across all nozzles (base-aligned at z=0)
-    global_z_max = max(float(c[0].max() - c[0].min()) for c in contours)
+    # Global axial extent: minimum shifted z across all nozzles (exit at z=0)
+    global_z_min = min(float(c[0].min() - c[0].max()) for c in contours)
 
     # Figure
     fig = plt.figure(figsize=(14, 12))
@@ -135,13 +135,13 @@ def plot_multi_3d(
 
         _draw_nozzle_on_ax(ax, cfg, z_offset=0.0, n_theta=n_theta, colormap=colormap)
 
-        # Unified axes: base at z=0, radial symmetric
+        # Unified axes: exit at z=0 (bottom), inlet extends downward
         xy_diameter = global_y_max * 2
-        ax.set_box_aspect([1.0, 1.0, global_z_max / xy_diameter])
+        ax.set_box_aspect([1.0, 1.0, abs(global_z_min) / xy_diameter])
 
         ax.set_xlim3d([-global_y_max, global_y_max])
         ax.set_ylim3d([-global_y_max, global_y_max])
-        ax.set_zlim3d([0.0, global_z_max])
+        ax.set_zlim3d([global_z_min, 0.0])
 
         # Clean axis panes
         ax.xaxis.pane.fill = False
