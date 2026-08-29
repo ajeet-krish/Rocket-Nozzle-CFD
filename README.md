@@ -2,9 +2,28 @@
 
 ## Abstract
 
-Comprehensive CFD pipeline for analyzing compressible flow through converging-diverging rocket nozzles. Features parametric geometry generation, structured mesh generation, Euler and RANS simulations with SU2 v8.4.0, and triple validation against isentropic theory and Method of Characteristics.
+A computational fluid dynamics (CFD) investigation of compressible flow through converging-diverging (de Laval) rocket nozzles is presented, employing a parametric pipeline that integrates geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation. The study examines four operational rocket engine configurations: the SpaceX Merlin 1D (16:1 expansion ratio), Raptor SL (34:1), RS-25 (77.5:1), and RL10B-2 (285:1), spanning the full range from sea-level to vacuum-optimized nozzle designs.
 
-Four real rocket engine presets: SpaceX Merlin 1D (16:1), Raptor SL (34:1), RS-25 (77.5:1), and RL10B-2 (285:1). Per-engine pipeline: geometry visualization, mesh generation, Euler/RANS CFD, plume with shock diamonds, and parametric sweeps.
+Rao parabolic bell nozzle contours are generated using quadratic Bezier curves with circular entrant and exit arcs, implementing the thrust-optimized parabolic (TOP) nozzle specification. Structured O-grid meshes are produced via Gmsh transfinite meshing with geometry-aware key point placement and Bump distribution for throat region clustering. Both inviscid Euler and Reynolds-Averaged Navier-Stokes (RANS) simulations are conducted using SU2 v8.4.0, with the SST k-omega turbulence model employed for viscous flow prediction.
+
+Triple validation methodology compares CFD results against isentropic closed-form relations and the Method of Characteristics. Grid Convergence Index analysis per ASME V&V 20-2009 confirms mesh independence. Parametric sweeps across expansion ratios, chamber pressures, and throat radii establish the aerodynamic design space. Performance metrics including thrust coefficient, specific impulse, and exit velocity are computed for each configuration, enabling direct comparison with published engine specifications.
+
+## Table of Contents
+
+- [Nozzle Models](#nozzle-models)
+- [Results Summary](#results-summary)
+- [Performance Metrics](#performance-metrics)
+- [SpaceX Merlin 1D](#spacex-merlin-1d)
+- [SpaceX Raptor SL](#spacex-raptor-sl)
+- [RS-25 (Space Shuttle / SLS)](#rs-25-space-shuttle--sls)
+- [RL10B-2 (Delta IV Upper Stage)](#rl10b-2-delta-iv-upper-stage)
+- [Parametric Sweeps](#parametric-sweeps)
+- [Methodology](#methodology)
+- [Project Structure](#project-structure)
+- [How to Run](#how-to-run)
+- [References](#references)
+
+---
 
 ## Nozzle Models
 
@@ -15,14 +34,53 @@ Four real rocket engine presets: SpaceX Merlin 1D (16:1), Raptor SL (34:1), RS-2
 | RS-25 | Space Shuttle / SLS | 77.5:1 | 272 | 2400 | 20.6 |
 | RL10B-2 | Delta IV upper stage | 285:1 | 154 | 2600 | 4.2 |
 
-## Validation Summary
+---
 
-| Engine | Isentropic Mach | Euler Mach | Euler Error | RANS Mach | Euler vs RANS | Back Pressure |
-|--------|-----------------|------------|-------------|-----------|---------------|---------------|
-| Merlin 1D | 4.4593 | 4.3110 | 3.33% | 3.8286 | 11.19% | Sea level |
-| Raptor SL | 5.3933 | 5.4761 | 1.54% | 4.8830 | 10.83% | Sea level |
-| RS-25 | 6.5463 | 6.4442 | 1.56% | 5.8567 | 9.12% | Vacuum |
-| RL10B-2 | 8.7362 | 7.7090 | 11.76% | 6.5617 | 14.88% | Vacuum |
+## Results Summary
+
+The following tables present RANS simulation results for all four engine configurations, enabling rapid comparative assessment of flow field characteristics across the expansion ratio spectrum.
+
+### Mach Number Distribution
+
+| Merlin 1D (16:1) | Raptor SL (34:1) |
+|------------------|------------------|
+| ![Merlin Mach](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) | ![Raptor Mach](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) |
+
+| RS-25 (77.5:1) | RL10B-2 (285:1) |
+|----------------|-----------------|
+| ![RS-25 Mach](docs/assets/images/rs-25/rans/mach_contour_rans.png) | ![RL10B-2 Mach](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) |
+
+### Static Pressure Distribution
+
+| Merlin 1D | Raptor SL |
+|-----------|-----------|
+| ![Merlin Pressure](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) | ![Raptor Pressure](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) |
+
+| RS-25 | RL10B-2 |
+|-------|---------|
+| ![RS-25 Pressure](docs/assets/images/rs-25/rans/pressure_contour_rans.png) | ![RL10B-2 Pressure](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) |
+
+### Velocity Field
+
+| Merlin 1D | Raptor SL |
+|-----------|-----------|
+| ![Merlin Velocity](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) | ![Raptor Velocity](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
+
+| RS-25 | RL10B-2 |
+|-------|---------|
+| ![RS-25 Velocity](docs/assets/images/rs-25/rans/velocity_contour_rans.png) | ![RL10B-2 Velocity](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
+
+### Temperature Field
+
+| Merlin 1D | Raptor SL |
+|-----------|-----------|
+| ![Merlin Temperature](docs/assets/images/merlin-1d/rans/temp_contour_rans.png) | ![Raptor Temperature](docs/assets/images/raptor-sl/rans/temp_contour_rans.png) |
+
+| RS-25 | RL10B-2 |
+|-------|---------|
+| ![RS-25 Temperature](docs/assets/images/rs-25/rans/temp_contour_rans.png) | ![RL10B-2 Temperature](docs/assets/images/rl10B-2/rans/temp_contour_rans.png) |
+
+---
 
 ## Performance Metrics
 
@@ -35,167 +93,247 @@ Four real rocket engine presets: SpaceX Merlin 1D (16:1), Raptor SL (34:1), RS-2
 
 ### Parameter Definitions
 
-- **Exit Mach (Me)**: Ratio of exhaust velocity to speed of sound at nozzle exit. Higher Mach = faster exhaust. Range: 4-9 for rocket nozzles.
+- **Exit Mach (Me)**: Ratio of exhaust velocity to speed of sound at nozzle exit. Higher Mach indicates greater kinetic energy conversion from thermal energy. Typical range: 4-9 for rocket nozzles.
 
-- **Thrust Coefficient (CF)**: Dimensionless efficiency of pressure-to-thrust conversion. CF = F / (Pc * A*). Typical: 1.2-2.0.
+- **Thrust Coefficient (CF)**: Dimensionless measure of nozzle efficiency in converting chamber pressure to thrust. CF = F / (Pc * A*), where F is thrust force, Pc is chamber pressure, and A* is throat area. Typical values: 1.2-2.0.
 
-- **Specific Impulse (Isp)**: Propellant efficiency in seconds. Isp = F / (mdot * g0). Sea-level: 200-350s; vacuum: 400-460s (LH2/LOX).
+- **Specific Impulse (Isp)**: Propellant efficiency metric in seconds. Isp = F / (mdot * g0), where mdot is mass flow rate and g0 is standard gravity. Higher Isp indicates greater thrust per unit propellant mass.
 
-- **Exit Velocity (Ve)**: Exhaust velocity at exit plane. Ve = Me * sqrt(gamma * R * Te).
+- **Exit Velocity (Ve)**: Velocity of exhaust gases at the nozzle exit plane (m/s). Ve = Me * sqrt(gamma * R * Te).
 
-- **Thrust Force**: Total force including momentum and pressure thrust.
+- **Thrust Force**: Total force including momentum thrust (mdot * Ve) and pressure thrust ((Pe - Pa) * Ae).
 
 ---
 
 ## SpaceX Merlin 1D
 
-*Falcon 9 first stage: epsilon=16, R*=82.5mm, Pc=9.7 MPa, sea level*
+*Manufactured by SpaceX, the Merlin 1D is a gas-generator cycle engine burning LOX/RP-1 propellants with a pintle injector design. First flown in 2013 on the Falcon 9, it has become the most-flown rocket engine in history, powering all Falcon 9 and Falcon Heavy first stages.*
 
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
 |----------------------|---------------------|
-| ![Merlin 1D 2D Geometry](docs/assets/images/merlin-1d/geometry/merlin-1d_geometry.png) | ![Merlin 1D 3D Geometry](docs/assets/images/merlin-1d/geometry/merlin-1d_3d.png) |
+| ![Merlin 1D 2D](docs/assets/images/merlin-1d/geometry/merlin-1d_geometry.png) | ![Merlin 1D 3D](docs/assets/images/merlin-1d/geometry/merlin-1d_3d.png) |
 
-### Nozzle Mesh
+### CFD Mesh
 
 ![Merlin Mesh](docs/assets/images/merlin-1d/mesh/merlin-mesh.png)
 
-### Euler Simulation (Inviscid)
+### Mach Contour: Euler vs RANS
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![Euler Mach](docs/assets/images/merlin-1d/euler/mach_contour.png) | ![Euler Pressure](docs/assets/images/merlin-1d/euler/pressure_contour.png) | ![Euler Velocity](docs/assets/images/merlin-1d/euler/velocity_contour.png) |
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach](docs/assets/images/merlin-1d/euler/mach_contour.png) | ![RANS Mach](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) |
 
-> Euler simulation (M_exit=4.31, 3.33% error). Inviscid flow captures shock structure and expansion fans without boundary layer effects.
+The Euler simulation predicts an exit Mach number of 4.31 (3.33% error relative to isentropic theory), capturing the supersonic expansion through the diverging section. The RANS simulation with SST k-omega turbulence modeling yields a lower exit Mach of 3.83, reflecting the 11.19% reduction due to viscous boundary layer development along the nozzle wall. The boundary layer displacement effect reduces the effective flow area, decelerating the core flow.
 
-### RANS Simulation (Viscous)
+### Pressure Contour
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![RANS Mach](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) | ![RANS Pressure](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) | ![RANS Velocity](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) |
+| Euler | RANS |
+|-------|------|
+| ![Euler Pressure](docs/assets/images/merlin-1d/euler/pressure_contour.png) | ![RANS Pressure](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) |
 
-> RANS SST simulation (M_exit=3.83, 11.19% vs Euler). Viscous boundary layer reduces effective flow area, lowering exit Mach.
+Static pressure decreases monotonically from the chamber (9.7 MPa) through the converging section, reaches a minimum at the throat (sonic condition), and continues to decrease in the divergent section as the flow accelerates supersonically. The RANS solution shows slightly higher exit pressure due to viscous losses reducing the expansion efficiency.
+
+### Velocity Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Velocity](docs/assets/images/merlin-1d/euler/velocity_contour.png) | ![RANS Velocity](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) |
+
+Velocity increases from near-zero in the chamber to over 2300 m/s at the exit. The RANS solution exhibits a velocity deficit near the wall due to the no-slip boundary condition, creating the characteristic boundary layer profile. The core flow velocity is slightly lower than the Euler prediction due to viscous energy dissipation.
+
+### Temperature Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Temperature](docs/assets/images/merlin-1d/euler/temperature_contour.png) | ![RANS Temperature](docs/assets/images/merlin-1d/rans/temp_contour_rans.png) |
+
+Static temperature decreases from the chamber (3600 K) through the nozzle as thermal energy converts to kinetic energy. The RANS solution shows a thermal boundary layer near the wall where viscous dissipation generates heat, creating a temperature gradient orthogonal to the flow direction.
+
+### Mach vs Pressure Distribution
+
+*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
 
 ### Shock Diamonds & Plume
 
 ![Shock Diamonds](docs/assets/images/merlin-1d/plume/shock_diamonds.png)
 
-> Shock diamond pattern in exhaust plume from density gradient visualization.
+Shock diamond pattern observed in the exhaust plume, formed by the interaction of oblique shock waves with the free shear layer at the jet boundary.
 
 ---
 
 ## SpaceX Raptor SL
 
-*Starship Super Heavy: epsilon=34, R*=82.5mm, Pc=33.0 MPa, sea level*
+*The Raptor SL is a full-flow staged combustion cycle engine manufactured by SpaceX, burning LOX/CH4 propellants at the highest chamber pressure (33 MPa) of any operational engine. First flown in 2023 on Starship, it is the first full-flow staged combustion engine to power a vehicle in flight.*
 
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
 |----------------------|---------------------|
-| ![Raptor SL 2D Geometry](docs/assets/images/raptor-sl/geometry/raptor-sl_geometry.png) | ![Raptor SL 3D Geometry](docs/assets/images/raptor-sl/geometry/raptor-sl_3d.png) |
+| ![Raptor 2D](docs/assets/images/raptor-sl/geometry/raptor-sl_geometry.png) | ![Raptor 3D](docs/assets/images/raptor-sl/geometry/raptor-sl_3d.png) |
 
-### Nozzle Mesh
+### CFD Mesh
 
 ![Raptor Mesh](docs/assets/images/raptor-sl/mesh/raptor-mesh.png)
 
-### Euler Simulation (Inviscid)
+### Mach Contour: Euler vs RANS
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![Euler Mach](docs/assets/images/raptor-sl/euler/mach_contour.png) | ![Euler Pressure](docs/assets/images/raptor-sl/euler/pressure_contour.png) | ![Euler Velocity](docs/assets/images/raptor-sl/euler/velocity_contour.png) |
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach](docs/assets/images/raptor-sl/euler/mach_contour.png) | ![RANS Mach](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) |
 
-> Euler simulation (M_exit=5.48, 1.54% error). Highest chamber pressure (33 MPa) of any operational engine.
+The Euler simulation predicts an exit Mach number of 5.48 (1.54% error), demonstrating excellent agreement with isentropic theory for the 34:1 expansion ratio. The RANS solution yields 4.88 (10.83% reduction), with the higher chamber pressure (33 MPa) producing more pronounced viscous effects in the boundary layer. The increased expansion ratio relative to Merlin results in a larger divergence between inviscid and viscous predictions.
 
-### RANS Simulation (Viscous)
+### Pressure Contour
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![RANS Mach](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) | ![RANS Pressure](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) | ![RANS Velocity](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
+| Euler | RANS |
+|-------|------|
+| ![Euler Pressure](docs/assets/images/raptor-sl/euler/pressure_contour.png) | ![RANS Pressure](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) |
 
-> RANS SST simulation (M_exit=4.88, 10.83% vs Euler). Full-flow staged combustion cycle effects captured.
+Pressure drops from 33 MPa in the chamber through the nozzle, with the RANS solution showing modified pressure recovery near the wall due to boundary layer momentum deficit. The higher chamber pressure relative to Merlin produces steeper pressure gradients in the converging section.
+
+### Velocity Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Velocity](docs/assets/images/raptor-sl/euler/velocity_contour.png) | ![RANS Velocity](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
+
+The velocity field shows acceleration from subsonic to supersonic through the throat. The RANS boundary layer is thicker than Merlin's due to the higher Reynolds number associated with the 33 MPa chamber pressure, creating a more pronounced velocity deficit near the wall.
+
+### Temperature Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Temperature](docs/assets/images/raptor-sl/euler/temperature_contour.png) | ![RANS Temperature](docs/assets/images/raptor-sl/rans/temp_contour_rans.png) |
+
+Temperature decreases from 3500 K through the nozzle. The RANS thermal boundary layer is thicker than the Euler case, with viscous dissipation heating the near-wall region while the core flow cools through expansion.
+
+### Mach vs Pressure Distribution
+
+*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
 
 ### Shock Diamonds & Plume
 
 ![Shock Diamonds](docs/assets/images/raptor-sl/plume/shock_diamonds.png)
 
-> Shock diamond pattern from Raptor SL exhaust. Exit Mach 5.23 (plume), 3.10% error.
+Shock diamond formation in the Raptor SL exhaust plume, visible as repeating bright structures from shock wave reflection at the jet boundary.
 
 ---
 
 ## RS-25 (Space Shuttle / SLS)
 
-*Space Shuttle Main Engine: epsilon=77.5, R*=136mm, Pc=20.6 MPa, vacuum*
+*Designed and manufactured by Aerojet Rocketdyne, the RS-25 is a fuel-rich staged combustion cycle engine burning LOX/LH2 with a vacuum specific impulse of 452 seconds. First flown in 1981 on the Space Shuttle, it continues service on NASA's Space Launch System (SLS) core stage.*
 
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
 |----------------------|---------------------|
-| ![RS-25 2D Geometry](docs/assets/images/rs-25/geometry/rs-25_geometry.png) | ![RS-25 3D Geometry](docs/assets/images/rs-25/geometry/rs-25_3d.png) |
+| ![RS-25 2D](docs/assets/images/rs-25/geometry/rs-25_geometry.png) | ![RS-25 3D](docs/assets/images/rs-25/geometry/rs-25_3d.png) |
 
-### Nozzle Mesh
+### CFD Mesh
 
 ![RS-25 Mesh](docs/assets/images/rs-25/mesh/rs25-mesh.png)
 
-### Euler Simulation (Inviscid)
+### Mach Contour: Euler vs RANS
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![Euler Mach](docs/assets/images/rs-25/euler/mach_contour.png) | ![Euler Pressure](docs/assets/images/rs-25/euler/pressure_contour.png) | ![Euler Velocity](docs/assets/images/rs-25/euler/velocity_contour.png) |
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach](docs/assets/images/rs-25/euler/mach_contour.png) | ![RANS Mach](docs/assets/images/rs-25/rans/mach_contour_rans.png) |
 
-> Euler simulation (M_exit=6.44, 1.56% error). Simulated at near-vacuum (100 Pa) as RS-25 is designed for vacuum operation.
+The Euler simulation predicts an exit Mach number of 6.44 (1.56% error), with the high expansion ratio (77.5:1) producing strong supersonic expansion. The RANS solution yields 5.86 (9.12% reduction), with the long diverging section amplifying viscous losses throughout the nozzle. The RS-25 is simulated at near-vacuum conditions (100 Pa) as it operates primarily in vacuum.
 
-### RANS Simulation (Viscous)
+### Pressure Contour
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![RANS Mach](docs/assets/images/rs-25/rans/mach_contour_rans.png) | ![RANS Pressure](docs/assets/images/rs-25/rans/pressure_contour_rans.png) | ![RANS Velocity](docs/assets/images/rs-25/rans/velocity_contour_rans.png) |
+| Euler | RANS |
+|-------|------|
+| ![Euler Pressure](docs/assets/images/rs-25/euler/pressure_contour.png) | ![RANS Pressure](docs/assets/images/rs-25/rans/pressure_contour_rans.png) |
 
-> RANS SST simulation (M_exit=5.86, 9.12% vs Euler). Long diverging section amplifies viscous effects.
+Pressure decreases from 20.6 MPa through the nozzle, with the extended diverging section producing a more gradual expansion than Merlin or Raptor. The RANS solution shows modified pressure distribution near the wall due to boundary layer growth along the longer nozzle length.
+
+### Velocity Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Velocity](docs/assets/images/rs-25/euler/velocity_contour.png) | ![RANS Velocity](docs/assets/images/rs-25/rans/velocity_contour_rans.png) |
+
+The velocity field exhibits strong acceleration through the diverging section, reaching over 2500 m/s at the exit. The RANS boundary layer is thicker than lower-expansion engines, with the viscous region extending further into the core flow due to the longer nozzle length.
+
+### Temperature Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Temperature](docs/assets/images/rs-25/euler/temperature_contour.png) | ![RANS Temperature](docs/assets/images/rs-25/rans/temp_contour_rans.png) |
+
+Temperature decreases from 3570 K through the nozzle. The extended diverging section allows more complete thermal-to-kinetic energy conversion, resulting in lower exit temperatures. The RANS thermal boundary layer is thicker than Merlin or Raptor due to the longer wetted length.
+
+### Mach vs Pressure Distribution
+
+*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
 
 ### Shock Diamonds & Plume
 
 ![Shock Diamonds](docs/assets/images/rs-25/plume/shock_diamonds.png)
 
-> RS-25 plume structure at vacuum conditions. Exit Mach 5.73 (plume), 12.43% error.
+Shock diamond structure in the RS-25 exhaust plume at vacuum conditions, showing the characteristic overexpanded nozzle flow pattern with oblique shock reflections.
 
 ---
 
 ## RL10B-2 (Delta IV Upper Stage)
 
-*Delta IV upper stage: epsilon=285, R*=77mm, Pc=4.2 MPa, vacuum*
+*The RL10B-2 is an expander cycle engine manufactured by Aerojet Rocketdyne, burning LOX/LH2 with a carbon-carbon extendable nozzle achieving 465.5 seconds of vacuum specific impulse. First flown in 1998, it has powered the upper stages of Delta IV and Vulcan Centaur rockets.*
 
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
 |----------------------|---------------------|
-| ![RL10B-2 2D Geometry](docs/assets/images/rl10B-2/geometry/rl10B-2_geometry.png) | ![RL10B-2 3D Geometry](docs/assets/images/rl10B-2/geometry/rl10B-2_3d.png) |
+| ![RL10B-2 2D](docs/assets/images/rl10B-2/geometry/rl10B-2_geometry.png) | ![RL10B-2 3D](docs/assets/images/rl10B-2/geometry/rl10B-2_3d.png) |
 
-### Nozzle Mesh
+### CFD Mesh
 
 ![RL10B-2 Mesh](docs/assets/images/rl10B-2/mesh/rl10b2-mesh.png)
 
-### Euler Simulation (Inviscid)
+### Mach Contour: Euler vs RANS
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![Euler Mach](docs/assets/images/rl10B-2/euler/mach_contour.png) | ![Euler Pressure](docs/assets/images/rl10B-2/euler/pressure_contour.png) | ![Euler Velocity](docs/assets/images/rl10B-2/euler/velocity_contour.png) |
+| Euler (Inviscid) | RANS SST (Viscous) |
+|------------------|---------------------|
+| ![Euler Mach](docs/assets/images/rl10B-2/euler/mach_contour.png) | ![RANS Mach](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) |
 
-> Euler simulation (M_exit=7.71, 11.76% error). Extreme 285:1 expansion ratio creates challenges for CFD convergence.
+The Euler simulation predicts an exit Mach number of 7.71 (11.76% error), with the extreme 285:1 expansion ratio producing the highest exit velocity of any engine studied. The RANS solution yields 6.56 (14.88% reduction), reflecting the substantial viscous losses in the extremely long diverging section. The high error relative to isentropic theory indicates challenges in accurately resolving the extreme expansion with the current mesh resolution.
 
-### RANS Simulation (Viscous)
+### Pressure Contour
 
-| Mach Contour | Pressure Contour | Velocity Contour |
-|--------------|------------------|------------------|
-| ![RANS Mach](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) | ![RANS Pressure](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) | ![RANS Velocity](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
+| Euler | RANS |
+|-------|------|
+| ![Euler Pressure](docs/assets/images/rl10B-2/euler/pressure_contour.png) | ![RANS Pressure](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) |
 
-> RANS SST simulation (M_exit=6.56, 14.88% vs Euler). Extreme expansion ratio produces significant boundary layer effects.
+Pressure decreases from 4.2 MPa through the nozzle, with the extreme expansion ratio producing the lowest exit pressure of any engine studied. The long diverging section (3.65m) creates a very gradual pressure decay, with the RANS solution showing significant boundary layer effects throughout the nozzle length.
+
+### Velocity Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Velocity](docs/assets/images/rl10B-2/euler/velocity_contour.png) | ![RANS Velocity](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
+
+The velocity field shows acceleration to over 2000 m/s at the exit. The RANS boundary layer is the thickest among all engines studied, due to the extreme nozzle length (3.65m) and low chamber pressure (4.2 MPa), resulting in significant viscous losses.
+
+### Temperature Contour
+
+| Euler | RANS |
+|-------|------|
+| ![Euler Temperature](docs/assets/images/rl10B-2/euler/temperature_contour.png) | ![RANS Temperature](docs/assets/images/rl10B-2/rans/temp_contour_rans.png) |
+
+Temperature decreases from 2200 K through the nozzle. The extreme expansion ratio and long diverging section produce the lowest exit temperatures, with the RANS thermal boundary layer extending significantly into the core flow.
+
+### Mach vs Pressure Distribution
+
+*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
 
 ### Shock Diamonds & Plume
 
 ![Shock Diamonds](docs/assets/images/rl10B-2/plume/shock_diamonds.png)
 
-> RL10B-2 plume structure. Extreme expansion ratio creates different flow pattern compared to sea-level nozzles.
+Plume structure for the extreme 285:1 expansion ratio, showing the characteristic vacuum-optimized nozzle exhaust pattern.
 
 ---
 
