@@ -42,51 +42,47 @@ RANS simulation results for all four engine configurations are presented below, 
 
 ### Mach Number Distribution
 
-| (a) Merlin 1D, epsilon=16 | (b) Raptor SL, epsilon=34 |
-|:-------------------------:|:-------------------------:|
-| ![Merlin Mach](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) | ![Raptor Mach](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) |
+| Engine | Euler | RANS |
+|--------|-------|------|
+| Merlin 1D, epsilon=16 | ![Euler](docs/assets/images/merlin-1d/euler/mach_contour.png) | ![RANS](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) |
+| Raptor SL, epsilon=34 | ![Euler](docs/assets/images/raptor-sl/euler/mach_contour.png) | ![RANS](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) |
+| RS-25, epsilon=77.5 | ![Euler](docs/assets/images/rs-25/euler/mach_contour.png) | ![RANS](docs/assets/images/rs-25/rans/mach_contour_rans.png) |
+| RL10B-2, epsilon=285 | ![Euler](docs/assets/images/rl10B-2/euler/mach_contour.png) | ![RANS](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) |
 
-| (c) RS-25, epsilon=77.5 | (d) RL10B-2, epsilon=285 |
-|:------------------------:|:------------------------:|
-| ![RS-25 Mach](docs/assets/images/rs-25/rans/mach_contour_rans.png) | ![RL10B-2 Mach](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) |
-
-**(a)** Merlin 1D: M_exit = 3.83, boundary layer thickness ~5% of radius. **(b)** Raptor SL: M_exit = 4.88, higher Reynolds number produces thicker boundary layer. **(c)** RS-25: M_exit = 5.86, long diverging section amplifies viscous effects. **(d)** RL10B-2: M_exit = 6.56, extreme expansion ratio creates largest boundary layer displacement.
+Merlin 1D: M_exit = 4.31 (Euler) vs 3.83 (RANS), 11.2% viscous reduction. Raptor SL: M_exit = 5.48 vs 4.88, 10.8% reduction. RS-25: M_exit = 6.44 vs 5.86, 9.1% reduction. RL10B-2: M_exit = 7.71 vs 6.56, 14.9% reduction. Viscous effects scale with expansion ratio and nozzle length.
 
 ### Static Pressure Distribution
 
-| (a) Merlin 1D | (b) Raptor SL |
-|:-------------:|:-------------:|
-| ![Merlin Pressure](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) | ![Raptor Pressure](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) |
+| Engine | Euler | RANS |
+|--------|-------|------|
+| Merlin 1D | ![Euler](docs/assets/images/merlin-1d/euler/pressure_contour.png) | ![RANS](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) |
+| Raptor SL | ![Euler](docs/assets/images/raptor-sl/euler/pressure_contour.png) | ![RANS](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) |
+| RS-25 | ![Euler](docs/assets/images/rs-25/euler/pressure_contour.png) | ![RANS](docs/assets/images/rs-25/rans/pressure_contour_rans.png) |
+| RL10B-2 | ![Euler](docs/assets/images/rl10B-2/euler/pressure_contour.png) | ![RANS](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) |
 
-| (c) RS-25 | (d) RL10B-2 |
-|:---------:|:-----------:|
-| ![RS-25 Pressure](docs/assets/images/rs-25/rans/pressure_contour_rans.png) | ![RL10B-2 Pressure](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) |
-
-**(a)** Chamber pressure 9.7 MPa decaying to ambient. **(b)** Highest chamber pressure (33 MPa) produces steepest gradients. **(c)** Extended diverging section produces gradual pressure decay. **(d)** Lowest chamber pressure (4.2 MPa) with extreme expansion to near-vacuum.
+Pressure decays from chamber (9.7-33 MPa) through the nozzle. RANS shows modified pressure recovery near the wall due to boundary layer momentum deficit.
 
 ### Velocity Field
 
-| (a) Merlin 1D | (b) Raptor SL |
-|:-------------:|:-------------:|
-| ![Merlin Velocity](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) | ![Raptor Velocity](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
+| Engine | Euler | RANS |
+|--------|-------|------|
+| Merlin 1D | ![Euler](docs/assets/images/merlin-1d/euler/velocity_contour.png) | ![RANS](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) |
+| Raptor SL | ![Euler](docs/assets/images/raptor-sl/euler/velocity_contour.png) | ![RANS](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
+| RS-25 | ![Euler](docs/assets/images/rs-25/euler/velocity_contour.png) | ![RANS](docs/assets/images/rs-25/rans/velocity_contour_rans.png) |
+| RL10B-2 | ![Euler](docs/assets/images/rl10B-2/euler/velocity_contour.png) | ![RANS](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
 
-| (c) RS-25 | (d) RL10B-2 |
-|:---------:|:-----------:|
-| ![RS-25 Velocity](docs/assets/images/rs-25/rans/velocity_contour_rans.png) | ![RL10B-2 Velocity](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
-
-**(a)** V_exit = 2388 m/s, thin boundary layer. **(b)** V_exit = 2455 m/s, thicker BL from high Re. **(c)** V_exit = 2530 m/s, BL extends further into core flow. **(d)** V_exit = 2019 m/s, thickest BL due to extreme nozzle length (3.65m).
+Velocity increases from near-zero in the chamber to 2000-2500 m/s at exit. RANS shows boundary layer velocity deficit near the wall. RL10B-2 exhibits the thickest boundary layer due to extreme nozzle length (3.65m).
 
 ### Temperature Field
 
-| (a) Merlin 1D | (b) Raptor SL |
-|:-------------:|:-------------:|
-| ![Merlin Temperature](docs/assets/images/merlin-1d/rans/temp_contour_rans.png) | ![Raptor Temperature](docs/assets/images/raptor-sl/rans/temp_contour_rans.png) |
+| Engine | Euler | RANS |
+|--------|-------|------|
+| Merlin 1D | ![Euler](docs/assets/images/merlin-1d/euler/temperature_contour.png) | ![RANS](docs/assets/images/merlin-1d/rans/temp_contour_rans.png) |
+| Raptor SL | ![Euler](docs/assets/images/raptor-sl/euler/temperature_contour.png) | ![RANS](docs/assets/images/raptor-sl/rans/temp_contour_rans.png) |
+| RS-25 | ![Euler](docs/assets/images/rs-25/euler/temperature_contour.png) | ![RANS](docs/assets/images/rs-25/rans/temp_contour_rans.png) |
+| RL10B-2 | ![Euler](docs/assets/images/rl10B-2/euler/temperature_contour.png) | ![RANS](docs/assets/images/rl10B-2/rans/temp_contour_rans.png) |
 
-| (c) RS-25 | (d) RL10B-2 |
-|:---------:|:-----------:|
-| ![RS-25 Temperature](docs/assets/images/rs-25/rans/temp_contour_rans.png) | ![RL10B-2 Temperature](docs/assets/images/rl10B-2/rans/temp_contour_rans.png) |
-
-**(a)** T_exit = 1140 K from 3600 K chamber. **(b)** T_exit from 3500 K, steeper gradient near throat. **(c)** T_exit from 3570 K, gradual decay over 3.17m diverging section. **(d)** T_exit from 2200 K, lowest exit temperature due to extreme expansion.
+Temperature decreases from chamber (2200-3600 K) as thermal energy converts to kinetic energy. RANS thermal boundary layer is thicker for longer nozzles (RS-25, RL10B-2).
 
 ---
 
