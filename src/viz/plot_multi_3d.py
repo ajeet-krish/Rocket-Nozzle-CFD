@@ -50,13 +50,13 @@ def _draw_nozzle_on_ax(
     Args:
         ax: 3D axes to draw on.
         config: Nozzle geometry configuration.
-        z_offset: Vertical shift so the nozzle base sits at z=0.
+        z_offset: Vertical shift so the nozzle exit sits at z=0.
         n_theta: Circumferential resolution for ring generation.
         colormap: Matplotlib colormap name.
     """
     x, y = generate_contour(config)
-    # Shift so base (minimum x) sits at z=0
-    x_shifted = x - x.min() + z_offset
+    # Shift so exit (maximum x) sits at z=0, inlet extends upward
+    x_shifted = x.max() - x + z_offset
     ring_thickness = 5.0 * abs(x[1] - x[0]) if len(x) > 1 else 0.01
 
     norm = plt.Normalize(x_shifted.min(), x_shifted.max())
