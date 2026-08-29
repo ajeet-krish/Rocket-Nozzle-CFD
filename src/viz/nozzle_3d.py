@@ -118,8 +118,11 @@ def plot_nozzle_3d(
 
     ax.set_title(
         f"{engine_name} 3D Geometry",
-        fontsize=12, color="black", pad=12,
+        fontsize=12, color="black", pad=8,
     )
+
+    # Reduce top margin
+    plt.subplots_adjust(top=0.92)
 
     # 10. Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
