@@ -11,54 +11,25 @@ if TYPE_CHECKING:
     from nozzle.config import NozzleConfig
 
 
-def _mask_inside_nozzle(
-    coords: np.ndarray,
-    nozzle_config: "NozzleConfig",
-) -> np.ndarray:
-    """Return boolean mask for points inside the nozzle (below the wall contour).
-
-    For each point (x, y), computes the wall y-coordinate at that x and keeps
-    the point only if 0 <= y <= y_wall(x). Points outside the nozzle domain are
-    excluded from the contour plot.
-
-    Args:
-        coords: (N, 3) node coordinates
-        nozzle_config: Nozzle geometry parameters
-
-    Returns:
-        (N,) boolean mask, True for points inside the nozzle domain
-    """
-    from nozzle.geometry import generate_contour
-
-    x_wall, y_wall = generate_contour(nozzle_config)
-    x_pts = coords[:, 0]
-    y_pts = coords[:, 1]
-
-    # Interpolate wall y at each point x
-    y_wall_interp = np.interp(x_pts, x_wall, y_wall)
-
-    # Inside: y >= 0 and y <= wall y (with small tolerance for boundary points)
-    tol = 1e-10
-    mask = (y_pts >= -tol) & (y_pts <= y_wall_interp + tol)
-    return mask
-
-
 def plot_mach_contour(
     flow_vtu: Path,
     output_path: Path,
     nozzle_config: "NozzleConfig | None" = None,
+    engine_name: str = "Nozzle",
+    is_plume: bool = False,
     dpi: int = 150,
 ) -> Path:
     """Plot Mach number contour from SU2 flow.vtu.
 
     Uses tricontourf for filled contours instead of scatter points.
     Optionally overlays the nozzle wall contour when nozzle_config is provided.
-    Contour data is clipped to the nozzle domain (top half only).
 
     Args:
         flow_vtu: Path to SU2 flow.vtu file
         output_path: Path to save contour plot
         nozzle_config: Optional NozzleConfig for wall overlay
+        engine_name: Engine name for plot title
+        is_plume: If True, extend axis limits to include plume domain
         dpi: Image resolution
 
     Returns:
@@ -82,12 +53,6 @@ def plot_mach_contour(
         # (diverged solutions can produce garbage values like Mach 400+)
         mach_clamped = np.clip(mach, 0, 20)
 
-        # Clip to nozzle domain if config provided
-        if nozzle_config is not None:
-            mask = _mask_inside_nozzle(coords, nozzle_config)
-            coords = coords[mask]
-            mach_clamped = mach_clamped[mask]
-
         # Create triangulation for filled contour plot
         triang = Triangulation(coords[:, 0], coords[:, 1])
 
@@ -96,17 +61,17 @@ def plot_mach_contour(
 
         # Filled contour plot with consistent scale
         contour = ax.tricontourf(
-            triang, mach_clamped, levels=20, cmap='jet', vmin=0, vmax=15,
+            triang, mach_clamped, levels=50, cmap='jet', vmin=0, vmax=15,
         )
 
         # Add contour lines for better visualization
-        ax.tricontour(triang, mach_clamped, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+        ax.tricontour(triang, mach_clamped, levels=50, colors='k', linewidths=0.3, alpha=0.5)
 
         ax.set_xlabel('Axial Distance (m)', fontsize=12)
         ax.set_ylabel('Radial Distance (m)', fontsize=12)
-        ax.set_title('Mach Number Contour', fontsize=14)
+        ax.set_title(f'{engine_name} Mach Number Contour', fontsize=14)
 
-        # Overlay nozzle wall contour if config provided
+        # Overlay nozzle wall contour and set axis limits
         if nozzle_config is not None:
             from nozzle.geometry import generate_contour
             x_wall, y_wall = generate_contour(nozzle_config)
@@ -114,10 +79,17 @@ def plot_mach_contour(
             ax.plot(x_wall, y_wall, 'k-', linewidth=2.5, label='Nozzle Wall')
             ax.axhline(y=0, color='k', linestyle='--', linewidth=0.5)
 
-            # Set axis limits to show full nozzle (top half)
-            ax.set_xlim(x_wall[0] * 1.1, x_wall[-1] * 1.3)
-            y_max = y_wall.max() * 1.5
-            ax.set_ylim(0, y_max)
+            x_min, x_max = x_wall[0], x_wall[-1]
+            y_max_wall = y_wall.max()
+
+            if is_plume:
+                # Plume plots: extend to show full domain
+                ax.set_xlim(x_min * 1.1, x_max * 1.3)
+                ax.set_ylim(0, y_max_wall * 1.5)
+            else:
+                # Non-plume plots: show only nozzle domain with 5% padding
+                ax.set_xlim(x_min * 1.05, x_max * 1.05)
+                ax.set_ylim(0, y_max_wall * 1.05)
         else:
             ax.set_aspect('equal')
 
@@ -141,17 +113,21 @@ def plot_pressure_contour(
     flow_vtu: Path,
     output_path: Path,
     nozzle_config: "NozzleConfig | None" = None,
+    engine_name: str = "Nozzle",
+    is_plume: bool = False,
     dpi: int = 150,
 ) -> Path:
     """Plot static pressure contour from SU2 flow.vtu.
 
-    Uses tricontourf for filled contours. Contour data is clipped to the
-    nozzle domain (top half only). Uses viridis colormap (blue=low, yellow=high).
+    Uses tricontourf for filled contours. Uses viridis colormap
+    (blue=low, yellow=high).
 
     Args:
         flow_vtu: Path to SU2 flow.vtu file
         output_path: Path to save contour plot
         nozzle_config: Optional NozzleConfig for wall overlay
+        engine_name: Engine name for plot title
+        is_plume: If True, extend axis limits to include plume domain
         dpi: Image resolution
 
     Returns:
@@ -171,12 +147,6 @@ def plot_pressure_contour(
         coords = data.coordinates
         pressure = data.pressure
 
-        # Clip to nozzle domain if config provided
-        if nozzle_config is not None:
-            mask = _mask_inside_nozzle(coords, nozzle_config)
-            coords = coords[mask]
-            pressure = pressure[mask]
-
         # Create triangulation for filled contour plot
         triang = Triangulation(coords[:, 0], coords[:, 1])
 
@@ -185,17 +155,17 @@ def plot_pressure_contour(
 
         # Filled contour plot (viridis: blue=low, yellow=high)
         contour = ax.tricontourf(
-            triang, pressure, levels=20, cmap='viridis',
+            triang, pressure, levels=50, cmap='viridis',
         )
 
         # Add contour lines for better visualization
-        ax.tricontour(triang, pressure, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+        ax.tricontour(triang, pressure, levels=50, colors='k', linewidths=0.3, alpha=0.5)
 
         ax.set_xlabel('Axial Distance (m)', fontsize=12)
         ax.set_ylabel('Radial Distance (m)', fontsize=12)
-        ax.set_title('Static Pressure Contour', fontsize=14)
+        ax.set_title(f'{engine_name} Pressure Contour', fontsize=14)
 
-        # Overlay nozzle wall contour if config provided
+        # Overlay nozzle wall contour and set axis limits
         if nozzle_config is not None:
             from nozzle.geometry import generate_contour
             x_wall, y_wall = generate_contour(nozzle_config)
@@ -203,10 +173,15 @@ def plot_pressure_contour(
             ax.plot(x_wall, y_wall, 'k-', linewidth=2.5, label='Nozzle Wall')
             ax.axhline(y=0, color='k', linestyle='--', linewidth=0.5)
 
-            # Set axis limits to show full nozzle (top half)
-            ax.set_xlim(x_wall[0] * 1.1, x_wall[-1] * 1.3)
-            y_max = y_wall.max() * 1.5
-            ax.set_ylim(0, y_max)
+            x_min, x_max = x_wall[0], x_wall[-1]
+            y_max_wall = y_wall.max()
+
+            if is_plume:
+                ax.set_xlim(x_min * 1.1, x_max * 1.3)
+                ax.set_ylim(0, y_max_wall * 1.5)
+            else:
+                ax.set_xlim(x_min * 1.05, x_max * 1.05)
+                ax.set_ylim(0, y_max_wall * 1.05)
         else:
             ax.set_aspect('equal')
 
@@ -230,18 +205,24 @@ def plot_velocity_contour(
     flow_vtu: Path,
     output_path: Path,
     nozzle_config: "NozzleConfig | None" = None,
+    engine_name: str = "Nozzle",
+    is_plume: bool = False,
+    gamma: float = 1.4,
     dpi: int = 150,
 ) -> Path:
     """Plot velocity magnitude contour from SU2 flow.vtu.
 
-    Computes |V| = sqrt(Vx^2 + Vy^2) from velocity components.
-    Contour data is clipped to the nozzle domain (top half only).
-    Uses plasma colormap.
+    Tries to read velocity components from VTU. If unavailable (e.g. Euler
+    solver), computes velocity from Mach and temperature: V = M * sqrt(gamma * R * T).
+    If neither data is available, skips gracefully with a warning.
 
     Args:
         flow_vtu: Path to SU2 flow.vtu file
         output_path: Path to save contour plot
         nozzle_config: Optional NozzleConfig for wall overlay
+        engine_name: Engine name for plot title
+        is_plume: If True, extend axis limits to include plume domain
+        gamma: Ratio of specific heats (default 1.4)
         dpi: Image resolution
 
     Returns:
@@ -254,18 +235,23 @@ def plot_velocity_contour(
 
         data = parse_vtu(flow_vtu)
 
-        if data.velocity_x is None or data.velocity_y is None:
-            print(f"Warning: No velocity data in {flow_vtu}")
+        R_gas = 287.05  # J/(kg*K) specific gas constant for air
+        velocity_mag = None
+
+        # Try direct velocity components first
+        if data.velocity_x is not None and data.velocity_y is not None:
+            velocity_mag = np.sqrt(data.velocity_x**2 + data.velocity_y**2)
+
+        # Fall back to computation from Mach and temperature
+        if velocity_mag is None and data.mach is not None and data.temperature is not None:
+            print(f"  Computing velocity from Mach and temperature (Euler solver)")
+            velocity_mag = data.mach * np.sqrt(gamma * R_gas * data.temperature)
+
+        if velocity_mag is None:
+            print(f"Warning: No velocity data available in {flow_vtu} (need velocity components or Mach+T)")
             return output_path
 
         coords = data.coordinates
-        velocity_mag = np.sqrt(data.velocity_x**2 + data.velocity_y**2)
-
-        # Clip to nozzle domain if config provided
-        if nozzle_config is not None:
-            mask = _mask_inside_nozzle(coords, nozzle_config)
-            coords = coords[mask]
-            velocity_mag = velocity_mag[mask]
 
         # Create triangulation for filled contour plot
         triang = Triangulation(coords[:, 0], coords[:, 1])
@@ -275,17 +261,17 @@ def plot_velocity_contour(
 
         # Filled contour plot (plasma colormap)
         contour = ax.tricontourf(
-            triang, velocity_mag, levels=20, cmap='plasma',
+            triang, velocity_mag, levels=50, cmap='plasma',
         )
 
         # Add contour lines for better visualization
-        ax.tricontour(triang, velocity_mag, levels=20, colors='k', linewidths=0.3, alpha=0.5)
+        ax.tricontour(triang, velocity_mag, levels=50, colors='k', linewidths=0.3, alpha=0.5)
 
         ax.set_xlabel('Axial Distance (m)', fontsize=12)
         ax.set_ylabel('Radial Distance (m)', fontsize=12)
-        ax.set_title('Velocity Magnitude Contour', fontsize=14)
+        ax.set_title(f'{engine_name} Velocity Contour', fontsize=14)
 
-        # Overlay nozzle wall contour if config provided
+        # Overlay nozzle wall contour and set axis limits
         if nozzle_config is not None:
             from nozzle.geometry import generate_contour
             x_wall, y_wall = generate_contour(nozzle_config)
@@ -293,10 +279,15 @@ def plot_velocity_contour(
             ax.plot(x_wall, y_wall, 'k-', linewidth=2.5, label='Nozzle Wall')
             ax.axhline(y=0, color='k', linestyle='--', linewidth=0.5)
 
-            # Set axis limits to show full nozzle (top half)
-            ax.set_xlim(x_wall[0] * 1.1, x_wall[-1] * 1.3)
-            y_max = y_wall.max() * 1.5
-            ax.set_ylim(0, y_max)
+            x_min, x_max = x_wall[0], x_wall[-1]
+            y_max_wall = y_wall.max()
+
+            if is_plume:
+                ax.set_xlim(x_min * 1.1, x_max * 1.3)
+                ax.set_ylim(0, y_max_wall * 1.5)
+            else:
+                ax.set_xlim(x_min * 1.05, x_max * 1.05)
+                ax.set_ylim(0, y_max_wall * 1.05)
         else:
             ax.set_aspect('equal')
 

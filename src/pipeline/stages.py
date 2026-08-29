@@ -161,8 +161,14 @@ def run_euler_stage(config: EngineConfig) -> int:
 
     vtu = workdir / "flow.vtu"
     if vtu.exists():
-        from viz.mach_contour import plot_mach_contour
-        plot_mach_contour(vtu, images_dir / "mach_contour.png", nozzle_config=nozzle_config)
+        from viz.mach_contour import (
+            plot_mach_contour,
+            plot_pressure_contour,
+            plot_velocity_contour,
+        )
+        plot_mach_contour(vtu, images_dir / "mach_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
+        plot_pressure_contour(vtu, images_dir / "pressure_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
+        plot_velocity_contour(vtu, images_dir / "velocity_contour.png", nozzle_config=nozzle_config, engine_name=config.label)
 
     print(f"  Mach (sim): {results.exit_mach:.4f}, Mach (theory): {theory_mach:.4f}")
     print(f"  Error: {report.mach_error_percent:.2f}%, Time: {elapsed:.1f}s")
@@ -253,9 +259,9 @@ def run_rans_stage(config: EngineConfig) -> int:
             plot_pressure_contour,
             plot_velocity_contour,
         )
-        plot_mach_contour(vtu, images_dir / "mach_contour_rans.png", nozzle_config=nozzle_config)
-        plot_pressure_contour(vtu, images_dir / "pressure_contour_rans.png", nozzle_config=nozzle_config)
-        plot_velocity_contour(vtu, images_dir / "velocity_contour_rans.png", nozzle_config=nozzle_config)
+        plot_mach_contour(vtu, images_dir / "mach_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
+        plot_pressure_contour(vtu, images_dir / "pressure_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
+        plot_velocity_contour(vtu, images_dir / "velocity_contour_rans.png", nozzle_config=nozzle_config, engine_name=config.label)
 
     history = workdir / "history.csv"
     if history.exists():
@@ -338,7 +344,7 @@ def run_plume_stage(config: EngineConfig) -> int:
 
     if vtu_path.exists():
         from viz.mach_contour import plot_mach_contour
-        plot_mach_contour(vtu_path, images_dir / "mach_contour_plume.png", nozzle_config=nozzle_config)
+        plot_mach_contour(vtu_path, images_dir / "mach_contour_plume.png", nozzle_config=nozzle_config, engine_name=config.label, is_plume=True)
 
         from viz.postprocessing import plot_shock_diamonds
         from cfd.vtu_parser import parse_vtu
