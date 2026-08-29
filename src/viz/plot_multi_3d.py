@@ -1,0 +1,173 @@
+"""2x2 multi-plot comparing all four rocket engine 3D geometries.
+
+Generates a 2x2 subplot grid with unified axes so relative size/scale
+of each engine is immediately visible. Merlin 1D and Raptor SL are
+compact sea-level engines; RS-25 and RL10B-2 are progressively larger
+vacuum-optimized nozzles.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+
+from nozzle.config import NozzleConfig
+from nozzle.geometry import generate_contour
+from nozzle.presets import merlin_1d, raptor_sl, rs_25, rl10b_2
+
+
+def _ring(
+    r: float,
+    h: float,
+    a: float = 0.0,
+    n_theta: int = 60,
+    n_height: int = 4,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Generate a cylindrical ring surface patch."""
+    theta = np.linspace(0, 2 * np.pi, n_theta)
+    v = np.linspace(a, a + h, n_height)
+    theta_mesh, v_mesh = np.meshgrid(theta, v)
+    X = r * np.cos(theta_mesh)
+    Y = r * np.sin(theta_mesh)
+    Z = v_mesh
+    return X, Y, Z
+
+
+def _draw_nozzle_on_ax(
+    ax: plt.Axes,
+    config: NozzleConfig,
+    n_theta: int = 60,
+    colormap: str = "coolwarm",
+) -> None:
+    """Draw a single nozzle surface on a 3D axes."""
+    x, y = generate_contour(config)
+    ring_thickness = 5.0 * abs(x[1] - x[0]) if len(x) > 1 else 0.01
+
+    norm = plt.Normalize(x.min(), x.max())
+    cmap = plt.get_cmap(colormap)
+
+    for i in range(len(y)):
+        X, Y, Z = _ring(y[i], ring_thickness, x[i], n_theta=n_theta)
+        colour = cmap(norm(x[i]))
+        ax.plot_surface(X, Y, Z, color=colour, alpha=0.92, shade=True)
+
+    # Axis of symmetry
+    z_min, z_max = float(x.min()), float(x.max())
+    ax.plot(
+        [0, 0], [0, 0], [z_min, z_max],
+        color="#1565C0", linewidth=1.0, alpha=0.6, linestyle="--",
+    )
+
+
+def plot_multi_3d(
+    output_path: Path,
+    dpi: int = 300,
+    elevation: float = -170.0,
+    azimuth: float = -15.0,
+    n_theta: int = 60,
+    colormap: str = "coolwarm",
+) -> Path:
+    """Create a 2x2 subplot grid comparing all four nozzle geometries.
+
+    All subplots share unified axis limits computed from the global
+    min/max across all four nozzle contours.
+
+    Args:
+        output_path: Where to save the PNG.
+        dpi: Image resolution.
+        elevation: 3D view elevation angle.
+        azimuth: 3D view azimuth angle.
+        n_theta: Circumferential resolution for ring generation.
+        colormap: Matplotlib colormap name.
+
+    Returns:
+        Path to saved image.
+    """
+    output_path = Path(output_path)
+
+    # Engine configs and titles in 2x2 layout order
+    engines: list[tuple[str, NozzleConfig]] = [
+        ("Merlin 1D", merlin_1d()),
+        ("Raptor SL", raptor_sl()),
+        ("RS-25", rs_25()),
+        ("RL10B-2", rl10b_2()),
+    ]
+
+    # Generate all contours first to compute global axis limits
+    contours: list[tuple[np.ndarray, np.ndarray]] = []
+    for _, cfg in engines:
+        contours.append(generate_contour(cfg))
+
+    # Global min/max across all contours
+    all_x = np.concatenate([c[0] for c in contours])
+    all_y = np.concatenate([c[1] for c in contours])
+    global_x_min, global_x_max = float(all_x.min()), float(all_x.max())
+    global_y_min = -float(all_y.max())
+    global_y_max = float(all_y.max())
+
+    # Figure
+    fig = plt.figure(figsize=(14, 12))
+    fig.patch.set_facecolor("white")
+
+    positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
+
+    for idx, ((name, cfg), (row, col)) in enumerate(
+        zip(engines, positions)
+    ):
+        ax = fig.add_subplot(2, 2, idx + 1, projection="3d")
+        ax.set_facecolor("white")
+
+        _draw_nozzle_on_ax(ax, cfg, n_theta=n_theta, colormap=colormap)
+
+        # Unified axes
+        x_range = global_x_max - global_x_min
+        y_range = global_y_max - global_y_min
+        z_dim = max(x_range, y_range)
+        xy_diameter = global_y_max * 2
+        ax.set_box_aspect([1.0, 1.0, x_range / xy_diameter])
+
+        ax.set_xlim3d([global_x_min, global_x_max])
+        ax.set_ylim3d([global_y_min, global_y_max])
+        ax.set_zlim3d([global_x_min, global_x_max])
+
+        # Clean axis panes
+        ax.xaxis.pane.fill = False
+        ax.yaxis.pane.fill = False
+        ax.zaxis.pane.fill = False
+
+        ax.view_init(elev=elevation, azim=azimuth)
+
+        # Labels and title
+        ax.set_xlabel("X (m)", fontsize=8, color="black", labelpad=6)
+        ax.set_ylabel("Y (m)", fontsize=8, color="black", labelpad=6)
+        ax.set_zlabel("Axial (m)", fontsize=8, color="black", labelpad=6)
+        ax.tick_params(colors="black", labelsize=7)
+        ax.grid(False)
+        for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
+            pane.fill = False
+            pane.set_edgecolor("#cccccc")
+
+        ax.set_title(name, fontsize=14, fontweight="bold", color="black", pad=10)
+
+    plt.tight_layout(pad=2.0)
+
+    # Save
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(
+        output_path, dpi=dpi, bbox_inches="tight",
+        facecolor="white", pad_inches=0.1,
+    )
+    plt.close(fig)
+
+    return output_path
+
+
+if __name__ == "__main__":
+    out = Path("docs/assets/images/nozzle_comparison_3d.png")
+    result = plot_multi_3d(out)
+    print(f"Saved: {result}")

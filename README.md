@@ -36,6 +36,14 @@ Triple validation methodology compares CFD results against isentropic closed-for
 
 ---
 
+### 3D Nozzle Geometry Comparison
+
+![3D Nozzle Comparison](docs/assets/images/nozzle_comparison_3d.png)
+
+All four nozzle geometries plotted to the same scale for direct size comparison. Merlin 1D and Raptor SL are sea-level engines with compact nozzles, while RS-25 and RL10B-2 are vacuum-optimized with progressively larger expansion ratios (77.5:1 and 285:1 respectively).
+
+---
+
 ## Results Summary
 
 RANS simulation results for all four engine configurations are presented below, enabling comparative assessment of flow field characteristics across the expansion ratio spectrum (16:1 to 285:1).
