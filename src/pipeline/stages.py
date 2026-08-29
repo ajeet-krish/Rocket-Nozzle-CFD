@@ -231,8 +231,8 @@ def run_rans_stage(config: EngineConfig) -> int:
 
     mesh_path = generate_nozzle_mesh(
         nozzle_config,
-        n_axial=config.rans_n_axial,
-        n_normal=config.rans_n_normal,
+        n_axial=config.euler_n_axial,  # Use Euler mesh for consistency
+        n_normal=config.euler_n_normal,
         output_file=str(workdir / "nozzle.su2"),
         rans_mode=False,  # Use Euler mesh for stability
         plume_extension=False,
