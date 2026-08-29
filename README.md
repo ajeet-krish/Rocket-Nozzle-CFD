@@ -154,11 +154,9 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 > **Left:** 2D annotated nozzle contour with throat radius, exit radius, and nozzle length. **Right:** 3D axisymmetric revolved surface.
 
-### Nozzle Geometry & Mesh
+### Nozzle Mesh
 
-<!-- PLACEHOLDER: Merlin 1D mesh with plume extension -->
-<!-- Run: uv run python run_plume.py (uses merlin_1d preset) -->
-<!-- Save screenshot from ParaView as: docs/assets/images/merlin/mesh_merlin.png -->
+![Merlin Mesh](docs/assets/images/merlin-1d/mesh/merlin-mesh.png)
 > *Merlin 1D nozzle mesh with chamber section and plume extension. The larger throat (165mm) compared to the generic nozzle produces similar expansion ratio but different flow features.*
 
 ### Mach Number: Euler vs RANS
@@ -211,6 +209,11 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 > **Left:** 2D annotated nozzle contour with throat radius 82.5mm and exit radius 481mm. **Right:** 3D axisymmetric revolved surface.
 
+### Nozzle Mesh
+
+![Raptor Mesh](docs/assets/images/raptor-sl/mesh/raptor-mesh.png)
+> *Mesh description*
+
 ### Simulation Results
 
 | Euler (Inviscid) | RANS SST (Viscous) |
@@ -240,11 +243,9 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 > **Left:** 2D annotated nozzle contour with throat radius 136mm and exit radius 1200mm. **Right:** 3D axisymmetric revolved surface.
 
-### Nozzle Geometry & Mesh
+### Nozzle Mesh
 
-<!-- PLACEHOLDER: RS-25 mesh -->
-<!-- Run: generate mesh with rs_25() preset -->
-<!-- Save ParaView screenshot as: docs/assets/images/rs25/mesh_rs25.png -->
+![RS-25 Mesh](docs/assets/images/rs-25/mesh/rs25-mesh.png)
 > *RS-25 nozzle mesh. High expansion ratio (78:1) produces very low exit pressure at sea level, causing flow separation. The nozzle length is significantly longer than Merlin 1D.*
 
 ### Mach Number: Euler vs RANS
@@ -297,11 +298,9 @@ The plume domain extends downstream of the nozzle exit to capture external shock
 
 > **Left:** 2D annotated nozzle contour with throat radius 77mm and extreme 285:1 expansion ratio. **Right:** 3D axisymmetric revolved surface.
 
-### Nozzle Geometry & Mesh
+### Nozzle Mesh
 
-<!-- PLACEHOLDER: RL10B-2 mesh -->
-<!-- Run: generate mesh with rl10b_2() preset -->
-<!-- Save ParaView screenshot as: docs/assets/images/rl10b2/mesh_rl10b2.png -->
+![RL10B-2 Mesh](docs/assets/images/rs-25/mesh/rs25-mesh.png)
 > *RL10B-2 nozzle mesh. Extreme expansion ratio (285:1) produces the highest Isp of any operational engine (465.5s vacuum). The nozzle exit diameter is 2.6m.*
 
 ### Mach Number: Euler vs RANS

@@ -3,6 +3,7 @@
 Loads a trained PINN checkpoint and provides sub-100ms prediction
 for arbitrary nozzle geometries and operating conditions.
 """
+import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,12 +55,31 @@ class PINNInference:
             device: Inference device ("cpu" or "cuda")
         """
         self.device = torch.device(device)
-        self.dataset = NozzleDataset(PINNConfig())
 
+        # Load model weights with weights_only=True (no pickle deserialization)
         checkpoint = torch.load(
-            checkpoint_path, map_location=self.device, weights_only=False
+            checkpoint_path, map_location=self.device, weights_only=True
         )
-        self.config: PINNConfig = checkpoint["config"]
+
+        # Load config from separate JSON file
+        config_path = checkpoint_path.with_suffix('.json')
+        if not config_path.exists():
+            raise FileNotFoundError(
+                f"Config file not found: {config_path}. "
+                "Ensure the checkpoint was saved with the updated trainer."
+            )
+        with open(config_path) as f:
+            config_dict = json.load(f)
+        # Convert JSON lists back to tuples for frozen dataclass
+        config_dict['hidden_layers'] = tuple(config_dict['hidden_layers'])
+        config_dict['curriculum_phases'] = tuple(config_dict['curriculum_phases'])
+        config_dict['grid_resolution'] = tuple(config_dict['grid_resolution'])
+        config_dict['param_bounds'] = {
+            k: tuple(v) for k, v in config_dict['param_bounds'].items()
+        }
+        self.config: PINNConfig = PINNConfig(**config_dict)
+
+        self.dataset = NozzleDataset(self.config)
         self.model = NozzlePINN(self.config).to(self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model.eval()
@@ -93,7 +113,27 @@ class PINNInference:
 
         Returns:
             PredictionResult with all flow fields
+
+        Raises:
+            ValueError: If any parameter is outside the configured bounds
         """
+        # Validate inputs against parameter bounds
+        param_values = {
+            'expansion_ratio': expansion_ratio,
+            'throat_radius': throat_radius,
+            'theta_n': theta_n,
+            'total_pressure': total_pressure,
+            'total_temperature': total_temperature,
+            'gamma': gamma,
+            'nozzle_length_fraction': nozzle_length_fraction,
+        }
+        for name, val in param_values.items():
+            lo, hi = self.config.param_bounds[name]
+            if not (lo <= val <= hi):
+                raise ValueError(
+                    f"Parameter '{name}'={val} is outside bounds [{lo}, {hi}]"
+                )
+
         t0 = time.time()
 
         # Normalize parameters
@@ -110,7 +150,12 @@ class PINNInference:
             y_range = (0.01, 1.0)
 
         nx, ny = grid_resolution or self.config.grid_resolution
-        x_grid, y_grid, x_flat, y_flat = self.dataset.generate_grid(x_range, y_range)
+
+        # Generate evaluation grid with the correct resolution
+        x = np.linspace(x_range[0], x_range[1], nx)
+        y = np.linspace(y_range[0], y_range[1], ny)
+        x_grid, y_grid = np.meshgrid(x, y, indexing="ij")
+        x_flat, y_flat = x_grid.ravel(), y_grid.ravel()
 
         # Create input tensors
         n_points = nx * ny

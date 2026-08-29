@@ -1,6 +1,7 @@
 """NozzlePINN model: Fourier-feature MLP with residual blocks."""
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .config import PINNConfig
 
@@ -95,11 +96,22 @@ class NozzlePINN(nn.Module):
             params: (B, 7) normalized engine parameters
 
         Returns:
-            (B, 6) flow field predictions
+            (B, 6) flow field predictions [Mach, P, T, rho, Vx, Vy]
         """
         spatial = torch.stack([x, y], dim=-1)  # (B, 2)
         fourier = self.fourier(spatial)  # (B, 4*n_freqs)
         h = self.input_proj(torch.cat([fourier, params], dim=-1))
         for block in self.residuals:
             h = block(h)
-        return self.output_head(h)
+        raw = self.output_head(h)
+
+        # Apply physical constraints: P, T, rho must be positive
+        # softplus(x) = log(1 + exp(x)) is always > 0 and differentiable
+        mach = F.softplus(raw[:, 0]) + 1e-6
+        pressure = F.softplus(raw[:, 1]) + 1e-6
+        temperature = F.softplus(raw[:, 2]) + 1e-6
+        density = F.softplus(raw[:, 3]) + 1e-6
+        vx = raw[:, 4]
+        vy = raw[:, 5]
+
+        return torch.stack([mach, pressure, temperature, density, vx, vy], dim=-1)

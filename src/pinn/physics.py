@@ -39,6 +39,7 @@ class EulerResiduals(nn.Module):
         vy: torch.Tensor,
         x: torch.Tensor,
         y: torch.Tensor,
+        gamma_tensor: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute Euler residuals from predicted primitive variables.
 
@@ -51,6 +52,7 @@ class EulerResiduals(nn.Module):
             vy: (B,) y-velocity
             x: (B,) axial coordinates (requires grad)
             y: (B,) radial coordinates (requires grad)
+            gamma_tensor: (B,) per-sample gamma values (optional)
 
         Returns:
             Dictionary of residual terms:
@@ -59,15 +61,17 @@ class EulerResiduals(nn.Module):
                 "y_momentum": y-momentum residual
                 "energy": energy residual
         """
+        # Use per-sample gamma if provided, otherwise scalar default
+        gamma = gamma_tensor if gamma_tensor is not None else self.gamma
+
         # Velocity magnitude for energy equation
-        gamma = self.gamma
         speed_sq = vx ** 2 + vy ** 2
-        enthalpy = gamma / (gamma - 1.0) * pressure / (density + 1e-30) + 0.5 * speed_sq
+        gamma_over_gm1 = gamma / (gamma - 1.0)
+        enthalpy = gamma_over_gm1 * pressure / (density + 1e-30) + 0.5 * speed_sq
 
         # Conservative variables
         rho_vx = density * vx
         rho_vy = density * vy
-        rho_e = density * (pressure / ((gamma - 1.0) * (density + 1e-30)) + 0.5 * speed_sq)
 
         # Pressure gradients
         dp_dx = torch.autograd.grad(
@@ -107,6 +111,16 @@ class EulerResiduals(nn.Module):
             create_graph=True, retain_graph=True,
         )[0]
 
+        # Enthalpy gradients via autograd (product rule for d(rho*Vx*H)/dx)
+        dH_dx = torch.autograd.grad(
+            enthalpy, x, grad_outputs=torch.ones_like(enthalpy),
+            create_graph=True, retain_graph=True,
+        )[0]
+        dH_dy = torch.autograd.grad(
+            enthalpy, y, grad_outputs=torch.ones_like(enthalpy),
+            create_graph=True, retain_graph=True,
+        )[0]
+
         # Avoid division by zero at axis (y=0)
         y_safe = torch.clamp(y.abs(), min=1e-6)
 
@@ -133,9 +147,10 @@ class EulerResiduals(nn.Module):
         )
 
         # Energy: d(rho*Vx*H)/dx + d(rho*Vy*H)/dy + rho*Vy*H/y = 0
+        # Product rule: d(rho*Vx*H)/dx = drho/dx*Vx*H + rho*dVx/dx*H + rho*Vx*dH/dx
         energy = (
-            drho_dx * vx * enthalpy + density * (dvx_dx * enthalpy + vx * 0)
-            + drho_dy * vy * enthalpy + density * (dvy_dy * enthalpy + vy * 0)
+            drho_dx * vx * enthalpy + density * (dvx_dx * enthalpy + vx * dH_dx)
+            + drho_dy * vy * enthalpy + density * (dvy_dy * enthalpy + vy * dH_dy)
             + density * vy * enthalpy / y_safe
         )
 

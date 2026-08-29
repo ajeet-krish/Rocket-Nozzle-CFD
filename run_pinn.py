@@ -256,7 +256,8 @@ def _generate_synthetic_targets(
     """Generate synthetic training targets using isentropic relations.
 
     Creates approximate flow field data for training without requiring
-    actual SU2 VTU files.
+    actual SU2 VTU files. Uses the isentropic area-Mach relation to
+    compute local Mach number from a quadratic area profile.
 
     Args:
         x: (N,) normalized x-coordinates
@@ -267,19 +268,40 @@ def _generate_synthetic_targets(
     Returns:
         (N, 6) target values [Mach, P, T, rho, Vx, Vy]
     """
+    from scipy.optimize import brentq
+    from validation.isentropic import area_mach_relation, exit_mach_from_area_ratio
+
     epsilon = params["expansion_ratio"]
     p0 = params["total_pressure"]
     T0 = params["total_temperature"]
 
-    # Approximate Mach from area ratio (isentropic)
-    # Use the validated formula from src/validation/isentropic.py
-    from validation.isentropic import exit_mach_from_area_ratio
+    # Get exit Mach from isentropic area-Mach relation
     mach_exit = exit_mach_from_area_ratio(epsilon, gamma)
 
-    # Linear interpolation: Mach=0 at inlet, Mach=mach_exit at exit
-    mach = mach_exit * np.clip(x, 0.0, 1.0)
+    # Model nozzle area profile: quadratic from inlet to throat to exit
+    # Throat at x=0.5 (area_ratio=1), exit at x=1.0 (area_ratio=epsilon)
+    t = 2.0 * (x - 0.5)  # ranges from -1 (inlet) to 0 (throat) to 1 (exit)
+    local_area_ratio = 1.0 + (epsilon - 1.0) * t ** 2
 
-    # Radial profile: Mach decreases near axis
+    # Solve for Mach from local area ratio using isentropic relation
+    mach = np.zeros_like(x, dtype=np.float64)
+    for i, ar in enumerate(local_area_ratio):
+        if abs(ar - 1.0) < 1e-10:
+            mach[i] = 1.0  # At throat
+        elif ar > 1.0:
+            # Supersonic branch (diverging section)
+            try:
+                mach[i] = brentq(
+                    lambda M: area_mach_relation(M, gamma) - ar,
+                    1.0 + 1e-6, 10.0,
+                )
+            except ValueError:
+                mach[i] = mach_exit * min(1.0, max(0.0, (x[i] - 0.3) / 0.7))
+        else:
+            # Subsonic branch (converging section, ar < 1 is unphysical here)
+            mach[i] = 0.1  # Low subsonic at inlet
+
+    # Radial profile: slight variation near axis
     mach = mach * (0.8 + 0.2 * y)
 
     # Isentropic relations

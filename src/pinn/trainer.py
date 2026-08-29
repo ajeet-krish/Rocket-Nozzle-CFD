@@ -4,8 +4,9 @@ Phase 1: Data fitting only (epochs 0 to phase1_end)
 Phase 2: Add physics constraints (epochs phase1_end to phase2_end)
 Phase 3: Fine-tune with full physics (remaining epochs)
 """
+import json
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import numpy as np
@@ -64,6 +65,10 @@ class PINNTrainer:
             weight_decay=config.weight_decay,
         )
 
+        # PDE loss normalization: running mean of squared residuals
+        self._pde_loss_ema: dict[str, float] = {}
+        self._pde_ema_beta: float = 0.99
+
     def train(
         self,
         x_data: torch.Tensor,
@@ -92,7 +97,7 @@ class PINNTrainer:
         Returns:
             TrainResult with loss history and metrics
         """
-        max_epochs = epochs or self.config.max_epochs
+        max_epochs = epochs if epochs is not None else self.config.max_epochs
         phases = self.config.curriculum_phases
         phase1_end = phases[0]
         phase2_end = phase1_end + phases[1]
@@ -152,10 +157,10 @@ class PINNTrainer:
 
         return TrainResult(
             epochs_trained=max_epochs,
-            final_loss=loss_history[-1],
-            final_data_loss=float(data_loss),
-            final_pde_loss=float(pde_loss),
-            final_bc_loss=float(bc_loss),
+            final_loss=loss_history[-1] if loss_history else 0.0,
+            final_data_loss=float(data_loss) if max_epochs > 0 else 0.0,
+            final_pde_loss=float(pde_loss) if max_epochs > 0 else 0.0,
+            final_bc_loss=float(bc_loss) if max_epochs > 0 else 0.0,
             training_time_s=elapsed,
             loss_history=loss_history,
         )
@@ -198,18 +203,32 @@ class PINNTrainer:
             vx_c = pred_colloc[:, 4]
             vy_c = pred_colloc[:, 5]
 
+            # Extract per-sample gamma from params (index 5, denormalize)
+            gamma_norm = params_colloc[:, 5]
+            gamma_bounds = self.config.param_bounds["gamma"]
+            gamma_tensor = gamma_norm * (gamma_bounds[1] - gamma_bounds[0]) + gamma_bounds[0]
+
             residuals = self.euler(
                 mach_c, pressure_c, temperature_c,
                 density_c, vx_c, vy_c,
                 x_c, y_c,
+                gamma_tensor=gamma_tensor,
             )
 
-            pde_loss = (
-                residuals["continuity"].pow(2).mean()
-                + residuals["x_momentum"].pow(2).mean()
-                + residuals["y_momentum"].pow(2).mean()
-                + residuals["energy"].pow(2).mean()
-            )
+            # Normalize PDE losses by running mean to prevent imbalance
+            pde_loss = torch.tensor(0.0, device=self.device)
+            for key, val in residuals.items():
+                term = val.pow(2).mean()
+                # Update exponential moving average
+                if key not in self._pde_loss_ema:
+                    self._pde_loss_ema[key] = term.item()
+                else:
+                    self._pde_loss_ema[key] = (
+                        self._pde_ema_beta * self._pde_loss_ema[key]
+                        + (1.0 - self._pde_ema_beta) * term.item()
+                    )
+                # Normalize by running mean so each term contributes ~1.0
+                pde_loss = pde_loss + term / (self._pde_loss_ema[key] + 1e-8)
 
         # BC loss: axis symmetry (Vy=0 at y=0)
         bc_loss = torch.tensor(0.0, device=self.device)
@@ -225,6 +244,10 @@ class PINNTrainer:
         # Total loss
         total_loss = lam_data * data_loss + lam_pde * pde_loss + lam_bc * bc_loss
         total_loss.backward()
+
+        # Gradient clipping for training stability
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+
         self.optimizer.step()
 
         return (
@@ -237,14 +260,21 @@ class PINNTrainer:
     def save(self, path: Path) -> None:
         """Save model checkpoint.
 
+        Model weights are saved as .pt (safe to load with weights_only=True).
+        Config is saved as .json alongside the checkpoint.
+
         Args:
             path: Output path (.pt file)
         """
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save({
             "model_state_dict": self.model.state_dict(),
-            "config": self.config,
         }, path)
+        # Save config as JSON for safe loading (no pickle)
+        config_path = path.with_suffix('.json')
+        config_dict = asdict(self.config)
+        with open(config_path, 'w') as f:
+            json.dump(config_dict, f, indent=2)
 
     def load(self, path: Path) -> None:
         """Load model checkpoint.
@@ -252,5 +282,5 @@ class PINNTrainer:
         Args:
             path: Checkpoint path (.pt file)
         """
-        checkpoint = torch.load(path, map_location=self.device, weights_only=False)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.model.load_state_dict(checkpoint["model_state_dict"])
