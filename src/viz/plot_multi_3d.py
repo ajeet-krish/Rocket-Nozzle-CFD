@@ -143,22 +143,10 @@ def plot_multi_3d(
         ax.set_ylim3d([-global_y_max, global_y_max])
         ax.set_zlim3d([global_z_min, 0.0])
 
-        # Clean axis panes
-        ax.xaxis.pane.fill = False
-        ax.yaxis.pane.fill = False
-        ax.zaxis.pane.fill = False
+        # Hide axes completely
+        ax.set_axis_off()
 
         ax.view_init(elev=elevation, azim=azimuth)
-
-        # Labels and title
-        ax.set_xlabel("X (m)", fontsize=8, color="black", labelpad=6)
-        ax.set_ylabel("Y (m)", fontsize=8, color="black", labelpad=6)
-        ax.set_zlabel("Axial (m)", fontsize=8, color="black", labelpad=6)
-        ax.tick_params(colors="black", labelsize=7)
-        ax.grid(False)
-        for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
-            pane.fill = False
-            pane.set_edgecolor("#cccccc")
 
         ax.set_title(name, fontsize=14, fontweight="bold", color="black", pad=10)
 
