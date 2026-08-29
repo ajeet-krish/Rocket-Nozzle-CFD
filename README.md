@@ -38,47 +38,55 @@ Triple validation methodology compares CFD results against isentropic closed-for
 
 ## Results Summary
 
-The following tables present RANS simulation results for all four engine configurations, enabling rapid comparative assessment of flow field characteristics across the expansion ratio spectrum.
+RANS simulation results for all four engine configurations are presented below, enabling comparative assessment of flow field characteristics across the expansion ratio spectrum (16:1 to 285:1).
 
 ### Mach Number Distribution
 
-| Merlin 1D (16:1) | Raptor SL (34:1) |
-|------------------|------------------|
+| (a) Merlin 1D, epsilon=16 | (b) Raptor SL, epsilon=34 |
+|:-------------------------:|:-------------------------:|
 | ![Merlin Mach](docs/assets/images/merlin-1d/rans/mach_contour_rans.png) | ![Raptor Mach](docs/assets/images/raptor-sl/rans/mach_contour_rans.png) |
 
-| RS-25 (77.5:1) | RL10B-2 (285:1) |
-|----------------|-----------------|
+| (c) RS-25, epsilon=77.5 | (d) RL10B-2, epsilon=285 |
+|:------------------------:|:------------------------:|
 | ![RS-25 Mach](docs/assets/images/rs-25/rans/mach_contour_rans.png) | ![RL10B-2 Mach](docs/assets/images/rl10B-2/rans/mach_contour_rans.png) |
+
+**(a)** Merlin 1D: M_exit = 3.83, boundary layer thickness ~5% of radius. **(b)** Raptor SL: M_exit = 4.88, higher Reynolds number produces thicker boundary layer. **(c)** RS-25: M_exit = 5.86, long diverging section amplifies viscous effects. **(d)** RL10B-2: M_exit = 6.56, extreme expansion ratio creates largest boundary layer displacement.
 
 ### Static Pressure Distribution
 
-| Merlin 1D | Raptor SL |
-|-----------|-----------|
+| (a) Merlin 1D | (b) Raptor SL |
+|:-------------:|:-------------:|
 | ![Merlin Pressure](docs/assets/images/merlin-1d/rans/pressure_contour_rans.png) | ![Raptor Pressure](docs/assets/images/raptor-sl/rans/pressure_contour_rans.png) |
 
-| RS-25 | RL10B-2 |
-|-------|---------|
+| (c) RS-25 | (d) RL10B-2 |
+|:---------:|:-----------:|
 | ![RS-25 Pressure](docs/assets/images/rs-25/rans/pressure_contour_rans.png) | ![RL10B-2 Pressure](docs/assets/images/rl10B-2/rans/pressure_contour_rans.png) |
+
+**(a)** Chamber pressure 9.7 MPa decaying to ambient. **(b)** Highest chamber pressure (33 MPa) produces steepest gradients. **(c)** Extended diverging section produces gradual pressure decay. **(d)** Lowest chamber pressure (4.2 MPa) with extreme expansion to near-vacuum.
 
 ### Velocity Field
 
-| Merlin 1D | Raptor SL |
-|-----------|-----------|
+| (a) Merlin 1D | (b) Raptor SL |
+|:-------------:|:-------------:|
 | ![Merlin Velocity](docs/assets/images/merlin-1d/rans/velocity_contour_rans.png) | ![Raptor Velocity](docs/assets/images/raptor-sl/rans/velocity_contour_rans.png) |
 
-| RS-25 | RL10B-2 |
-|-------|---------|
+| (c) RS-25 | (d) RL10B-2 |
+|:---------:|:-----------:|
 | ![RS-25 Velocity](docs/assets/images/rs-25/rans/velocity_contour_rans.png) | ![RL10B-2 Velocity](docs/assets/images/rl10B-2/rans/velocity_contour_rans.png) |
+
+**(a)** V_exit = 2388 m/s, thin boundary layer. **(b)** V_exit = 2455 m/s, thicker BL from high Re. **(c)** V_exit = 2530 m/s, BL extends further into core flow. **(d)** V_exit = 2019 m/s, thickest BL due to extreme nozzle length (3.65m).
 
 ### Temperature Field
 
-| Merlin 1D | Raptor SL |
-|-----------|-----------|
+| (a) Merlin 1D | (b) Raptor SL |
+|:-------------:|:-------------:|
 | ![Merlin Temperature](docs/assets/images/merlin-1d/rans/temp_contour_rans.png) | ![Raptor Temperature](docs/assets/images/raptor-sl/rans/temp_contour_rans.png) |
 
-| RS-25 | RL10B-2 |
-|-------|---------|
+| (c) RS-25 | (d) RL10B-2 |
+|:---------:|:-----------:|
 | ![RS-25 Temperature](docs/assets/images/rs-25/rans/temp_contour_rans.png) | ![RL10B-2 Temperature](docs/assets/images/rl10B-2/rans/temp_contour_rans.png) |
+
+**(a)** T_exit = 1140 K from 3600 K chamber. **(b)** T_exit from 3500 K, steeper gradient near throat. **(c)** T_exit from 3570 K, gradual decay over 3.17m diverging section. **(d)** T_exit from 2200 K, lowest exit temperature due to extreme expansion.
 
 ---
 
