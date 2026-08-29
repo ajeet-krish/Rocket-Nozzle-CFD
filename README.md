@@ -41,12 +41,47 @@ The pipeline demonstrates a complete workflow from geometry definition through v
 
 ## Validation Summary
 
-| Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | CF (Euler) | Isp (Euler) | Thrust | Back Pressure |
-|--------|---------------------|-----------------|-------------|------------|-------------|--------|---------------|
-| Merlin 1D | 4.4593 | 4.4416 | 0.40% | 1.5105 | 228.7s | 313 kN | Sea level |
-| Raptor SL | 5.3933 | 5.4761 | 1.54% | 1.6103 | 240.4s | 1136 kN | Sea level |
-| RS-25 | 6.5463 | 6.4442 | 1.56% | 1.7427 | 262.7s | 2086 kN | Vacuum |
-| RL10B-2 | 8.7362 | 7.7090 | 11.76% | 1.7702 | 209.5s | 139 kN | Vacuum |
+| Engine | Isentropic Exit Mach | Euler Exit Mach | Euler Error | Back Pressure |
+|--------|---------------------|-----------------|-------------|---------------|
+| Merlin 1D | 4.4593 | 4.4416 | 0.40% | Sea level |
+| Raptor SL | 5.3933 | 5.4761 | 1.54% | Sea level |
+| RS-25 | 6.5463 | 6.4442 | 1.56% | Vacuum |
+| RL10B-2 | 8.7362 | 7.7090 | 11.76% | Vacuum |
+
+## Performance Metrics
+
+Computed from Euler CFD results using isentropic relations. These metrics quantify the nozzle's ability to convert chamber pressure into thrust.
+
+| Engine | Exit Mach | CF | Isp (s) | Ve (m/s) | Thrust (kN) | mdot (kg/s) | Pc (MPa) | Area Ratio |
+|--------|-----------|-----|---------|----------|-------------|-------------|----------|------------|
+| Merlin 1D | 4.44 | 1.511 | 228.7 | 2402 | 313 | 139.5 | 9.7 | 16:1 |
+| Raptor SL | 5.48 | 1.610 | 240.4 | 2455 | 1136 | 481.5 | 33.0 | 34:1 |
+| RS-25 | 6.44 | 1.743 | 262.7 | 2530 | 2086 | 810.6 | 20.6 | 77.5:1 |
+| RL10B-2 | 7.71 | 1.770 | 209.5 | 2019 | 139 | 67.6 | 4.2 | 285:1 |
+
+### Parameter Definitions
+
+- **Exit Mach (Me)**: Ratio of exhaust velocity to speed of sound at the nozzle exit. Higher Mach means faster exhaust and more kinetic energy conversion. Range: 4-9 for rocket nozzles.
+
+- **Thrust Coefficient (CF)**: Dimensionless measure of how efficiently the nozzle converts chamber pressure into thrust. CF = F / (Pc * A*), where F is thrust force, Pc is chamber pressure, and A* is throat area. Typical values: 1.2-2.0. Higher CF means more thrust per unit chamber pressure.
+
+- **Specific Impulse (Isp)**: Measure of propellant efficiency in seconds. Isp = F / (mdot * g0), where mdot is mass flow rate and g0 is standard gravity. Higher Isp means more thrust per unit propellant mass. Sea-level engines: 200-350s; vacuum engines: 400-460s (with LH2/LOX).
+
+- **Exit Velocity (Ve)**: Velocity of exhaust gases at the nozzle exit plane in m/s. Ve = Me * sqrt(gamma * R * Te). Higher Ve means more kinetic energy and thrust.
+
+- **Thrust Force**: Total force produced by the nozzle in Newtons. Includes both momentum thrust (mdot * Ve) and pressure thrust ((Pe - Pa) * Ae). For vacuum engines, pressure thrust is significant.
+
+- **Mass Flow Rate (mdot)**: Mass of propellant consumed per second in kg/s. Determined by chamber conditions and throat area (choked flow). Higher mdot means more propellant consumed.
+
+### Key Insights
+
+1. **RS-25 produces the highest thrust** (2086 kN) due to its large throat area (272mm diameter) and high chamber pressure (20.6 MPa), despite moderate expansion ratio.
+
+2. **RL10B-2 has the highest CF** (1.770) due to its extreme expansion ratio (285:1), but lowest thrust (139 kN) due to small throat (154mm) and low chamber pressure (4.2 MPa).
+
+3. **Merlin 1D achieves 228.7s Isp** at sea level with RP-1/LOX (gamma=1.4). Real RL10B-2 achieves 462s Isp with LH2/LOX (gamma=1.2), which our model doesn't capture.
+
+4. **Raptor SL has the highest chamber pressure** (33 MPa) of any operational engine, demonstrating the full-flow staged combustion cycle's capability.
 
 ---
 
