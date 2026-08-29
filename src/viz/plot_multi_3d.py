@@ -153,7 +153,7 @@ def plot_multi_3d(
 
     plt.tight_layout(pad=1.5)
     # Shift subplots up to make room for labels below
-    fig.subplots_adjust(bottom=0.15)
+    fig.subplots_adjust(bottom=0.08)
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
