@@ -121,6 +121,19 @@ Temperature decreases from chamber (2200-3600 K). RANS thermal boundary layer is
 
 *Manufactured by SpaceX, the Merlin 1D is a gas-generator cycle engine burning LOX/RP-1 propellants with a pintle injector design. First flown in 2013 on the Falcon 9, it has become the most-flown rocket engine in history, powering all Falcon 9 and Falcon Heavy first stages.*
 
+### Nozzle Dimensions
+
+| Parameter | Value |
+|-----------|-------|
+| Throat Radius (Rt) | 82.5 mm |
+| Exit Radius (Re) | 330 mm |
+| Inlet Radius (Ri) | 124 mm |
+| Nozzle Length (Ln) | 0.74 m |
+| Converging Length | 83 mm |
+| Chamber Length | 300 mm |
+| Expansion Ratio | 16:1 |
+| theta_n | 30.0 deg |
+
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
@@ -178,6 +191,19 @@ Shock diamond pattern observed in the exhaust plume, formed by the interaction o
 ## SpaceX Raptor SL
 
 *The Raptor SL is a full-flow staged combustion cycle engine manufactured by SpaceX, burning LOX/CH4 propellants at the highest chamber pressure (33 MPa) of any operational engine. First flown in 2023 on Starship, it is the first full-flow staged combustion engine to power a vehicle in flight.*
+
+### Nozzle Dimensions
+
+| Parameter | Value |
+|-----------|-------|
+| Throat Radius (Rt) | 82.5 mm |
+| Exit Radius (Re) | 481 mm |
+| Inlet Radius (Ri) | 124 mm |
+| Nozzle Length (Ln) | 1.19 m |
+| Converging Length | 83 mm |
+| Chamber Length | 300 mm |
+| Expansion Ratio | 34:1 |
+| theta_n | 28.0 deg |
 
 ### Nozzle Geometry
 
@@ -237,6 +263,19 @@ Shock diamond formation in the Raptor SL exhaust plume, visible as repeating bri
 
 *Designed and manufactured by Aerojet Rocketdyne, the RS-25 is a fuel-rich staged combustion cycle engine burning LOX/LH2 with a vacuum specific impulse of 452 seconds. First flown in 1981 on the Space Shuttle, it continues service on NASA's Space Launch System (SLS) core stage.*
 
+### Nozzle Dimensions
+
+| Parameter | Value |
+|-----------|-------|
+| Throat Radius (Rt) | 136 mm |
+| Exit Radius (Re) | 1197 mm |
+| Inlet Radius (Ri) | 204 mm |
+| Nozzle Length (Ln) | 3.17 m |
+| Converging Length | 136 mm |
+| Chamber Length | 500 mm |
+| Expansion Ratio | 77.5:1 |
+| theta_n | 25.0 deg |
+
 ### Nozzle Geometry
 
 | 2D Annotated Profile | 3D Revolved Surface |
@@ -294,6 +333,19 @@ Shock diamond structure in the RS-25 exhaust plume at vacuum conditions, showing
 ## RL10B-2 (Delta IV Upper Stage)
 
 *The RL10B-2 is an expander cycle engine manufactured by Aerojet Rocketdyne, burning LOX/LH2 with a carbon-carbon extendable nozzle achieving 465.5 seconds of vacuum specific impulse. First flown in 1998, it has powered the upper stages of Delta IV and Vulcan Centaur rockets.*
+
+### Nozzle Dimensions
+
+| Parameter | Value |
+|-----------|-------|
+| Throat Radius (Rt) | 77 mm |
+| Exit Radius (Re) | 1300 mm |
+| Inlet Radius (Ri) | 115.5 mm |
+| Nozzle Length (Ln) | 3.65 m |
+| Converging Length | 77 mm |
+| Chamber Length | 600 mm |
+| Expansion Ratio | 285:1 |
+| theta_n | 20.0 deg |
 
 ### Nozzle Geometry
 

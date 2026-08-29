@@ -114,18 +114,18 @@ def plot_annotated_contour(
     ax.plot(x, y, color="#1565C0", linewidth=2.0, label="Wall", zorder=5)
     ax.plot(x, -y, color="#1565C0", linewidth=2.0, zorder=5)
 
-    # --- Color-coded sections (top half) ---
+    # --- Color-coded sections (top half) - distinct colors per section ---
     ax.plot(
         sections.entrant_arc_x, sections.entrant_arc_y,
-        color="#2E7D32", linewidth=3.0, label="Entrant arc", zorder=6,
+        color="#6A1B9A", linewidth=3.0, label="Entrant arc", zorder=6,
     )
     ax.plot(
         sections.exit_arc_x, sections.exit_arc_y,
-        color="#C62828", linewidth=3.0, label="Exit arc", zorder=6,
+        color="#E65100", linewidth=3.0, label="Exit arc", zorder=6,
     )
     ax.plot(
         sections.bell_x, sections.bell_y,
-        color="#1565C0", linewidth=3.0, label="Bell (Rao)", zorder=6,
+        color="#0277BD", linewidth=3.0, label="Bell (Rao)", zorder=6,
     )
 
     # --- Axis of symmetry ---
@@ -156,34 +156,34 @@ def plot_annotated_contour(
             fontsize=9, color="#333", va="center",
         )
 
-        # Exit radius: vertical line at exit
-        ax.annotate(
-            "", xy=(ln, r_exit), xytext=(ln, 0),
-            arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
-        )
-        ax.text(
-            ln + h_offset, r_exit / 2, f"$R_e$ = {r_exit*1000:.0f} mm",
-            fontsize=9, color="#333", va="center",
-        )
-
-        # Nozzle length: horizontal line along axis
+        # Nozzle length: horizontal line along axis (Ln label below the line)
         ax.annotate(
             "", xy=(ln, -v_offset), xytext=(0, -v_offset),
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            ln / 2, -1.5 * v_offset, f"$L_n$ = {ln:.2f} m",
+            ln / 2, -2.0 * v_offset, f"$L_n$ = {ln:.2f} m",
             fontsize=9, color="#333", ha="center",
         )
 
-        # Inlet radius: vertical line at chamber start
+        # Exit radius: vertical line at exit (Re label to the left)
+        ax.annotate(
+            "", xy=(ln, r_exit), xytext=(ln, 0),
+            arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
+        )
+        ax.text(
+            ln - h_offset, r_exit / 2, f"$R_e$ = {r_exit*1000:.0f} mm",
+            fontsize=9, color="#333", va="center", ha="right",
+        )
+
+        # Inlet radius: vertical line at chamber start (Ri label to the right)
         ax.annotate(
             "", xy=(x_start, r_inlet), xytext=(x_start, 0),
             arrowprops=dict(arrowstyle="<->", color="#333", lw=1.0),
         )
         ax.text(
-            x_start - h_offset, r_inlet / 2, f"$R_i$ = {r_inlet*1000:.0f} mm",
-            fontsize=9, color="#333", va="center", ha="right",
+            x_start + h_offset, r_inlet / 2, f"$R_i$ = {r_inlet*1000:.0f} mm",
+            fontsize=9, color="#333", va="center", ha="left",
         )
 
     # --- Angle annotations ---
@@ -209,8 +209,7 @@ def plot_annotated_contour(
     ax.set_xlabel("Axial Distance (m)", fontsize=12, color="black")
     ax.set_ylabel("Radial Distance (m)", fontsize=12, color="black")
     ax.set_title(
-        f"{engine_name} 2D Geometry  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
-        f",  $R_t$ = {config.throat_radius*1000:.0f} mm",
+        f"{engine_name} 2D Profile",
         fontsize=13, color="black", pad=12,
     )
     ax.legend(fontsize=9, loc="upper left", framealpha=0.9)

@@ -117,8 +117,7 @@ def plot_nozzle_3d(
         pane.set_edgecolor("#cccccc")
 
     ax.set_title(
-        f"{engine_name} 3D Geometry  --  $\\epsilon$ = {config.expansion_ratio:.0f}:1"
-        f",  $R_t$ = {config.throat_radius*1000:.0f} mm",
+        f"{engine_name} 3D Geometry",
         fontsize=12, color="black", pad=12,
     )
 
