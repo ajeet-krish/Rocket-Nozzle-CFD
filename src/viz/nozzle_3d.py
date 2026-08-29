@@ -122,7 +122,7 @@ def plot_nozzle_3d(
     )
 
     # Reduce top margin
-    plt.subplots_adjust(top=0.92)
+    plt.subplots_adjust(top=0.80)
 
     # 10. Save
     output_path.parent.mkdir(parents=True, exist_ok=True)
