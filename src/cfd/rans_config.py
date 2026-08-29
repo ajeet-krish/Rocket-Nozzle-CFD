@@ -55,9 +55,9 @@ REYNOLDS_NUMBER= 1e6
 REYNOLDS_LENGTH= 0.1
 
 % -------------------- FREESTREAM CONDITIONS -------------------
-% Set to ambient conditions (inlet BC drives the flow)
-FREESTREAM_PRESSURE= {self.static_pressure:.1f}
-FREESTREAM_TEMPERATURE= 300.0
+% Use chamber conditions for RANS initialization (matches inlet BC)
+FREESTREAM_PRESSURE= {self.total_pressure:.1f}
+FREESTREAM_TEMPERATURE= {self.total_temperature:.1f}
 FREESTREAM_OPTION= TEMPERATURE_FS
 MACH_NUMBER= 0.01
 
