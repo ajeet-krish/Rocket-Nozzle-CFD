@@ -94,49 +94,128 @@
       <div class="container">
         <h2 class="section-title">Euler vs RANS Comparison</h2>
 
-        <p>The inviscid Euler simulation neglects boundary layer effects. The RANS SST k-omega simulation includes viscous effects, producing a slightly lower exit Mach number due to boundary layer displacement.</p>
+        <p style="margin-bottom: var(--space-6); color: var(--fg-dim); font-size: var(--text-sm);">
+          The inviscid Euler simulation neglects boundary layer effects. The RANS SST k-omega simulation includes viscous effects, producing a lower exit Mach number due to boundary layer displacement. The following comparison covers all four engine configurations.
+        </p>
 
-        <div class="walkthrough-step__media">
-          <img src="assets/images/mach_comparison.png" alt="Euler vs RANS Mach comparison" loading="lazy">
-        </div>
-
-        <div class="table-wrapper">
+        <div class="table-wrapper" style="margin-bottom: var(--space-8);">
           <table class="table">
             <thead>
               <tr>
-                <th>Method</th>
-                <th>Exit Mach</th>
-                <th>Boundary Layer</th>
-                <th>Wall Treatment</th>
+                <th>Engine</th>
+                <th>Euler Mach</th>
+                <th>RANS Mach</th>
+                <th>Difference</th>
+                <th>Isentropic Mach</th>
+                <th>Euler Error</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Euler (Inviscid)</td>
-                <td>4.4927</td>
-                <td>None</td>
-                <td>Slip wall</td>
+                <td><strong>Merlin 1D</strong></td>
+                <td>4.4717</td>
+                <td>4.2547</td>
+                <td>4.85%</td>
+                <td>4.4593</td>
+                <td>0.28%</td>
               </tr>
               <tr>
-                <td>RANS SST k-omega</td>
-                <td>4.1017</td>
-                <td>Resolved</td>
-                <td>Low-Re, adiabatic</td>
+                <td><strong>Raptor SL</strong></td>
+                <td>5.1431</td>
+                <td>4.8180</td>
+                <td>6.32%</td>
+                <td>5.3933</td>
+                <td>4.64%</td>
               </tr>
               <tr>
-                <td>Difference</td>
-                <td>8.70%</td>
-                <td>-</td>
-                <td>-</td>
+                <td><strong>RS-25</strong></td>
+                <td>6.4055</td>
+                <td>5.2510</td>
+                <td>18.03%</td>
+                <td>6.5463</td>
+                <td>2.15%</td>
+              </tr>
+              <tr>
+                <td><strong>RL10B-2</strong></td>
+                <td>7.4913</td>
+                <td>--</td>
+                <td>--</td>
+                <td>8.7362</td>
+                <td>14.25%</td>
               </tr>
             </tbody>
           </table>
         </div>
 
+        <!-- Merlin 1D -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">SpaceX Merlin 1D</h3>
+        <div class="comparison-grid" style="margin-bottom: var(--space-4);">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Merlin 1D Euler Mach contour" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="Merlin 1D RANS Mach contour" loading="lazy">
+          </div>
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-8);">
+          The Merlin 1D shows excellent agreement between Euler and isentropic theory (0.28% error). The RANS boundary layer reduces exit Mach by 4.85%, consistent with the moderate expansion ratio (16:1) and compact nozzle length (0.74m).
+        </p>
+
+        <!-- Raptor SL -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">SpaceX Raptor SL</h3>
+        <div class="comparison-grid" style="margin-bottom: var(--space-4);">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/raptor-sl/euler/mach_contour.png" alt="Raptor SL Euler Mach contour" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/raptor-sl/rans/mach_contour_rans.png" alt="Raptor SL RANS Mach contour" loading="lazy">
+          </div>
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-8);">
+          The Raptor SL's higher chamber pressure (33 MPa) produces a slightly larger Euler-isentropic discrepancy (4.64%). The RANS viscous correction (6.32%) is larger than Merlin's due to the higher Reynolds number and longer nozzle (1.19m).
+        </p>
+
+        <!-- RS-25 -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">RS-25 (Space Shuttle / SLS)</h3>
+        <div class="comparison-grid" style="margin-bottom: var(--space-4);">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/rs-25/euler/mach_contour.png" alt="RS-25 Euler Mach contour" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/rs-25/rans/mach_contour_rans.png" alt="RS-25 RANS Mach contour" loading="lazy">
+          </div>
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-8);">
+          The RS-25 shows a significant RANS correction (18.03%) due to its long diverging section (3.17m) and high expansion ratio (77.5:1). The extended nozzle length amplifies viscous losses throughout the flow field.
+        </p>
+
+        <!-- RL10B-2 -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">RL10B-2 (Delta IV Upper Stage)</h3>
+        <div class="comparison-grid" style="margin-bottom: var(--space-4);">
+          <div class="comparison-grid__item">
+            <h4>Euler (Inviscid)</h4>
+            <img src="assets/images/rl10B-2/euler/mach_contour.png" alt="RL10B-2 Euler Mach contour" loading="lazy">
+          </div>
+          <div class="comparison-grid__item">
+            <h4>RANS SST (Viscous)</h4>
+            <img src="assets/images/rl10B-2/rans/mach_contour_rans.png" alt="RL10B-2 RANS Mach contour" loading="lazy">
+          </div>
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-6);">
+          The RL10B-2's extreme expansion ratio (285:1) and nozzle length (3.65m) produce the largest Euler-isentropic error (14.25%). The current mesh resolution may be insufficient to fully resolve the extreme expansion, indicating opportunities for mesh refinement studies.
+        </p>
+
         <ul class="key-findings">
-          <li><strong>Boundary layer effect:</strong> Viscous effects reduce effective flow area by ~8.7%</li>
-          <li><strong>Displacement thickness:</strong> Boundary layer displaces core flow, reducing exit Mach</li>
-          <li><strong>Physical correctness:</strong> RANS results match expected behavior for viscous nozzle flow</li>
+          <li><strong>Boundary layer effect scales with nozzle length:</strong> Longer nozzles (RS-25, RL10B-2) show larger Euler-RANS differences</li>
+          <li><strong>High chamber pressure increases viscous effects:</strong> Raptor SL at 33 MPa shows larger RANS correction than Merlin at 9.7 MPa</li>
+          <li><strong>Expansion ratio affects accuracy:</strong> Extreme ratios (285:1) challenge mesh resolution requirements</li>
+          <li><strong>Physical correctness:</strong> RANS results consistently show lower exit Mach than Euler, matching expected viscous behavior</li>
         </ul>
       </div>
     </section>

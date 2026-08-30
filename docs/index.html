@@ -98,6 +98,18 @@
         max-width: 100%;
       }
     }
+
+    /* --- Performance Metrics Table --- */
+    .metrics-note {
+      font-size: var(--text-xs);
+      color: var(--fg-muted);
+      margin-top: var(--space-4);
+      line-height: var(--leading-relaxed);
+    }
+
+    .metrics-note strong {
+      color: var(--fg-dim);
+    }
   </style>
 </head>
 
@@ -130,7 +142,7 @@
           Rocket Nozzle CFD: <span class="accent">Compressible</span> Flow Analysis
         </h1>
         <p class="hero__description">
-          How does a rocket engine convert high-pressure combustion gases into thrust? The answer lies in the converging-diverging (de Laval) nozzle, a geometry that accelerates flow from subsonic to supersonic speeds. Understanding compressible flow through nozzles is fundamental to propulsion engineering.
+          A computational fluid dynamics investigation of compressible flow through converging-diverging (de Laval) rocket nozzles, employing a parametric pipeline that integrates geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation.
         </p>
       </div>
     </section>
@@ -204,7 +216,7 @@
             </ul>
           </div>
           <div class="walkthrough-step__media">
-            <img src="assets/images/merlin-1d/euler/shock_diamond_euler.png" alt="CFD visualization of shock diamond structure in exhaust plume" loading="lazy">
+            <img src="assets/images/merlin-1d/plume/shock_diamonds.png" alt="CFD visualization of shock diamond structure in exhaust plume" loading="lazy">
           </div>
         </div>
       </div>
@@ -233,11 +245,29 @@
           </div>
         </div>
 
+        <!-- Raptor SL -->
+        <div class="engine-block">
+          <h3 class="engine-block__title">SpaceX Raptor SL</h3>
+          <p class="engine-block__desc">
+            A full-flow staged combustion cycle engine burning LOX/CH4 propellants at the highest chamber pressure (33 MPa) of any operational engine. First flown in 2023 on Starship, it is the first full-flow staged combustion engine to power a vehicle in flight. With a 34:1 expansion ratio, it achieves Mach 5.48 and 1136 kN thrust, combining high thrust density with good sea-level efficiency.
+          </p>
+          <div class="engine-carousel" data-engine="raptor">
+            <div class="engine-carousel__track">
+              <img src="assets/images/raptor-sl/geometry/raptor-sl_geometry.png" alt="Raptor SL nozzle geometry" class="engine-carousel__slide active" loading="lazy">
+              <img src="assets/images/raptor-sl/geometry/raptor-sl_3d.png" alt="Raptor SL 3D nozzle geometry" class="engine-carousel__slide" loading="lazy">
+            </div>
+            <div class="engine-carousel__dots">
+              <button class="engine-carousel__dot active" data-index="0" aria-label="Show image 1"></button>
+              <button class="engine-carousel__dot" data-index="1" aria-label="Show image 2"></button>
+            </div>
+          </div>
+        </div>
+
         <!-- RS-25 -->
         <div class="engine-block">
           <h3 class="engine-block__title">RS-25 (Space Shuttle Main Engine)</h3>
           <p class="engine-block__desc">
-            One of the most powerful and sophisticated liquid-fuel rocket engines ever built. The RS-25 uses a staged-combustion cycle with liquid hydrogen and liquid oxygen, achieving an expansion ratio of 77:1 and chamber pressure of 20.6 MPa. Originally powering the Space Shuttle, it now serves as the core stage engine for NASA's Space Launch System (SLS).
+            One of the most powerful and sophisticated liquid-fuel rocket engines ever built. The RS-25 uses a staged-combustion cycle with liquid hydrogen and liquid oxygen, achieving an expansion ratio of 77.5:1 and chamber pressure of 20.6 MPa. Originally powering the Space Shuttle, it now serves as the core stage engine for NASA's Space Launch System (SLS).
           </p>
           <div class="engine-carousel" data-engine="rs25">
             <div class="engine-carousel__track">
@@ -277,6 +307,135 @@
       </div>
     </section>
 
+    <!-- Performance Metrics -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">Performance Metrics</h2>
+
+        <p style="margin-bottom: var(--space-6); color: var(--fg-dim); font-size: var(--text-sm);">
+          Direct comparison of aerodynamic performance across the four engine configurations, spanning the full range from sea-level to vacuum-optimized nozzle designs.
+        </p>
+
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Engine</th>
+                <th>Exit Mach</th>
+                <th>CF</th>
+                <th>Isp (s)</th>
+                <th>Ve (m/s)</th>
+                <th>Thrust (kN)</th>
+                <th>Pc (MPa)</th>
+                <th>Area Ratio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Merlin 1D</strong></td>
+                <td>4.31</td>
+                <td>1.511</td>
+                <td>228.8</td>
+                <td>2388</td>
+                <td>313</td>
+                <td>9.7</td>
+                <td>16:1</td>
+              </tr>
+              <tr>
+                <td><strong>Raptor SL</strong></td>
+                <td>5.48</td>
+                <td>1.610</td>
+                <td>240.4</td>
+                <td>2455</td>
+                <td>1136</td>
+                <td>33.0</td>
+                <td>34:1</td>
+              </tr>
+              <tr>
+                <td><strong>RS-25</strong></td>
+                <td>6.44</td>
+                <td>1.743</td>
+                <td>262.7</td>
+                <td>2530</td>
+                <td>2086</td>
+                <td>20.6</td>
+                <td>77.5:1</td>
+              </tr>
+              <tr>
+                <td><strong>RL10B-2</strong></td>
+                <td>7.71</td>
+                <td>1.770</td>
+                <td>209.5</td>
+                <td>2019</td>
+                <td>139</td>
+                <td>4.2</td>
+                <td>285:1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="metrics-note">
+          <strong>Exit Mach (Me):</strong> Ratio of exhaust velocity to speed of sound at nozzle exit. Higher Mach indicates greater kinetic energy conversion from thermal energy.<br>
+          <strong>Thrust Coefficient (CF):</strong> Dimensionless measure of nozzle efficiency in converting chamber pressure to thrust. CF = F / (Pc * A*).<br>
+          <strong>Specific Impulse (Isp):</strong> Propellant efficiency metric in seconds. Higher Isp indicates greater thrust per unit propellant mass.<br>
+          <strong>Exit Velocity (Ve):</strong> Velocity of exhaust gases at the nozzle exit plane (m/s).
+        </p>
+      </div>
+    </section>
+
+    <!-- Comparative Analysis -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Comparative Analysis & Design Implications</h2>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3>Sea-Level vs Vacuum Design Philosophy</h3>
+            <p>
+              The four engines represent distinct points in the sea-level to vacuum design spectrum, each optimized for its mission profile. The <strong>Merlin 1D</strong> (16:1) achieves an exit Mach of 4.31 with a thrust coefficient of 1.511, producing 313 kN at 9.7 MPa chamber pressure. Its compact geometry (0.74 m nozzle length) and moderate expansion ratio reflect the sea-level constraint: overexpanded nozzles suffer flow separation and drag losses in atmosphere.
+            </p>
+            <p>
+              The <strong>Raptor SL</strong> (34:1) pushes chamber pressure to 33 MPa, the highest of any operational engine, achieving Mach 5.48 and 1136 kN thrust. This high-pressure approach increases thrust density, allowing a smaller engine for the same output, which is critical for Starship's rapid reusability requirements.
+            </p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/nozzle_comparison_3d.png" alt="3D nozzle geometry comparison of all four engines plotted to the same scale" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3>Vacuum Optimization Strategy</h3>
+            <p>
+              The <strong>RS-25</strong> (77.5:1) and <strong>RL10B-2</strong> (285:1) demonstrate the vacuum optimization strategy. The RS-25 achieves Mach 6.44 and 262.7 s Isp, while the RL10B-2 reaches Mach 7.71. However, the RL10B-2's extreme expansion ratio (285:1) produces a 3.65 m nozzle with only 139 kN thrust at 4.2 MPa, yielding the lowest Isp (209.5 s) among the four engines due to high friction losses in the extended diverging section. This highlights the diminishing returns of expansion ratio beyond ~100:1 for practical engines.
+            </p>
+            <p>
+              The CFD results explain the industry's shift toward the Merlin 1D's design philosophy. The RS-25, while performant, requires a complex staged combustion cycle with separate fuel and oxidizer preburners, resulting in manufacturing costs exceeding $100M per engine. The Merlin 1D's gas-generator cycle and pintle injector design reduce part count by approximately 60%, enabling production rates of hundreds per year at roughly $1M per unit.
+            </p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="RANS Mach contour showing viscous flow field through the Merlin 1D nozzle" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3>Systems-Level Optimization</h3>
+            <p>
+              The <strong>Raptor SL</strong> represents the next evolution, combining high chamber pressure (33 MPa) with a moderate expansion ratio (34:1) to achieve both high thrust density and good sea-level efficiency. The full-flow staged combustion cycle, while complex, eliminates the gas-generator exhaust losses inherent in the Merlin's design, improving overall cycle efficiency.
+            </p>
+            <p>
+              These results demonstrate that nozzle design is fundamentally a systems-level optimization problem. The "best" expansion ratio depends not only on aerodynamic performance but on manufacturing cost, engine mass, mission profile, and operational constraints. The parametric sweep data generated by this pipeline enables engineers to quantify these tradeoffs and identify optimal configurations for specific mission requirements.
+            </p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/raptor-sl/rans/mach_contour_rans.png" alt="RANS Mach contour showing flow field through the Raptor SL nozzle at 33 MPa chamber pressure" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Nozzle Geometry -->
     <section class="section" style="background: var(--surface);">
       <div class="container">
@@ -291,11 +450,26 @@
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/merlin-1d/geometry/merlin-1d_geometry.png" alt="Merlin 1D 2D nozzle geometry" loading="lazy">
-            <p>epsilon=16:1, R_t=82.5mm, L_n=0.20m</p>
+            <p>epsilon=16:1, R_t=82.5mm, L_n=0.74m</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
             <img src="assets/images/merlin-1d/geometry/merlin-1d_3d.png" alt="Merlin 1D 3D nozzle geometry" loading="lazy">
+            <p>Axisymmetric surface of revolution</p>
+          </div>
+        </div>
+
+        <!-- Raptor SL -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4); margin-top: var(--space-8);">SpaceX Raptor SL</h3>
+        <div class="comparison-grid">
+          <div class="comparison-grid__item">
+            <h4>2D Annotated Profile</h4>
+            <img src="assets/images/raptor-sl/geometry/raptor-sl_geometry.png" alt="Raptor SL 2D nozzle geometry" loading="lazy">
+            <p>epsilon=34:1, R_t=82.5mm, L_n=1.19m</p>
+          </div>
+          <div class="comparison-grid__item">
+            <h4>3D Revolved Surface</h4>
+            <img src="assets/images/raptor-sl/geometry/raptor-sl_3d.png" alt="Raptor SL 3D nozzle geometry" loading="lazy">
             <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
@@ -306,7 +480,7 @@
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/rs-25/geometry/rs-25_geometry.png" alt="RS-25 2D nozzle geometry" loading="lazy">
-            <p>epsilon=77.5:1, R_t=136mm, L_n=0.61m</p>
+            <p>epsilon=77.5:1, R_t=136mm, L_n=3.17m</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
@@ -321,7 +495,7 @@
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/rl10B-2/geometry/rl10B-2_geometry.png" alt="RL10B-2 2D nozzle geometry" loading="lazy">
-            <p>epsilon=285:1, R_t=77mm, L_n=0.86m</p>
+            <p>epsilon=285:1, R_t=77mm, L_n=3.65m</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
@@ -333,7 +507,7 @@
     </section>
 
     <!-- Why CFD -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section">
       <div class="container">
         <h2 class="section-title">Why Computational Fluid Dynamics?</h2>
 
@@ -400,8 +574,8 @@
         <a href="theory.html" class="explore-index__item">
           <div class="explore-index__number">01</div>
           <div class="explore-index__content">
-            <h3>Theory</h3>
-            <p>Compressible flow equations, isentropic relations, and nozzle flow regimes.</p>
+            <h3>Theory & Methodology</h3>
+            <p>Compressible flow equations, isentropic relations, nozzle flow regimes, and the computational methodology (geometry, mesh, solver, validation).</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
@@ -409,7 +583,7 @@
           <div class="explore-index__number">02</div>
           <div class="explore-index__content">
             <h3>Results</h3>
-            <p>Mach contour, pressure distribution, shock diamonds, and parametric sweep analysis.</p>
+            <p>Per-engine deep dives: geometry, mesh, Mach/Pressure/Velocity/Temperature contours (Euler vs RANS), shock diamonds, and parametric sweeps.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>
@@ -417,7 +591,7 @@
           <div class="explore-index__number">03</div>
           <div class="explore-index__content">
             <h3>Validation</h3>
-            <p>Triple comparison (isentropic vs MoC vs SU2) and grid convergence index study.</p>
+            <p>Triple comparison (isentropic vs MoC vs SU2), Euler vs RANS for all four engines, and grid convergence index study per ASME V&V 20-2009.</p>
           </div>
           <div class="explore-index__arrow">&rarr;</div>
         </a>

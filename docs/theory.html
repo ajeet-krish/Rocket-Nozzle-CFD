@@ -518,6 +518,233 @@
       </div>
     </section>
 
+    <!-- Methodology -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Methodology</h2>
+
+        <p style="margin-bottom: var(--space-8); color: var(--fg-dim); font-size: var(--text-sm);">
+          The computational pipeline integrates geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation. Each stage is parameterized and reproducible.
+        </p>
+
+        <div class="walkthrough-step">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Nozzle Geometry</h3>
+            <p>
+              Rao parabolic bell nozzle contours are generated using quadratic Bezier curves with circular entrant and exit arcs, implementing the thrust-optimized parabolic (TOP) nozzle specification. The geometry is fully parameterized by throat radius, expansion ratio, convergent angle, and bell length fraction.
+            </p>
+            <p>
+              The contour defines the nozzle wall profile from chamber inlet through the converging section, throat, and diverging bell to the exit plane. Configurable parameters include the throat radius of curvature, the convergent half-angle (typically 30-45 degrees), and the divergent bell length as a fraction of an equivalent 15-degree cone.
+            </p>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/merlin-1d/geometry/merlin-1d_geometry.png" alt="Annotated nozzle geometry showing Rao parabolic bell contour with key dimensions" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Mesh Generation</h3>
+            <p>
+              Structured O-grid meshes are produced via Gmsh transfinite meshing with geometry-aware key point placement. Key points are placed at actual section transitions (entrant arc start, throat, exit arc end, bell transitions) rather than using index arithmetic.
+            </p>
+            <p>
+              Bump distribution clusters cells near the throat where curvature is highest, resolving the rapid flow acceleration from subsonic to supersonic. Boundary layer refinement ensures adequate resolution of viscous effects for RANS simulations.
+            </p>
+
+            <div class="table-wrapper" style="margin-top: var(--space-4);">
+              <table class="table">
+                <thead>
+                  <tr><th>Engine</th><th>Mesh</th><th>CFL</th><th>Back Pressure</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Merlin 1D</td><td>40x20</td><td>0.1</td><td>Sea level</td></tr>
+                  <tr><td>Raptor SL</td><td>50x25</td><td>0.1</td><td>Sea level</td></tr>
+                  <tr><td>RS-25</td><td>60x30</td><td>0.05</td><td>Vacuum (100 Pa)</td></tr>
+                  <tr><td>RL10B-2</td><td>80x40</td><td>0.03</td><td>Vacuum (100 Pa)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="walkthrough-step__media">
+            <img src="assets/images/merlin-1d/mesh/merlin-mesh.png" alt="Structured O-grid mesh showing boundary layer refinement and throat clustering" loading="lazy">
+          </div>
+        </div>
+
+        <div class="walkthrough-step" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">CFD Solver Settings</h3>
+            <p>
+              Both inviscid Euler and Reynolds-Averaged Navier-Stokes (RANS) simulations are conducted using SU2 v8.4.0. The solver configuration follows established practices for compressible nozzle flow:
+            </p>
+
+            <div class="table-wrapper" style="margin-top: var(--space-4);">
+              <table class="table">
+                <thead>
+                  <tr><th>Setting</th><th>Euler</th><th>RANS</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Solver</td><td>SU2 EULER</td><td>SU2 RANS SST k-omega</td></tr>
+                  <tr><td>Axisymmetric</td><td>YES</td><td>YES</td></tr>
+                  <tr><td>Flux</td><td>ROE</td><td>ROE</td></tr>
+                  <tr><td>MUSCL</td><td>NO</td><td>NO</td></tr>
+                  <tr><td>Wall</td><td>Slip wall (EULER)</td><td>Adiabatic, no-slip</td></tr>
+                  <tr><td>Turbulence</td><td>N/A</td><td>SST k-omega</td></tr>
+                  <tr><td>Freestream</td><td>N/A</td><td>Chamber conditions (P, T, M=0.01)</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p style="margin-top: var(--space-4);">
+              The RANS SST k-omega turbulence model is selected for its robustness in adverse pressure gradient flows and its ability to resolve the near-wall boundary layer without requiring explicit wall functions.
+            </p>
+          </div>
+        </div>
+
+        <div class="walkthrough-step walkthrough-step--reverse" style="margin-top: var(--space-12);">
+          <div class="walkthrough-step__content">
+            <h3 style="color: var(--cyan);">Validation Approach</h3>
+            <p>
+              Triple validation methodology compares CFD results against two independent analytical methods:
+            </p>
+
+            <ul style="list-style: none; padding: 0;">
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Isentropic Relations:</strong> Closed-form area-Mach relations provide the theoretical exit Mach number for a given expansion ratio and gamma. This is the baseline reference.
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>Method of Characteristics:</strong> Exact technique for 2D supersonic flow that traces Mach wave propagation through the flow field. For 1D nozzle approximations, matches isentropic results exactly.
+              </li>
+              <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+                <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+                <strong>SU2 CFD:</strong> Numerical solution of the governing equations. Euler for inviscid baseline, RANS for viscous correction.
+              </li>
+            </ul>
+
+            <div class="walkthrough-step__media" style="margin-top: var(--space-6);">
+              <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Euler Mach contour showing CFD results for validation comparison" loading="lazy">
+            </div>
+
+            <div style="background: var(--surface); border-left: 3px solid var(--cyan); padding: 16px 20px; margin-top: var(--space-6);">
+              <p style="margin: 0; font-size: var(--text-sm);">
+                <strong style="color: var(--cyan);">Grid Convergence Index:</strong> Mesh independence is confirmed per ASME V&V 20-2009 using three mesh levels (coarse, medium, fine) with refinement ratio r=2. The GCI quantifies discretization error and ensures solutions are in the asymptotic convergence range.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project Structure -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Project Structure</h2>
+
+        <p style="margin-bottom: var(--space-8);">
+          The codebase is organized as a modular Python pipeline with clear separation between geometry, meshing, solving, post-processing, and validation.
+        </p>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0; font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.8;">
+          <pre style="margin: 0; white-space: pre-wrap;">rocket-nozzle-cfd/
+  src/nozzle/          # Geometry (config, presets, contour)
+  src/cfd/             # SU2 mesh &amp; solver
+  src/validation/      # Isentropic, MoC, GCI
+  src/sweep/           # Parametric sweeps
+  src/viz/             # Contour, convergence, annotated geometry, 3D surface
+  src/pipeline/        # Per-engine pipeline orchestration
+  src/pinn/            # PINN surrogate model
+  tests/               # 287 tests
+  docs/                # Portfolio HTML site
+  run_merlin.py        # Merlin 1D: all steps
+  run_raptor.py        # Raptor SL: all steps
+  run_rs25.py          # RS-25: all steps
+  run_rl10b2.py        # RL10B-2: all steps
+  run_all.py           # All engines
+  run_euler_spike.py   # Quick convergence test
+  run_pinn.py          # PINN training/prediction</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to Run -->
+    <section class="section" style="background: var(--surface);">
+      <div class="container">
+        <h2 class="section-title">How to Run</h2>
+
+        <p style="margin-bottom: var(--space-8);">
+          The pipeline uses <code>uv</code> for dependency management. Each engine has a dedicated run file with a <code>--step</code> flag for selective execution.
+        </p>
+
+        <div style="background: var(--background); border: 1px solid var(--border); border-left: 3px solid var(--orange); padding: 20px; margin: 16px 0; font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.8;">
+          <pre style="margin: 0; white-space: pre-wrap;"># Install dependencies
+uv run sync
+
+# Per-engine pipeline
+uv run python run_merlin.py                  # All steps
+uv run python run_merlin.py --step geometry  # Just geometry
+uv run python run_merlin.py --step euler     # Just Euler
+uv run python run_merlin.py --step rans      # Just RANS
+
+# All engines
+uv run python run_all.py
+
+# Tests
+uv run pytest tests/ -v</pre>
+        </div>
+
+        <div class="table-wrapper" style="margin-top: var(--space-8);">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Engine</th>
+                <th>Mesh</th>
+                <th>CFL (Euler)</th>
+                <th>Back Pressure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Merlin 1D</td><td>40x20</td><td>0.1</td><td>Sea level</td></tr>
+              <tr><td>Raptor SL</td><td>50x25</td><td>0.1</td><td>Sea level</td></tr>
+              <tr><td>RS-25</td><td>60x30</td><td>0.05</td><td>Vacuum (100 Pa)</td></tr>
+              <tr><td>RL10B-2</td><td>80x40</td><td>0.03</td><td>Vacuum (100 Pa)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- References -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">References</h2>
+
+        <ul style="list-style: none; padding: 0;">
+          <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+            <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+            Anderson, J.D. "Modern Compressible Flow"
+          </li>
+          <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+            <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+            Sutton, G.P. &amp; Biblarz, O. "Rocket Propulsion Elements"
+          </li>
+          <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+            <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+            Shapiro, A.H. "The Dynamics and Thermodynamics of Compressible Fluid Flow"
+          </li>
+          <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+            <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+            ASME V&amp;V 20-2009 (Grid Convergence Index)
+          </li>
+          <li style="position: relative; padding-left: 20px; margin-bottom: 12px;">
+            <span style="position: absolute; left: 0; color: var(--cyan);">&#9658;</span>
+            SU2 Documentation: <a href="https://su2code.github.io/" target="_blank" rel="noopener noreferrer" style="color: var(--cyan);">su2code.github.io</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <!-- Navigation to other pages -->
     <section class="explore-section">
       <h2>Continue Exploring</h2>

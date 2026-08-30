@@ -4,13 +4,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Rocket Nozzle CFD Results: Reference case analysis and parametric sweeps.">
+  <meta name="description" content="Rocket Nozzle CFD Results: Per-engine deep dives with Mach, Pressure, Velocity, and Temperature contours for all four configurations.">
   <title>Results - Rocket Nozzle CFD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .engine-dimensions {
+      margin: var(--space-6) 0;
+    }
+    .engine-dimensions h4 {
+      color: var(--cyan);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+    .contour-section {
+      margin: var(--space-8) 0;
+    }
+    .contour-section h3 {
+      color: var(--fg);
+      font-size: var(--text-base);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+    .contour-section p {
+      font-size: var(--text-sm);
+      color: var(--fg-dim);
+      margin-bottom: var(--space-4);
+      line-height: var(--leading-normal);
+    }
+  </style>
 </head>
 
 <body>
@@ -38,7 +64,7 @@
       <div class="hero__content">
         <h1 class="hero__title">Results</h1>
         <p class="hero__description">
-          CFD analysis results for four rocket nozzle configurations: generic Rao bell, SpaceX Merlin 1D, RS-25, and RL10B-2.
+          CFD analysis results for four rocket nozzle configurations: SpaceX Merlin 1D, Raptor SL, RS-25, and RL10B-2, spanning the full range from sea-level to vacuum-optimized designs.
         </p>
       </div>
     </section>
@@ -62,15 +88,7 @@
             </thead>
             <tbody>
               <tr>
-                <td>Generic (Rao Bell)</td>
-                <td>Reference case</td>
-                <td>16:1</td>
-                <td>100</td>
-                <td>400</td>
-                <td>9.7</td>
-              </tr>
-              <tr>
-                <td>SpaceX Merlin 1D</td>
+                <td><strong>Merlin 1D</strong></td>
                 <td>Falcon 9 first stage</td>
                 <td>16:1</td>
                 <td>165</td>
@@ -78,7 +96,15 @@
                 <td>9.7</td>
               </tr>
               <tr>
-                <td>RS-25</td>
+                <td><strong>Raptor SL</strong></td>
+                <td>Starship Super Heavy</td>
+                <td>34:1</td>
+                <td>165</td>
+                <td>960</td>
+                <td>33.0</td>
+              </tr>
+              <tr>
+                <td><strong>RS-25</strong></td>
                 <td>Space Shuttle / SLS</td>
                 <td>77.5:1</td>
                 <td>272</td>
@@ -86,267 +112,578 @@
                 <td>20.6</td>
               </tr>
               <tr>
-                <td>RL10B-2</td>
+                <td><strong>RL10B-2</strong></td>
                 <td>Delta IV upper stage</td>
                 <td>285:1</td>
                 <td>154</td>
                 <td>2600</td>
                 <td>4.2</td>
               </tr>
-              <tr>
-                <td>SpaceX Raptor SL</td>
-                <td>Starship Super Heavy booster</td>
-                <td>34:1</td>
-                <td>165</td>
-                <td>960</td>
-                <td>33.0</td>
-              </tr>
             </tbody>
           </table>
         </div>
+
+        <!-- 3D Comparison -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">3D Nozzle Geometry Comparison</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/nozzle_comparison_3d.png" alt="3D nozzle geometry comparison of all four engines plotted to the same scale" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          All four nozzle geometries plotted to the same scale for direct size comparison. Merlin 1D and Raptor SL are sea-level engines with compact nozzles, while RS-25 and RL10B-2 are vacuum-optimized with progressively larger expansion ratios.
+        </p>
       </div>
     </section>
 
-    <!-- Generic Nozzle -->
+    <!-- ============================================================ -->
+    <!-- SPACEX MERLIN 1D -->
+    <!-- ============================================================ -->
     <section class="section" style="background: var(--surface);">
       <div class="container">
-        <h2 class="section-title">Generic Nozzle (Rao Bell)</h2>
-        <p><em>Reference case: epsilon=16, R*=50mm, Pc=9.7 MPa</em></p>
-
-        <h3>Nozzle Geometry & Mesh</h3>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/merlin-1d/mesh/nozzle_mesh.png" alt="Generic nozzle mesh" loading="lazy">
-        </div>
-        <p>Structured O-grid mesh with Rao parabolic bell contour. 60x30 cells with boundary layer refinement.</p>
-
-        <h3>Mach Number: Euler vs RANS</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Euler Mach contour" loading="lazy">
-            <p>Exit Mach: 4.44 (0.40% error)</p>
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS SST (Viscous)</h4>
-            <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="RANS Mach contour" loading="lazy">
-            <p>Exit Mach: 4.45 (0.19% vs Euler)</p>
-          </div>
-        </div>
-
-        <h3>Shock Diamonds</h3>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/merlin-1d/plume/shock_diamonds.png" alt="Shock diamonds" loading="lazy">
-        </div>
-        <p>Density gradient magnitude reveals shock diamond pattern in exhaust plume.</p>
-
-        <h3>Plume Extension</h3>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/merlin-1d/plume/mach_contour_plume.png" alt="Plume Mach contour" loading="lazy">
-        </div>
-        <p>Conformal plume mesh captures shock diamond structure downstream of nozzle exit.</p>
-      </div>
-    </section>
-
-    <!-- Merlin 1D -->
-    <section class="section">
-      <div class="container">
         <h2 class="section-title">SpaceX Merlin 1D</h2>
-        <p><em>Falcon 9 first stage: epsilon=16, R*=82.5mm, Pc=9.7 MPa</em></p>
+        <p style="color: var(--fg-dim); font-size: var(--text-sm); margin-bottom: var(--space-6);">
+          <em>Manufactured by SpaceX, the Merlin 1D is a gas-generator cycle engine burning LOX/RP-1 propellants with a pintle injector design. First flown in 2013 on the Falcon 9, it has become the most-flown rocket engine in history, powering all Falcon 9 and Falcon Heavy first stages.</em>
+        </p>
 
-        <h3>Nozzle Geometry</h3>
+        <!-- Nozzle Dimensions -->
+        <div class="engine-dimensions">
+          <h4>Nozzle Dimensions</h4>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Parameter</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Throat Radius (Rt)</td><td>82.5 mm</td></tr>
+                <tr><td>Exit Radius (Re)</td><td>330 mm</td></tr>
+                <tr><td>Inlet Radius (Ri)</td><td>124 mm</td></tr>
+                <tr><td>Nozzle Length (Ln)</td><td>0.74 m</td></tr>
+                <tr><td>Converging Length</td><td>83 mm</td></tr>
+                <tr><td>Chamber Length</td><td>300 mm</td></tr>
+                <tr><td>Expansion Ratio</td><td>16:1</td></tr>
+                <tr><td>theta_n</td><td>30.0 deg</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Nozzle Geometry -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">Nozzle Geometry</h3>
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/merlin-1d/geometry/merlin-1d_geometry.png" alt="Merlin 1D 2D nozzle geometry" loading="lazy">
-            <p>epsilon=16:1, R_t=82.5mm</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
             <img src="assets/images/merlin-1d/geometry/merlin-1d_3d.png" alt="Merlin 1D 3D nozzle geometry" loading="lazy">
-            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
-        <h3>Mach Number: Euler vs RANS</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Merlin 1D Euler Mach contour" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS SST (Viscous)</h4>
-            <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="Merlin 1D RANS Mach contour" loading="lazy">
+        <!-- CFD Mesh -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">CFD Mesh</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/merlin-1d/mesh/merlin-mesh.png" alt="Merlin 1D structured O-grid mesh" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Structured O-grid mesh with Rao parabolic bell contour. 40x20 cells with boundary layer refinement and Bump distribution for throat clustering.
+        </p>
+
+        <!-- Mach Contour -->
+        <div class="contour-section">
+          <h3>Mach Contour: Euler vs RANS</h3>
+          <p>The Euler simulation predicts an exit Mach number of 4.31 (3.33% error relative to isentropic theory). The RANS simulation yields 3.83, reflecting an 11.19% reduction due to viscous boundary layer development along the nozzle wall.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler (Inviscid)</h4>
+              <img src="assets/images/merlin-1d/euler/mach_contour.png" alt="Merlin 1D Euler Mach contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS SST (Viscous)</h4>
+              <img src="assets/images/merlin-1d/rans/mach_contour_rans.png" alt="Merlin 1D RANS Mach contour" loading="lazy">
+            </div>
           </div>
         </div>
 
-        <h3>Shock Diamonds</h3>
+        <!-- Pressure Contour -->
+        <div class="contour-section">
+          <h3>Pressure Contour: Euler vs RANS</h3>
+          <p>Static pressure decreases monotonically from the chamber (9.7 MPa) through the converging section, reaches a minimum at the throat, and continues to decrease in the divergent section. The RANS solution shows slightly higher exit pressure due to viscous losses.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/merlin-1d/euler/pressure_contour.png" alt="Merlin 1D Euler pressure contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/merlin-1d/rans/pressure_contour_rans.png" alt="Merlin 1D RANS pressure contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Velocity Contour -->
+        <div class="contour-section">
+          <h3>Velocity Contour: Euler vs RANS</h3>
+          <p>Velocity increases from near-zero in the chamber to over 2300 m/s at the exit. The RANS solution exhibits a velocity deficit near the wall due to the no-slip boundary condition, creating the characteristic boundary layer profile.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/merlin-1d/euler/velocity_contour.png" alt="Merlin 1D Euler velocity contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/merlin-1d/rans/velocity_contour_rans.png" alt="Merlin 1D RANS velocity contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature Contour -->
+        <div class="contour-section">
+          <h3>Temperature Contour: Euler vs RANS</h3>
+          <p>Static temperature decreases from the chamber (3600 K) through the nozzle as thermal energy converts to kinetic energy. The RANS solution shows a thermal boundary layer near the wall where viscous dissipation generates heat.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/merlin-1d/euler/temperature_contour.png" alt="Merlin 1D Euler temperature contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/merlin-1d/rans/temp_contour_rans.png" alt="Merlin 1D RANS temperature contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Shock Diamonds & Plume</h3>
         <div class="walkthrough-step__media">
           <img src="assets/images/merlin-1d/plume/shock_diamonds.png" alt="Merlin 1D shock diamond visualization" loading="lazy">
         </div>
-
-        <h3>Plume Extension</h3>
-        <div class="walkthrough-step__media">
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Shock diamond pattern observed in the exhaust plume, formed by the interaction of oblique shock waves with the free shear layer at the jet boundary.
+        </p>
+        <div class="walkthrough-step__media" style="margin-top: var(--space-4);">
           <img src="assets/images/merlin-1d/plume/mach_contour_plume.png" alt="Merlin 1D plume Mach contour" loading="lazy">
         </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Conformal plume mesh captures shock diamond structure downstream of nozzle exit.
+        </p>
       </div>
     </section>
 
-    <!-- Raptor SL -->
-    <section class="section" style="background: var(--surface);">
+    <!-- ============================================================ -->
+    <!-- SPACEX RAPTOR SL -->
+    <!-- ============================================================ -->
+    <section class="section">
       <div class="container">
         <h2 class="section-title">SpaceX Raptor SL</h2>
-        <p><em>Starship Super Heavy booster: epsilon=34, R*=82.5mm, Pc=33.0 MPa</em></p>
+        <p style="color: var(--fg-dim); font-size: var(--text-sm); margin-bottom: var(--space-6);">
+          <em>The Raptor SL is a full-flow staged combustion cycle engine manufactured by SpaceX, burning LOX/CH4 propellants at the highest chamber pressure (33 MPa) of any operational engine. First flown in 2023 on Starship, it is the first full-flow staged combustion engine to power a vehicle in flight.</em>
+        </p>
 
-        <h3>Nozzle Geometry</h3>
+        <!-- Nozzle Dimensions -->
+        <div class="engine-dimensions">
+          <h4>Nozzle Dimensions</h4>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Parameter</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Throat Radius (Rt)</td><td>82.5 mm</td></tr>
+                <tr><td>Exit Radius (Re)</td><td>481 mm</td></tr>
+                <tr><td>Inlet Radius (Ri)</td><td>124 mm</td></tr>
+                <tr><td>Nozzle Length (Ln)</td><td>1.19 m</td></tr>
+                <tr><td>Converging Length</td><td>83 mm</td></tr>
+                <tr><td>Chamber Length</td><td>300 mm</td></tr>
+                <tr><td>Expansion Ratio</td><td>34:1</td></tr>
+                <tr><td>theta_n</td><td>28.0 deg</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Nozzle Geometry -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">Nozzle Geometry</h3>
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/raptor-sl/geometry/raptor-sl_geometry.png" alt="Raptor SL 2D nozzle geometry" loading="lazy">
-            <p>epsilon=34:1, R_t=82.5mm</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
             <img src="assets/images/raptor-sl/geometry/raptor-sl_3d.png" alt="Raptor SL 3D nozzle geometry" loading="lazy">
-            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
-        <h3>Mach Number: Euler vs RANS</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/raptor-sl/euler/mach_contour.png" alt="Raptor SL Euler Mach contour" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS SST (Viscous)</h4>
-            <img src="assets/images/raptor-sl/rans/mach_contour_rans.png" alt="Raptor SL RANS Mach contour" loading="lazy">
-          </div>
-        </div>
-
-        <h3>Convergence</h3>
+        <!-- CFD Mesh -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">CFD Mesh</h3>
         <div class="walkthrough-step__media">
-          <img src="assets/images/raptor-sl/euler/convergence.png" alt="Raptor SL convergence history" loading="lazy">
+          <img src="assets/images/raptor-sl/mesh/raptor-mesh.png" alt="Raptor SL structured O-grid mesh" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Structured O-grid mesh with Rao parabolic bell contour. 50x25 cells with boundary layer refinement and Bump distribution for throat clustering.
+        </p>
+
+        <!-- Mach Contour -->
+        <div class="contour-section">
+          <h3>Mach Contour: Euler vs RANS</h3>
+          <p>The Euler simulation predicts an exit Mach number of 5.48 (1.54% error), demonstrating excellent agreement with isentropic theory for the 34:1 expansion ratio. The RANS solution yields 4.88 (10.83% reduction), with the higher chamber pressure (33 MPa) producing more pronounced viscous effects.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler (Inviscid)</h4>
+              <img src="assets/images/raptor-sl/euler/mach_contour.png" alt="Raptor SL Euler Mach contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS SST (Viscous)</h4>
+              <img src="assets/images/raptor-sl/rans/mach_contour_rans.png" alt="Raptor SL RANS Mach contour" loading="lazy">
+            </div>
+          </div>
         </div>
 
-        <h3>Shock Diamonds</h3>
+        <!-- Pressure Contour -->
+        <div class="contour-section">
+          <h3>Pressure Contour: Euler vs RANS</h3>
+          <p>Pressure drops from 33 MPa in the chamber through the nozzle, with the RANS solution showing modified pressure recovery near the wall due to boundary layer momentum deficit. The higher chamber pressure relative to Merlin produces steeper pressure gradients in the converging section.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/raptor-sl/euler/pressure_contour.png" alt="Raptor SL Euler pressure contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/raptor-sl/rans/pressure_contour_rans.png" alt="Raptor SL RANS pressure contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Velocity Contour -->
+        <div class="contour-section">
+          <h3>Velocity Contour: Euler vs RANS</h3>
+          <p>The velocity field shows acceleration from subsonic to supersonic through the throat. The RANS boundary layer is thicker than Merlin's due to the higher Reynolds number associated with the 33 MPa chamber pressure.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/raptor-sl/euler/velocity_contour.png" alt="Raptor SL Euler velocity contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/raptor-sl/rans/velocity_contour_rans.png" alt="Raptor SL RANS velocity contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature Contour -->
+        <div class="contour-section">
+          <h3>Temperature Contour: Euler vs RANS</h3>
+          <p>Temperature decreases from 3500 K through the nozzle. The RANS thermal boundary layer is thicker than the Euler case, with viscous dissipation heating the near-wall region while the core flow cools through expansion.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/raptor-sl/euler/temperature_contour.png" alt="Raptor SL Euler temperature contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/raptor-sl/rans/temp_contour_rans.png" alt="Raptor SL RANS temperature contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Shock Diamonds & Plume</h3>
         <div class="walkthrough-step__media">
           <img src="assets/images/raptor-sl/plume/shock_diamonds.png" alt="Raptor SL shock diamond visualization" loading="lazy">
         </div>
-
-        <h3>Plume Extension</h3>
-        <div class="walkthrough-step__media">
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Shock diamond formation in the Raptor SL exhaust plume, visible as repeating bright structures from shock wave reflection at the jet boundary.
+        </p>
+        <div class="walkthrough-step__media" style="margin-top: var(--space-4);">
           <img src="assets/images/raptor-sl/plume/mach_contour_plume.png" alt="Raptor SL plume Mach contour" loading="lazy">
         </div>
       </div>
     </section>
 
+    <!-- ============================================================ -->
     <!-- RS-25 -->
-    <section class="section">
+    <!-- ============================================================ -->
+    <section class="section" style="background: var(--surface);">
       <div class="container">
-        <h2 class="section-title">RS-25 (Space Shuttle Main Engine)</h2>
-        <p><em>Space Shuttle / SLS core stage: epsilon=77.5, R*=136mm, Pc=20.6 MPa</em></p>
+        <h2 class="section-title">RS-25 (Space Shuttle / SLS)</h2>
+        <p style="color: var(--fg-dim); font-size: var(--text-sm); margin-bottom: var(--space-6);">
+          <em>Designed and manufactured by Aerojet Rocketdyne, the RS-25 is a fuel-rich staged combustion cycle engine burning LOX/LH2 with a vacuum specific impulse of 452 seconds. First flown in 1981 on the Space Shuttle, it continues service on NASA's Space Launch System (SLS) core stage.</em>
+        </p>
 
-        <h3>Nozzle Geometry</h3>
+        <!-- Nozzle Dimensions -->
+        <div class="engine-dimensions">
+          <h4>Nozzle Dimensions</h4>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Parameter</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Throat Radius (Rt)</td><td>136 mm</td></tr>
+                <tr><td>Exit Radius (Re)</td><td>1197 mm</td></tr>
+                <tr><td>Inlet Radius (Ri)</td><td>204 mm</td></tr>
+                <tr><td>Nozzle Length (Ln)</td><td>3.17 m</td></tr>
+                <tr><td>Converging Length</td><td>136 mm</td></tr>
+                <tr><td>Chamber Length</td><td>500 mm</td></tr>
+                <tr><td>Expansion Ratio</td><td>77.5:1</td></tr>
+                <tr><td>theta_n</td><td>25.0 deg</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Nozzle Geometry -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">Nozzle Geometry</h3>
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/rs-25/geometry/rs-25_geometry.png" alt="RS-25 2D nozzle geometry" loading="lazy">
-            <p>epsilon=77.5:1, R_t=136mm</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
             <img src="assets/images/rs-25/geometry/rs-25_3d.png" alt="RS-25 3D nozzle geometry" loading="lazy">
-            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
-        <h3>Mach Number: Euler vs RANS</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/rs-25/euler/mach_contour.png" alt="RS-25 Euler Mach contour" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS SST (Viscous)</h4>
-            <img src="assets/images/rs-25/rans/mach_contour_rans.png" alt="RS-25 RANS Mach contour" loading="lazy">
+        <!-- CFD Mesh -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">CFD Mesh</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/rs-25/mesh/rs25-mesh.png" alt="RS-25 structured O-grid mesh" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Structured O-grid mesh with Rao parabolic bell contour. 60x30 cells with boundary layer refinement and Bump distribution for throat clustering.
+        </p>
+
+        <!-- Mach Contour -->
+        <div class="contour-section">
+          <h3>Mach Contour: Euler vs RANS</h3>
+          <p>The Euler simulation predicts an exit Mach number of 6.44 (1.56% error), with the high expansion ratio (77.5:1) producing strong supersonic expansion. The RANS solution yields 5.86 (9.12% reduction), with the long diverging section amplifying viscous losses. The RS-25 is simulated at near-vacuum conditions (100 Pa).</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler (Inviscid)</h4>
+              <img src="assets/images/rs-25/euler/mach_contour.png" alt="RS-25 Euler Mach contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS SST (Viscous)</h4>
+              <img src="assets/images/rs-25/rans/mach_contour_rans.png" alt="RS-25 RANS Mach contour" loading="lazy">
+            </div>
           </div>
         </div>
 
-        <h3>Shock Diamonds</h3>
+        <!-- Pressure Contour -->
+        <div class="contour-section">
+          <h3>Pressure Contour: Euler vs RANS</h3>
+          <p>Pressure decreases from 20.6 MPa through the nozzle, with the extended diverging section producing a more gradual expansion than Merlin or Raptor. The RANS solution shows modified pressure distribution near the wall due to boundary layer growth along the longer nozzle length.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rs-25/euler/pressure_contour.png" alt="RS-25 Euler pressure contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rs-25/rans/pressure_contour_rans.png" alt="RS-25 RANS pressure contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Velocity Contour -->
+        <div class="contour-section">
+          <h3>Velocity Contour: Euler vs RANS</h3>
+          <p>The velocity field exhibits strong acceleration through the diverging section, reaching over 2500 m/s at the exit. The RANS boundary layer is thicker than lower-expansion engines, with the viscous region extending further into the core flow.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rs-25/euler/velocity_contour.png" alt="RS-25 Euler velocity contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rs-25/rans/velocity_contour_rans.png" alt="RS-25 RANS velocity contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature Contour -->
+        <div class="contour-section">
+          <h3>Temperature Contour: Euler vs RANS</h3>
+          <p>Temperature decreases from 3570 K through the nozzle. The extended diverging section allows more complete thermal-to-kinetic energy conversion, resulting in lower exit temperatures. The RANS thermal boundary layer is thicker due to the longer wetted length.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rs-25/euler/temperature_contour.png" alt="RS-25 Euler temperature contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rs-25/rans/temp_contour_rans.png" alt="RS-25 RANS temperature contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Shock Diamonds & Plume</h3>
         <div class="walkthrough-step__media">
           <img src="assets/images/rs-25/plume/shock_diamonds.png" alt="RS-25 shock diamond visualization" loading="lazy">
         </div>
-
-        <h3>Plume Extension</h3>
-        <div class="walkthrough-step__media">
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Shock diamond structure in the RS-25 exhaust plume at vacuum conditions, showing the characteristic overexpanded nozzle flow pattern with oblique shock reflections.
+        </p>
+        <div class="walkthrough-step__media" style="margin-top: var(--space-4);">
           <img src="assets/images/rs-25/plume/mach_contour_plume.png" alt="RS-25 plume Mach contour" loading="lazy">
         </div>
       </div>
     </section>
 
+    <!-- ============================================================ -->
     <!-- RL10B-2 -->
+    <!-- ============================================================ -->
     <section class="section">
       <div class="container">
         <h2 class="section-title">RL10B-2 (Delta IV Upper Stage)</h2>
-        <p><em>Delta IV upper stage: epsilon=285, R*=77mm, Pc=4.2 MPa</em></p>
+        <p style="color: var(--fg-dim); font-size: var(--text-sm); margin-bottom: var(--space-6);">
+          <em>The RL10B-2 is an expander cycle engine manufactured by Aerojet Rocketdyne, burning LOX/LH2 with a carbon-carbon extendable nozzle achieving 465.5 seconds of vacuum specific impulse. First flown in 1998, it has powered the upper stages of Delta IV and Vulcan Centaur rockets.</em>
+        </p>
 
-        <h3>Nozzle Geometry</h3>
+        <!-- Nozzle Dimensions -->
+        <div class="engine-dimensions">
+          <h4>Nozzle Dimensions</h4>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Parameter</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Throat Radius (Rt)</td><td>77 mm</td></tr>
+                <tr><td>Exit Radius (Re)</td><td>1300 mm</td></tr>
+                <tr><td>Inlet Radius (Ri)</td><td>115.5 mm</td></tr>
+                <tr><td>Nozzle Length (Ln)</td><td>3.65 m</td></tr>
+                <tr><td>Converging Length</td><td>77 mm</td></tr>
+                <tr><td>Chamber Length</td><td>600 mm</td></tr>
+                <tr><td>Expansion Ratio</td><td>285:1</td></tr>
+                <tr><td>theta_n</td><td>20.0 deg</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Nozzle Geometry -->
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">Nozzle Geometry</h3>
         <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>2D Annotated Profile</h4>
             <img src="assets/images/rl10B-2/geometry/rl10B-2_geometry.png" alt="RL10B-2 2D nozzle geometry" loading="lazy">
-            <p>epsilon=285:1, R_t=77mm</p>
           </div>
           <div class="comparison-grid__item">
             <h4>3D Revolved Surface</h4>
             <img src="assets/images/rl10B-2/geometry/rl10B-2_3d.png" alt="RL10B-2 3D nozzle geometry" loading="lazy">
-            <p>Axisymmetric surface of revolution</p>
           </div>
         </div>
 
-        <h3>Mach Number: Euler vs RANS</h3>
-        <div class="comparison-grid">
-          <div class="comparison-grid__item">
-            <h4>Euler (Inviscid)</h4>
-            <img src="assets/images/rl10B-2/euler/mach_contour.png" alt="RL10B-2 Euler Mach contour" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>RANS SST (Viscous)</h4>
-            <img src="assets/images/rl10B-2/rans/mach_contour_rans.png" alt="RL10B-2 RANS Mach contour" loading="lazy">
+        <!-- CFD Mesh -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">CFD Mesh</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/rl10B-2/mesh/rl10b2-mesh.png" alt="RL10B-2 structured O-grid mesh" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Structured O-grid mesh with Rao parabolic bell contour. 80x40 cells with boundary layer refinement and Bump distribution for throat clustering. The extreme 285:1 expansion ratio requires the finest mesh resolution.
+        </p>
+
+        <!-- Mach Contour -->
+        <div class="contour-section">
+          <h3>Mach Contour: Euler vs RANS</h3>
+          <p>The Euler simulation predicts an exit Mach number of 7.71 (11.76% error), with the extreme 285:1 expansion ratio producing the highest exit velocity of any engine studied. The RANS solution yields 6.56 (14.88% reduction), reflecting the substantial viscous losses in the extremely long diverging section.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler (Inviscid)</h4>
+              <img src="assets/images/rl10B-2/euler/mach_contour.png" alt="RL10B-2 Euler Mach contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS SST (Viscous)</h4>
+              <img src="assets/images/rl10B-2/rans/mach_contour_rans.png" alt="RL10B-2 RANS Mach contour" loading="lazy">
+            </div>
           </div>
         </div>
 
-        <h3>Shock Diamonds</h3>
+        <!-- Pressure Contour -->
+        <div class="contour-section">
+          <h3>Pressure Contour: Euler vs RANS</h3>
+          <p>Pressure decreases from 4.2 MPa through the nozzle, with the extreme expansion ratio producing the lowest exit pressure of any engine studied. The long diverging section (3.65m) creates a very gradual pressure decay.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rl10B-2/euler/pressure_contour.png" alt="RL10B-2 Euler pressure contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rl10B-2/rans/pressure_contour_rans.png" alt="RL10B-2 RANS pressure contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Velocity Contour -->
+        <div class="contour-section">
+          <h3>Velocity Contour: Euler vs RANS</h3>
+          <p>The velocity field shows acceleration to over 2000 m/s at the exit. The RANS boundary layer is the thickest among all engines studied, due to the extreme nozzle length (3.65m) and low chamber pressure (4.2 MPa).</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rl10B-2/euler/velocity_contour.png" alt="RL10B-2 Euler velocity contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rl10B-2/rans/velocity_contour_rans.png" alt="RL10B-2 RANS velocity contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Temperature Contour -->
+        <div class="contour-section">
+          <h3>Temperature Contour: Euler vs RANS</h3>
+          <p>Temperature decreases from 2200 K through the nozzle. The extreme expansion ratio and long diverging section produce the lowest exit temperatures, with the RANS thermal boundary layer extending significantly into the core flow.</p>
+          <div class="comparison-grid">
+            <div class="comparison-grid__item">
+              <h4>Euler</h4>
+              <img src="assets/images/rl10B-2/euler/temperature_contour.png" alt="RL10B-2 Euler temperature contour" loading="lazy">
+            </div>
+            <div class="comparison-grid__item">
+              <h4>RANS</h4>
+              <img src="assets/images/rl10B-2/rans/temp_contour_rans.png" alt="RL10B-2 RANS temperature contour" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shock Diamonds -->
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Shock Diamonds & Plume</h3>
         <div class="walkthrough-step__media">
           <img src="assets/images/rl10B-2/plume/shock_diamonds.png" alt="RL10B-2 shock diamond visualization" loading="lazy">
         </div>
-
-        <h3>Plume Extension</h3>
-        <div class="walkthrough-step__media">
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Plume structure for the extreme 285:1 expansion ratio, showing the characteristic vacuum-optimized nozzle exhaust pattern.
+        </p>
+        <div class="walkthrough-step__media" style="margin-top: var(--space-4);">
           <img src="assets/images/rl10B-2/plume/mach_contour_plume.png" alt="RL10B-2 plume Mach contour" loading="lazy">
         </div>
       </div>
     </section>
 
     <!-- Convergence Analysis -->
-    <section class="section">
+    <section class="section" style="background: var(--surface);">
       <div class="container">
         <h2 class="section-title">Convergence Analysis</h2>
-        <p>Convergence history for all four nozzle configurations, showing RMS density residual reduction over solver iterations.</p>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-6);">
+          Convergence history for all four nozzle configurations, showing RMS density residual reduction over solver iterations.
+        </p>
 
         <div class="comparison-grid">
           <div class="comparison-grid__item">
-            <h4>Generic (Rao Bell)</h4>
-            <img src="assets/images/merlin-1d/euler/convergence.png" alt="Generic nozzle convergence" loading="lazy">
-          </div>
-          <div class="comparison-grid__item">
-            <h4>SpaceX Merlin 1D</h4>
+            <h4>Merlin 1D</h4>
             <img src="assets/images/merlin-1d/euler/convergence.png" alt="Merlin 1D convergence" loading="lazy">
           </div>
           <div class="comparison-grid__item">
-            <h4>SpaceX Raptor SL</h4>
+            <h4>Raptor SL</h4>
             <img src="assets/images/raptor-sl/euler/convergence.png" alt="Raptor SL convergence" loading="lazy">
           </div>
+        </div>
+        <div class="comparison-grid">
           <div class="comparison-grid__item">
             <h4>RS-25</h4>
             <img src="assets/images/rs-25/euler/convergence.png" alt="RS-25 convergence" loading="lazy">
@@ -360,27 +697,49 @@
     </section>
 
     <!-- Parametric Sweeps -->
-    <section class="section" style="background: var(--surface);">
+    <section class="section">
       <div class="container">
         <h2 class="section-title">Parametric Sweeps</h2>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-bottom: var(--space-6);">
+          Sweeps vary one parameter while holding others constant, performed on the generic nozzle (epsilon=16, R*=50mm).
+        </p>
 
-        <h3>Exit Mach vs Expansion Ratio</h3>
-        <div class="walkthrough-step__media">
-          <img src="assets/images/sweep_mach_vs_epsilon.png" alt="Exit Mach vs expansion ratio" loading="lazy">
+        <div class="table-wrapper" style="margin-bottom: var(--space-8);">
+          <table class="table">
+            <thead>
+              <tr><th>Sweep</th><th>Parameter</th><th>Values</th><th>Fixed</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Expansion ratio</td><td>4, 8, 12, 16, 20</td><td>Pc=9.7 MPa</td></tr>
+              <tr><td>2</td><td>Chamber pressure</td><td>5, 10, 20, 50 MPa</td><td>epsilon=12</td></tr>
+              <tr><td>3</td><td>Throat radius</td><td>0.01, 0.025, 0.05, 0.1 m</td><td>epsilon=12</td></tr>
+            </tbody>
+          </table>
         </div>
-        <p>Exit Mach increases with expansion ratio following the isentropic area-Mach relation.</p>
 
-        <h3>Exit Mach vs Chamber Pressure</h3>
+        <h3 style="color: var(--cyan); margin-bottom: var(--space-4);">Exit Mach vs Expansion Ratio</h3>
         <div class="walkthrough-step__media">
-          <img src="assets/images/sweep_mach_vs_pc.png" alt="Exit Mach vs chamber pressure" loading="lazy">
+          <img src="assets/images/merlin-1d/sweeps/sweep_mach_vs_epsilon.png" alt="Exit Mach vs expansion ratio" loading="lazy">
         </div>
-        <p>Exit Mach is independent of chamber pressure for calorically perfect gas.</p>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Exit Mach increases with expansion ratio following the isentropic area-Mach relation.
+        </p>
 
-        <h3>Exit Mach vs Throat Radius</h3>
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Exit Mach vs Chamber Pressure</h3>
         <div class="walkthrough-step__media">
-          <img src="assets/images/sweep_mach_vs_rstar.png" alt="Exit Mach vs throat radius" loading="lazy">
+          <img src="assets/images/merlin-1d/sweeps/sweep_mach_vs_pc.png" alt="Exit Mach vs chamber pressure" loading="lazy">
         </div>
-        <p>Exit Mach is independent of absolute scale for geometrically similar nozzles.</p>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Exit Mach is independent of chamber pressure for calorically perfect gas.
+        </p>
+
+        <h3 style="color: var(--cyan); margin: var(--space-8) 0 var(--space-4);">Exit Mach vs Throat Radius</h3>
+        <div class="walkthrough-step__media">
+          <img src="assets/images/merlin-1d/sweeps/sweep_mach_vs_rstar.png" alt="Exit Mach vs throat radius" loading="lazy">
+        </div>
+        <p style="font-size: var(--text-sm); color: var(--fg-dim); margin-top: var(--space-3);">
+          Exit Mach is independent of absolute scale for geometrically similar nozzles.
+        </p>
       </div>
     </section>
 
