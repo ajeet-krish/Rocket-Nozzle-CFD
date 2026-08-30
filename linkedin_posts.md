@@ -20,7 +20,7 @@ The Mach number distribution shows acceleration from near-zero in the pressure c
 3. RANS Mach contour of the Merlin 1D
 
 **Hashtags:**
-`#CFD #RocketPropulsion #FluidDynamics #AerospaceEngineering #deLavalNozzle #CompressibleFlow #SpaceX #Merlin`
+`#CFD #RocketPropulsion #FluidDynamics #AerospaceEngineering #SpaceX`
 
 ---
 
