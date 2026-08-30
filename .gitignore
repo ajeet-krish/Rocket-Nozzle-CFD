@@ -30,3 +30,7 @@ Thumbs.db
 
 # uv
 .python-version
+
+# Internal docs
+docs/PARAVIEW_GUIDE.md
+linkedin_posts.md
