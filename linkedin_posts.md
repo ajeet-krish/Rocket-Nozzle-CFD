@@ -6,21 +6,13 @@ A collection of post ideas for sharing compressible CFD rocket nozzle analysis o
 
 ## Post 1: The de Laval Principle -- Merlin 1D
 
-**Hook:**
-Why does a rocket engine have an hourglass shape? The answer is one of the most elegant tricks in fluid dynamics.
+Why does a rocket engine have an hourglass shape?
 
-**Body:**
 A converging-diverging nozzle (de Laval nozzle) accelerates gas from subsonic to supersonic speeds using nothing but geometry. In the converging section, flow speeds up as the area shrinks. At the throat, the gas hits Mach 1. In compressible flow, the gas can compress or expand, meaning its density changes with pressure. Once supersonic, pressure and density drop so rapidly through the diverging section that velocity must increase to conserve mass, even though the area is growing.
 
-I modeled this using the SpaceX Merlin 1D, the most-flown rocket engine in history. It's driven by a gas-generator cycle and pintle injector design that keeps it simple, reliable, and cheap to produce.
+I modeled this using the SpaceX Merlin 1D, the most-flown rocket engine in history, to capture the full viscous flow field. It's driven by a gas-generator cycle and pintle injector design that keeps it simple, reliable, and cheap to produce.
 
-Using SU2 and RANS with the SST k-omega model, I captured the full viscous flow field. The Mach contours show acceleration from near-zero in the chamber to supersonic at the exit, with a thin boundary layer developing along the wall where friction slows the gas. Pressure decays monotonically through the nozzle, and the velocity field confirms the core flow reaching over 2000 m/s while the near-wall region lags behind.
-
-**Key takeaway:**
-The nozzle shape is not arbitrary. It is the physical embodiment of compressible flow physics, and the Merlin 1D is a masterclass in optimizing it for real-world missions.
-
-**Call to action:**
-What nozzle design concept surprised you the most when you first learned it? Drop it in the comments.
+The Mach number distribution shows acceleration from near-zero in the pressure chamber to supersonic at the exit, with a thin boundary layer developing along the wall where friction slows the gas. Pressure decays monotonically through the nozzle, and the velocity field confirms the core flow reaching over 2000 m/s. Nozzle shape design is the physical embodiment of compressible flow physics, and the Merlin 1D is a perfect example in optimizing it for real-world missions.
 
 **Suggested images:**
 1. Real-life photo of Merlin 1D engine firing
