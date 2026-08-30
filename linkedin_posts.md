@@ -10,9 +10,9 @@ A collection of post ideas for sharing compressible CFD rocket nozzle analysis o
 Why does a rocket engine have an hourglass shape? The answer is one of the most elegant tricks in fluid dynamics.
 
 **Body:**
-A converging-diverging nozzle (de Laval nozzle) accelerates gas from subsonic to supersonic speeds using nothing but geometry. In the converging section, flow speeds up as the area shrinks. At the throat, the gas hits Mach 1. Then the physics flip: compressibility takes over. Density drops faster than the area increases, so velocity must rise to conserve mass. The diverging section becomes a supersonic accelerator.
+A converging-diverging nozzle (de Laval nozzle) accelerates gas from subsonic to supersonic speeds using nothing but geometry. In the converging section, flow speeds up as the area shrinks. At the throat, the gas hits Mach 1. In compressible flow, the gas can compress or expand, meaning its density changes with pressure. Once supersonic, pressure and density drop so rapidly through the diverging section that velocity must increase to conserve mass, even though the area is growing.
 
-I modeled this using the SpaceX Merlin 1D, the engine powering every Falcon 9 first stage. It burns LOX/RP-1 at 9.7 MPa with a 16:1 expansion ratio. The Merlin is the most-flown rocket engine in history, driven by a gas-generator cycle and pintle injector design that keeps it simple, reliable, and cheap to produce.
+I modeled this using the SpaceX Merlin 1D, the most-flown rocket engine in history. It's driven by a gas-generator cycle and pintle injector design that keeps it simple, reliable, and cheap to produce.
 
 Using SU2 and RANS with the SST k-omega model, I captured the full viscous flow field. The Mach contours show acceleration from near-zero in the chamber to supersonic at the exit, with a thin boundary layer developing along the wall where friction slows the gas. Pressure decays monotonically through the nozzle, and the velocity field confirms the core flow reaching over 2000 m/s while the near-wall region lags behind.
 
