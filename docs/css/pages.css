@@ -46,8 +46,8 @@
 
 .gallery__item img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
 }
 
 /* --- Prose Content --- */
@@ -360,8 +360,7 @@
 }
 
 .walkthrough-step__media img:only-child {
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+  max-height: none;
 }
 
 .walkthrough-step--compact .walkthrough-step__media {
@@ -1283,15 +1282,14 @@
 
 .feature-img-wrap {
   position: relative;
-  aspect-ratio: 16 / 10;
   background: var(--background);
   overflow: hidden;
 }
 
 .feature-img-wrap .screenshot {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   display: block;
   border: none;
   border-radius: 0;
@@ -1815,15 +1813,14 @@
 }
 
 .engine-card__media {
-  aspect-ratio: 16 / 10;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
 }
 
 .engine-card__media img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
 }
 
 .engine-card__content {
