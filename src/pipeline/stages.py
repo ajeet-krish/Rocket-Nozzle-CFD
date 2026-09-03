@@ -292,6 +292,7 @@ def run_plume_stage(config: EngineConfig) -> int:
         iterations=config.plume_iterations,
         cfl_number=config.plume_cfl,
         farfield_marker="farfield",
+        muscl=config.plume_muscl,
     )
 
     mesh_path = generate_nozzle_mesh(

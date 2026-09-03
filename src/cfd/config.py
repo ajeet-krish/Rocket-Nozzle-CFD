@@ -33,6 +33,8 @@ class SU2NozzleConfig:
     cfl_number: float = 5.0
     iterations: int = 5000
     conv_residual_minval: float = -6.0
+    muscl: bool = False
+    muscl_limiter: str = "VAN_ALBADA"
 
     # Gas properties (air)
     gamma: float = 1.4
@@ -84,7 +86,8 @@ MARKER_OUTLET= ( {self.outlet_marker}, {self.static_pressure:.1f} )
 MARKER_FAR= ( {self.farfield_marker} )
 ''' if self.farfield_marker else ''}% -------------------- NUMERICAL METHOD -----------------------
 CONV_NUM_METHOD_FLOW= ROE
-MUSCL_FLOW= NO
+MUSCL_FLOW= {'YES' if self.muscl else 'NO'}
+{f'LIMITER_FLOW= {self.muscl_limiter}' if self.muscl else ''}
 TIME_DISCRE_FLOW= EULER_IMPLICIT
 
 % -------------------- CONVERGENCE ----------------------------

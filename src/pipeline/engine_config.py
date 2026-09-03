@@ -68,6 +68,7 @@ class EngineConfig:
     rans_iterations: int = 10000
     plume_length_ratio: float = 10.0
     plume_radius_ratio: float = 2.0
+    plume_muscl: bool = False
     sweep_expansion_ratios: tuple[float, ...] = (4.0, 8.0, 12.0, 16.0, 20.0)
     sweep_chamber_pressures: tuple[float, ...] = (5e6, 10e6, 20e6, 50e6)
     sweep_throat_radii: tuple[float, ...] = (0.01, 0.025, 0.05, 0.1)

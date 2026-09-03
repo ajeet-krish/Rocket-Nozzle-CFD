@@ -29,12 +29,12 @@ CONFIG = EngineConfig(
     rans_cfl=0.05,
     rans_iterations=10000,
     # Extended plume domain for shock diamonds
-    # 20 exit diameters downstream (13.2m), 5 exit radii wide (1.65m)
-    plume_n_axial=200,
-    plume_n_normal=60,
+    # 17 exit diameters downstream (11.2m), 5 exit radii wide (1.65m)
+    plume_n_axial=300,
+    plume_n_normal=80,
     plume_cfl=0.05,
     plume_iterations=10000,
-    plume_length_ratio=160.0,   # 13.2m / 0.0825m throat_radius
+    plume_length_ratio=136.0,   # 11.2m / 0.0825m throat_radius (trimmed 2m)
     plume_radius_ratio=3.0,     # 3x exit radius (0.99m, narrower for better resolution)
     sweep_expansion_ratios=(8.0, 12.0, 16.0, 20.0, 24.0),
     sweep_chamber_pressures=(5e6, 9.7e6, 15e6, 20e6),
