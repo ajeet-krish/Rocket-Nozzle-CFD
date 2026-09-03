@@ -280,49 +280,81 @@ def generate_nozzle_mesh(
         x_plume_end = x_exit + plume_length
         plume_width = plume_radius_ratio * config.exit_radius
 
-        # Plume corner points
+        # Plume domain: two-region rectangular box
+        # Region 1 (transition): x_exit to x_exit+0.1m, vertical jump from exit_radius to plume_width
+        # Region 2 (main plume): x_exit+0.1m to x_plume_end, full-width rectangle
+        x_plume_start = x_exit + 0.1  # 10cm transition zone
+
+        # Points
+        plume_jump_top = gmsh.model.geo.addPoint(x_plume_start, plume_width, 0)
         plume_top_right = gmsh.model.geo.addPoint(x_plume_end, plume_width, 0)
         plume_bot_right = gmsh.model.geo.addPoint(x_plume_end, 0, 0)
+        plume_jump_bot = gmsh.model.geo.addPoint(x_plume_start, 0, 0)
 
-        # CRITICAL: Use negative curve index for conformal interface
-        # This makes plume_left traverse the same geometric curve as exit_line
-        # but in the opposite direction, ensuring node matching between nozzle
-        # and plume domains
-        plume_left = -exit_line  # Negative index = reversed direction
+        # Shared interface: reversed exit_line for conformal mesh
+        plume_left = -exit_line
 
-        # Plume boundary curves (3 new curves + shared exit_line)
-        plume_top = gmsh.model.geo.addLine(wall_last_pt, plume_top_right)
-        plume_outlet = gmsh.model.geo.addLine(plume_top_right, plume_bot_right)
-        plume_axis = gmsh.model.geo.addLine(plume_bot_right, axis_end)
+        # Region 1 boundary (transition from nozzle to plume width):
+        # Left: shared exit interface (plume_left)
+        # Top: angled line from wall_last_pt to plume_jump_top
+        # Right: vertical line from plume_jump_top to plume_jump_bot
+        # Bottom: axis from plume_jump_bot to axis_end (short segment)
+        plume_r1_top = gmsh.model.geo.addLine(wall_last_pt, plume_jump_top)
+        plume_r1_right = gmsh.model.geo.addLine(plume_jump_top, plume_jump_bot)
+        plume_r1_bot = gmsh.model.geo.addLine(plume_jump_bot, axis_end)
 
-        # Plume surface (4-curve loop: shared left + 3 new curves)
-        plume_loop = gmsh.model.geo.addCurveLoop(
-            [plume_left, plume_top, plume_outlet, plume_axis],
+        plume_r1_loop = gmsh.model.geo.addCurveLoop(
+            [plume_left, plume_r1_top, plume_r1_right, plume_r1_bot],
         )
-        plume_surface = gmsh.model.geo.addPlaneSurface([plume_loop])
+        plume_r1_surface = gmsh.model.geo.addPlaneSurface([plume_r1_loop])
 
-        # Plume transfinite meshing
-        # plume_left = -exit_line, so it shares the same node count as exit_line.
-        gmsh.model.geo.mesh.setTransfiniteCurve(plume_top, n_axial + 1)
-        gmsh.model.geo.mesh.setTransfiniteCurve(plume_outlet, n_normal + 1)
-        gmsh.model.geo.mesh.setTransfiniteCurve(plume_axis, n_axial + 1)
+        # Region 2 boundary (main plume rectangle):
+        # Left: vertical line from plume_jump_top to plume_jump_bot (shared with R1)
+        # Top: horizontal line across main plume
+        # Right: vertical outlet
+        # Bottom: axis
+        plume_r2_left = -plume_r1_right  # Reversed = upward direction
+        plume_r2_top = gmsh.model.geo.addLine(plume_jump_top, plume_top_right)
+        plume_r2_right = gmsh.model.geo.addLine(plume_top_right, plume_bot_right)
+        plume_r2_bot = gmsh.model.geo.addLine(plume_bot_right, plume_jump_bot)
 
-        gmsh.model.geo.mesh.setTransfiniteSurface(plume_surface, "Left")
-        gmsh.model.geo.mesh.setRecombine(2, plume_surface)
+        plume_r2_loop = gmsh.model.geo.addCurveLoop(
+            [plume_r2_left, plume_r2_top, plume_r2_right, plume_r2_bot],
+        )
+        plume_r2_surface = gmsh.model.geo.addPlaneSurface([plume_r2_loop])
+
+        # Transfinite meshing
+        # Region 1 (transition)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r1_top, max(n_axial // 10, 3) + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r1_right, n_normal + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r1_bot, max(n_axial // 10, 3) + 1)
+        # plume_left = -exit_line, shares node count with exit_line
+
+        # Region 2 (main plume)
+        n_plume_r2 = n_axial - max(n_axial // 10, 3)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r2_top, n_plume_r2 + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r2_right, n_normal + 1)
+        gmsh.model.geo.mesh.setTransfiniteCurve(plume_r2_bot, n_plume_r2 + 1)
+        # plume_r2_left = -plume_r1_right, shares node count
+
+        gmsh.model.geo.mesh.setTransfiniteSurface(plume_r1_surface, "Left")
+        gmsh.model.geo.mesh.setRecombine(2, plume_r1_surface)
+        gmsh.model.geo.mesh.setTransfiniteSurface(plume_r2_surface, "Left")
+        gmsh.model.geo.mesh.setRecombine(2, plume_r2_surface)
 
     # --- Physical groups ---
 
     if plume_extension:
         # Nozzle + plume: exit_line is the shared internal interface (not a boundary)
         gmsh.model.geo.addPhysicalGroup(1, [inlet_line], name="inlet")
-        gmsh.model.geo.addPhysicalGroup(1, [plume_outlet], name="outlet")
-        gmsh.model.geo.addPhysicalGroup(1, wall_curves, name="wall")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_r2_right], name="outlet")
+        gmsh.model.geo.addPhysicalGroup(1, wall_curves + [plume_r1_top], name="wall")
         gmsh.model.geo.addPhysicalGroup(
-            1, [axis_line, plume_axis], name="symmetry",
+            1, [axis_line, plume_r1_bot, plume_r2_bot], name="symmetry",
         )
-        gmsh.model.geo.addPhysicalGroup(1, [plume_top], name="farfield")
+        gmsh.model.geo.addPhysicalGroup(1, [plume_r2_top], name="farfield")
         gmsh.model.geo.addPhysicalGroup(
-            2, [nozzle_surface, plume_surface], name="fluid",
+            2, [nozzle_surface, plume_r1_surface, plume_r2_surface], name="fluid",
         )
     else:
         # Nozzle only
