@@ -60,6 +60,8 @@ class EngineConfig:
     rans_n_normal: int = 30
     plume_n_axial: int = 40
     plume_n_normal: int = 20
+    plume_cfl: float = 0.05
+    plume_iterations: int = 8000
     euler_cfl: float = 0.1
     euler_iterations: int = 5000
     rans_cfl: float = 0.05

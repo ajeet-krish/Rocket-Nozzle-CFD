@@ -289,8 +289,8 @@ def run_plume_stage(config: EngineConfig) -> int:
         total_temperature=config.total_temperature,
         static_pressure=config.static_pressure,
         gamma=config.gamma,
-        iterations=config.euler_iterations,
-        cfl_number=config.euler_cfl * 0.5,
+        iterations=config.plume_iterations,
+        cfl_number=config.plume_cfl,
         farfield_marker="farfield",
     )
 

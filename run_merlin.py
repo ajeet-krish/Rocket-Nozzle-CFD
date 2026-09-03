@@ -18,14 +18,24 @@ CONFIG = EngineConfig(
     total_temperature=3600.0,
     theta_n=30,
     ld=0.7,
+    # Nozzle Euler mesh
     euler_n_axial=40,
     euler_n_normal=20,
     euler_cfl=0.1,
     euler_iterations=5000,
+    # RANS mesh
     rans_n_axial=80,
     rans_n_normal=40,
     rans_cfl=0.05,
     rans_iterations=10000,
+    # Extended plume domain for shock diamonds
+    # 20 exit diameters downstream (13.2m), 5 exit radii wide (1.65m)
+    plume_n_axial=200,
+    plume_n_normal=60,
+    plume_cfl=0.05,
+    plume_iterations=10000,
+    plume_length_ratio=160.0,   # 13.2m / 0.0825m throat_radius
+    plume_radius_ratio=5.0,     # 5x exit radius
     sweep_expansion_ratios=(8.0, 12.0, 16.0, 20.0, 24.0),
     sweep_chamber_pressures=(5e6, 9.7e6, 15e6, 20e6),
     sweep_throat_radii=(0.05, 0.0825, 0.1, 0.15),
