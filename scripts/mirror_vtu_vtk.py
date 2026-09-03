@@ -62,11 +62,12 @@ def mirror_vtu_to_vtk(input_path: Path, output_path: Path) -> None:
         arrays['Density'] = np.concatenate([data.density, data.density])
     if data.temperature is not None:
         arrays['Temperature'] = np.concatenate([data.temperature, data.temperature])
-    if data.velocity_x is not None:
-        arrays['Velocity_x'] = np.concatenate([data.velocity_x, data.velocity_x])
-    if data.velocity_y is not None:
-        # Negate y-velocity for mirrored half
-        arrays['Velocity_y'] = np.concatenate([data.velocity_y, -data.velocity_y])
+    if data.velocity_x is not None and data.velocity_y is not None:
+        # Combine into VECTORS array (vx, vy, 0) for ParaView streamlines
+        vx = np.concatenate([data.velocity_x, data.velocity_x])
+        vy = np.concatenate([data.velocity_y, -data.velocity_y])  # negate for mirror
+        vz = np.zeros_like(vx)
+        arrays['Velocity'] = np.column_stack([vx, vy, vz])
 
     n_total_points = len(full_coords)
     n_total_cells = len(full_cells)
