@@ -194,9 +194,11 @@ Static temperature decreases from the chamber (3600 K) through the nozzle as the
 
 ### Shock Diamonds & Plume
 
-![Shock Diamonds](docs/assets/images/merlin-1d/plume/shock_diamonds.png)
+![Mach Contour - Plume](docs/assets/images/merlin-1d/plume/plume_mach_full.png)
 
-Shock diamond pattern observed in the exhaust plume, formed by the interaction of oblique shock waves with the free shear layer at the jet boundary.
+An Euler plume simulation with an extended domain spanning 17 exit diameters downstream captures the full shock diamond train. The nozzle operates overexpanded at sea level (exit pressure 0.11x ambient), driving a repeating compression-expansion cycle in the exhaust jet. Oblique shocks originate at the exit lip and converge on the centerline, where they reflect as Prandtl-Meyer expansion fans. The cycle repeats downstream until viscous mixing dissipates the structure.
+
+The centerline Mach oscillates between 1.3 and 6.3, with 6 shock diamonds identified in the plume. Diamond spacing averages 1.93m, decaying in amplitude as the pressure ratio converges toward ambient. The simulation uses a 200x60 structured mesh with the Roe flux scheme and Euler implicit time integration at CFL 0.05.
 
 ---
 
