@@ -113,3 +113,26 @@ def generic_test() -> NozzleConfig:
         nozzle_length_fraction=0,
         num_points=200,
     )
+
+
+def aerospike_x33() -> "AerospikeConfig":
+    """NASA X-33 style axisymmetric aerospike nozzle.
+
+    - Throat radius: 82.5mm (annular gap inner)
+    - Expansion ratio: 49:1
+    - Spike length: 1.62m
+    - Truncated at 80%
+    - Designed for altitude compensation demonstration
+    """
+    from .aerospike import AerospikeConfig
+    return AerospikeConfig(
+        throat_radius=0.0825,
+        expansion_ratio=49.0,
+        spike_length=1.62,
+        truncation_ratio=0.80,
+        spike_theta_n=25.0,
+        spike_theta_e=0.0,
+        casing_length=0.30,
+        casing_gap=0.04,
+        num_points=300,
+    )
