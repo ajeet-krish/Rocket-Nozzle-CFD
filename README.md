@@ -2,23 +2,9 @@
 
 ## Abstract
 
-A computational fluid dynamics (CFD) investigation of compressible flow through converging-diverging (de Laval) rocket nozzles is presented, employing a parametric pipeline that integrates geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation. The study examines four operational rocket engine configurations: the SpaceX Merlin 1D (16:1 expansion ratio), Raptor SL (34:1), RS-25 (77.5:1), and RL10B-2 (285:1), spanning the full range from sea-level to vacuum-optimized nozzle designs.
+A computational fluid dynamics (CFD) investigation of compressible flow through converging-diverging (de Laval) rocket nozzles is presented, employing a parametric pipeline that integrates geometry generation, structured mesh generation, finite-volume CFD simulation, and multi-method validation. The study examines four operational rocket engine configurations: the SpaceX Merlin 1D (16:1 expansion ratio), Raptor SL (34:1), RS-25 (77.5:1), and RL10B-2 (285:1), spanning the full range from sea-level to vacuum-optimized nozzle designs. Rao parabolic bell contours are generated via quadratic Bezier curves, structured O-grid meshes are produced through Gmsh transfinite meshing, and both inviscid Euler and RANS simulations are conducted using SU2 v8.4.0 with the SST k-omega turbulence model.
 
-Rao parabolic bell nozzle contours are generated using quadratic Bezier curves with circular entrant and exit arcs, implementing the thrust-optimized parabolic (TOP) nozzle specification. Structured O-grid meshes are produced via Gmsh transfinite meshing with geometry-aware key point placement and Bump distribution for throat region clustering. Both inviscid Euler and Reynolds-Averaged Navier-Stokes (RANS) simulations are conducted using SU2 v8.4.0, with the SST k-omega turbulence model employed for viscous flow prediction.
-
-Triple validation methodology compares CFD results against isentropic closed-form relations and the Method of Characteristics. Grid Convergence Index analysis per ASME V&V 20-2009 confirms mesh independence. Parametric sweeps across expansion ratios, chamber pressures, and throat radii establish the aerodynamic design space. Performance metrics including thrust coefficient, specific impulse, and exit velocity are computed for each configuration, enabling direct comparison with published engine specifications.
-
-### Comparative Analysis and Design Implications
-
-The four engines represent distinct points in the sea-level to vacuum design spectrum, each optimized for its mission profile. The Merlin 1D (16:1) achieves an exit Mach of 4.31 with a thrust coefficient of 1.511, producing 313 kN at 9.7 MPa chamber pressure. Its compact geometry (0.74 m nozzle length) and moderate expansion ratio reflect the sea-level constraint: overexpanded nozzles suffer flow separation and drag losses in atmosphere. The Raptor SL (34:1) pushes chamber pressure to 33 MPa, the highest of any operational engine, achieving Mach 5.48 and 1136 kN thrust. This high-pressure approach increases thrust density, allowing a smaller engine for the same output, which is critical for Starship's rapid reusability requirements.
-
-The RS-25 (77.5:1) and RL10B-2 (285:1) demonstrate the vacuum optimization strategy. The RS-25 achieves Mach 6.44 and 262.7 s Isp, while the RL10B-2 reaches Mach 7.71. However, the RL10B-2's extreme expansion ratio (285:1) produces a 3.65 m nozzle with only 139 kN thrust at 4.2 MPa, yielding the lowest Isp (209.5 s) among the four engines due to high friction losses in the extended diverging section. This highlights the diminishing returns of expansion ratio beyond ~100:1 for practical engines.
-
-The CFD results explain the industry's shift toward the Merlin 1D's design philosophy. The RS-25, while performant, requires a complex staged combustion cycle with separate fuel and oxidizer preburners, resulting in manufacturing costs exceeding $100M per engine. The Merlin 1D's gas-generator cycle and pintle injector design reduce part count by approximately 60%, enabling production rates of hundreds per year at roughly $1M per unit. For Falcon 9's mission profile, where the first stage operates entirely in atmosphere, the 16:1 expansion ratio is aerodynamically optimal. The marginal Isp gain from higher expansion ratios does not justify the weight penalty of a larger nozzle in sea-level operations.
-
-The Raptor SL represents the next evolution, combining high chamber pressure (33 MPa) with a moderate expansion ratio (34:1) to achieve both high thrust density and good sea-level efficiency. The full-flow staged combustion cycle, while complex, eliminates the gas-generator exhaust losses inherent in the Merlin's design, improving overall cycle efficiency. This approach trades manufacturing complexity for propellant efficiency, a favorable exchange for Starship's deep-space mission requirements where every second of Isp translates to reduced propellant mass.
-
-These results demonstrate that nozzle design is fundamentally a systems-level optimization problem. The "best" expansion ratio depends not only on aerodynamic performance but on manufacturing cost, engine mass, mission profile, and operational constraints. The parametric sweep data generated by this pipeline enables engineers to quantify these tradeoffs and identify optimal configurations for specific mission requirements.
+Triple validation compares CFD results against isentropic closed-form relations and the Method of Characteristics, with Grid Convergence Index analysis per ASME V&V 20-2009 confirming mesh independence. Parametric sweeps across expansion ratios, chamber pressures, and throat radii establish the aerodynamic design space. Results reveal that nozzle performance is fundamentally a systems-level optimization: the Merlin 1D's compact 16:1 geometry achieves 228.8 s Isp at sea level, while the RL10B-2's extreme 285:1 expansion reaches Mach 7.71 in vacuum but suffers diminishing returns from viscous losses in its 3.65 m diverging section.
 
 ## Table of Contents
 
@@ -29,6 +15,7 @@ These results demonstrate that nozzle design is fundamentally a systems-level op
 - [SpaceX Raptor SL](#spacex-raptor-sl)
 - [RS-25 (Space Shuttle / SLS)](#rs-25-space-shuttle--sls)
 - [RL10B-2 (Delta IV Upper Stage)](#rl10b-2-delta-iv-upper-stage)
+- [Results](#results)
 - [Parametric Sweeps](#parametric-sweeps)
 - [Methodology](#methodology)
 - [Project Structure](#project-structure)
@@ -412,6 +399,28 @@ Temperature decreases from 2200 K through the nozzle. The extreme expansion rati
 ![Shock Diamonds](docs/assets/images/rl10B-2/plume/shock_diamonds.png)
 
 Plume structure for the extreme 285:1 expansion ratio, showing the characteristic vacuum-optimized nozzle exhaust pattern.
+
+---
+
+## Results
+
+The four engine configurations examined in this study represent distinct points along the sea-level to vacuum design spectrum, each optimized for its respective mission profile. The CFD results, validated against isentropic theory and the Method of Characteristics, reveal how expansion ratio, chamber pressure, and nozzle geometry interact to determine aerodynamic performance.
+
+### Merlin 1D and Raptor SL: Sea-Level Optimization
+
+The Merlin 1D (16:1) achieves an exit Mach of 4.31 with a thrust coefficient of 1.511, producing 313 kN at 9.7 MPa chamber pressure. Its compact geometry (0.74 m nozzle length) and moderate expansion ratio reflect the sea-level constraint: overexpanded nozzles suffer flow separation and drag losses in atmosphere. The RANS simulation captures an 11.19% reduction in exit Mach (3.83) relative to the inviscid prediction, attributable to boundary layer development along the short diverging section. The Raptor SL (34:1) pushes chamber pressure to 33 MPa, the highest of any operational engine, achieving Mach 5.48 and 1136 kN thrust. This high-pressure approach increases thrust density, allowing a smaller engine for the same output, which is critical for Starship's rapid reusability requirements. The higher Reynolds number associated with the 33 MPa chamber pressure produces a more pronounced viscous boundary layer, reducing RANS exit Mach to 4.88 (10.83% reduction from inviscid).
+
+### RS-25 and RL10B-2: Vacuum Optimization
+
+The RS-25 (77.5:1) and RL10B-2 (285:1) demonstrate the vacuum optimization strategy. The RS-25 achieves Mach 6.44 and 262.7 s Isp, with the extended diverging section (3.17 m) enabling more complete thermal-to-kinetic energy conversion. The RANS solution yields 5.86 exit Mach (9.12% reduction), with viscous losses amplified by the longer wetted length. The RL10B-2 reaches the highest inviscid exit Mach (7.71) of any engine studied, but its extreme expansion ratio (285:1) produces a 3.65 m nozzle with only 139 kN thrust at 4.2 MPa. The RANS simulation reveals substantial viscous losses in the extended diverging section, reducing exit Mach to 6.56 (14.88% reduction) and yielding the lowest Isp (209.5 s) among the four engines. This result highlights the diminishing returns of expansion ratio beyond approximately 100:1 for practical engines, where friction losses in the extended nozzle length offset gains from expanded exhaust velocity.
+
+### Design Implications
+
+The CFD results elucidate the industry's divergence in design philosophy. The RS-25, while aerodynamically performant, requires a complex staged combustion cycle with separate fuel and oxidizer preburners, resulting in manufacturing costs exceeding 100M per engine. The Merlin 1D's gas-generator cycle and pintle injector design reduce part count by approximately 60%, enabling production rates of hundreds per year at roughly $1M per unit. For Falcon 9's mission profile, where the first stage operates entirely in atmosphere, the 16:1 expansion ratio is aerodynamically optimal; the marginal Isp gain from higher expansion ratios does not justify the weight penalty of a larger nozzle in sea-level operations.
+
+The Raptor SL represents the next evolution, combining high chamber pressure (33 MPa) with a moderate expansion ratio (34:1) to achieve both high thrust density and good sea-level efficiency. The full-flow staged combustion cycle, while complex, eliminates the gas-generator exhaust losses inherent in the Merlin's design, improving overall cycle efficiency. This approach trades manufacturing complexity for propellant efficiency, a favorable exchange for Starship's deep-space mission requirements where every second of Isp translates to reduced propellant mass.
+
+These results demonstrate that nozzle design is fundamentally a systems-level optimization problem. The optimal expansion ratio depends not only on aerodynamic performance but on manufacturing cost, engine mass, mission profile, and operational constraints. The parametric sweep data generated by this pipeline enables engineers to quantify these tradeoffs and identify optimal configurations for specific mission requirements.
 
 ---
 

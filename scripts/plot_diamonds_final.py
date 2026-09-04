@@ -58,13 +58,17 @@ def main():
             filtered_peaks_x.append(xp)
             filtered_peaks_pr.append(pp)
 
+    # Smooth the Mach data
+    from scipy.ndimage import uniform_filter1d
+    ax_mach_smooth = uniform_filter1d(ax_mach, size=15)
+
     # Plot
     fig, ax = plt.subplots(figsize=(14, 4))
 
-    ax.plot(ax_x, ax_mach, 'b-', linewidth=1.0)
+    ax.plot(ax_x, ax_mach_smooth, 'b-', linewidth=1.2)
     ax.axhline(y=1.0, color='gray', linestyle='--', alpha=0.5)
 
-    ax.set_xlabel('x (m)', fontsize=12)
+    ax.set_xlabel('Axial Distance from the Throat (m)', fontsize=12)
     ax.set_ylabel('Mach Number', fontsize=12)
     ax.set_title('Merlin 1D: Centerline Mach (Shock Diamond Formation)', fontsize=14)
     ax.set_xlim(0.8, 12)
