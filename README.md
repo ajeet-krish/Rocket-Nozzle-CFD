@@ -177,7 +177,9 @@ Static temperature decreases from the chamber (3600 K) through the nozzle as the
 
 ### Mach vs Pressure Distribution
 
-*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
+![Mach vs Axis](docs/assets/images/merlin-1d/rans/mach_vs_axis.png)
+
+Centerline distribution of Mach number (blue, left axis) and static pressure (red, right axis) along the nozzle axis from the RANS simulation. The throat position is marked with a vertical dashed line. The monotonic increase in Mach number through the diverging section confirms proper supersonic expansion, while the corresponding pressure decay follows the isentropic relation.
 
 ### Shock Diamonds & Plume
 
@@ -248,16 +250,6 @@ The velocity field shows acceleration from subsonic to supersonic through the th
 
 Temperature decreases from 3500 K through the nozzle. The RANS thermal boundary layer is thicker than the Euler case, with viscous dissipation heating the near-wall region while the core flow cools through expansion.
 
-### Mach vs Pressure Distribution
-
-*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
-
-### Shock Diamonds & Plume
-
-![Shock Diamonds](docs/assets/images/raptor-sl/plume/shock_diamonds.png)
-
-Shock diamond formation in the Raptor SL exhaust plume, visible as repeating bright structures from shock wave reflection at the jet boundary.
-
 ---
 
 ## RS-25 (Space Shuttle / SLS)
@@ -318,16 +310,6 @@ The velocity field exhibits strong acceleration through the diverging section, r
 | ![Euler Temperature](docs/assets/images/rs-25/euler/temperature_contour.png) | ![RANS Temperature](docs/assets/images/rs-25/rans/temp_contour_rans.png) |
 
 Temperature decreases from 3570 K through the nozzle. The extended diverging section allows more complete thermal-to-kinetic energy conversion, resulting in lower exit temperatures. The RANS thermal boundary layer is thicker than Merlin or Raptor due to the longer wetted length.
-
-### Mach vs Pressure Distribution
-
-*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
-
-### Shock Diamonds & Plume
-
-![Shock Diamonds](docs/assets/images/rs-25/plume/shock_diamonds.png)
-
-Shock diamond structure in the RS-25 exhaust plume at vacuum conditions, showing the characteristic overexpanded nozzle flow pattern with oblique shock reflections.
 
 ---
 
@@ -390,16 +372,6 @@ The velocity field shows acceleration to over 2000 m/s at the exit. The RANS bou
 
 Temperature decreases from 2200 K through the nozzle. The extreme expansion ratio and long diverging section produce the lowest exit temperatures, with the RANS thermal boundary layer extending significantly into the core flow.
 
-### Mach vs Pressure Distribution
-
-*Placeholder: Plot of Mach number and static pressure along the nozzle axis.*
-
-### Shock Diamonds & Plume
-
-![Shock Diamonds](docs/assets/images/rl10B-2/plume/shock_diamonds.png)
-
-Plume structure for the extreme 285:1 expansion ratio, showing the characteristic vacuum-optimized nozzle exhaust pattern.
-
 ---
 
 ## Results
@@ -426,13 +398,13 @@ These results demonstrate that nozzle design is fundamentally a systems-level op
 
 ## Parametric Sweeps
 
-Sweeps vary one parameter while holding others constant, performed on the generic nozzle (epsilon=16, R*=50mm).
+Sweeps vary one parameter while holding others constant, performed on the Merlin 1D nozzle (epsilon=16, Rt=82.5mm).
 
 | Sweep | Parameter | Values | Fixed |
 |-------|-----------|--------|-------|
-| 1 | Expansion ratio | 4, 8, 12, 16, 20 | Pc=9.7 MPa |
-| 2 | Chamber pressure | 5, 10, 20, 50 MPa | epsilon=12 |
-| 3 | Throat radius | 0.01, 0.025, 0.05, 0.1 m | epsilon=12 |
+| 1 | Expansion ratio | 8, 12, 16, 20, 24 | Pc=9.7 MPa |
+| 2 | Chamber pressure | 5, 9.7, 15, 20 MPa | epsilon=8 |
+| 3 | Throat radius | 0.05, 0.0825, 0.1, 0.15 m | epsilon=8 |
 
 ### Exit Mach vs Expansion Ratio
 

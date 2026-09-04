@@ -180,3 +180,128 @@ def plot_shock_diamonds(
     plt.close()
 
     return output_path
+
+
+def extract_centerline_data(
+    vtu_data: VTUData,
+    y_tolerance: float = 0.001,
+    n_bins: int = 200,
+) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None]:
+    """Extract Mach number and pressure along nozzle centerline (y=0 axis).
+
+    For axisymmetric meshes, the centerline is the symmetry axis (y=0).
+    Bins nodes by x-coordinate and selects the node closest to y=0 in each bin.
+
+    Args:
+        vtu_data: Parsed VTU data from parse_vtu()
+        y_tolerance: Maximum |y| to consider as centerline (m)
+        n_bins: Number of axial bins
+
+    Returns:
+        x_centerline: Axial coordinates (n_bins,)
+        mach_centerline: Mach number at each x station (or None)
+        pressure_centerline: Pressure at each x station (or None)
+    """
+    coords = vtu_data.coordinates
+    x = coords[:, 0]
+    y = coords[:, 1]
+
+    # Bin by x-coordinate
+    x_min, x_max = x.min(), x.max()
+    x_bins = np.linspace(x_min, x_max, n_bins + 1)
+    x_centerline: list[float] = []
+    mach_values: list[float] = []
+    pressure_values: list[float] = []
+
+    for i in range(n_bins):
+        mask = (x >= x_bins[i]) & (x < x_bins[i + 1])
+        if mask.any():
+            # Filter to centerline nodes
+            center_mask = np.abs(y[mask]) < y_tolerance
+            if center_mask.any():
+                # Among centerline nodes, take the one closest to y=0
+                y_abs = np.abs(y[mask][center_mask])
+                idx = np.argmin(y_abs)
+                x_vals = x[mask][center_mask]
+                x_centerline.append(x_vals[idx])
+                if vtu_data.mach is not None:
+                    mach_values.append(vtu_data.mach[mask][center_mask][idx])
+                if vtu_data.pressure is not None:
+                    pressure_values.append(vtu_data.pressure[mask][center_mask][idx])
+
+    if len(x_centerline) == 0:
+        return np.array([]), None, None
+
+    x_out = np.array(x_centerline)
+    mach_out = np.array(mach_values) if vtu_data.mach is not None else None
+    pressure_out = np.array(pressure_values) if vtu_data.pressure is not None else None
+
+    return x_out, mach_out, pressure_out
+
+
+def plot_mach_vs_axis(
+    vtu_data: VTUData,
+    output_path: Path,
+    nozzle_config: "NozzleConfig | None" = None,
+    engine_name: str = "Nozzle",
+    dpi: int = 150,
+) -> Path:
+    """Plot Mach number and static pressure along nozzle centerline.
+
+    Creates a dual-y-axis plot: Mach on left y-axis, pressure on right y-axis (log scale).
+    Marks throat position with a vertical dashed line if nozzle_config is provided.
+
+    Args:
+        vtu_data: Parsed VTU data
+        output_path: Path to save plot
+        nozzle_config: Optional NozzleConfig for throat annotation
+        engine_name: Engine name for title
+        dpi: Image resolution
+
+    Returns:
+        Path to saved plot
+    """
+    x, mach, pressure = extract_centerline_data(vtu_data)
+
+    if len(x) == 0:
+        print(f"  Warning: no centerline data extracted, skipping plot")
+        return output_path
+
+    fig, ax1 = plt.subplots(1, 1, figsize=(10, 6))
+
+    # Mach on left y-axis
+    if mach is not None:
+        ax1.plot(x, mach, "b-", linewidth=2, label="Mach Number")
+    ax1.set_xlabel("Axial Distance (m)", fontsize=12)
+    ax1.set_ylabel("Mach Number", fontsize=12, color="b")
+    ax1.tick_params(axis="y", labelcolor="b")
+
+    # Pressure on right y-axis (log scale)
+    if pressure is not None:
+        ax2 = ax1.twinx()
+        ax2.plot(x, pressure, "r-", linewidth=2, label="Static Pressure")
+        ax2.set_ylabel("Static Pressure (Pa)", fontsize=12, color="r")
+        ax2.tick_params(axis="y", labelcolor="r")
+        ax2.set_yscale("log")
+
+    # Throat annotation (throat is at x=0 in nozzle coordinate system)
+    if nozzle_config is not None:
+        ax1.axvline(x=0.0, color="k", linestyle="--", linewidth=1, alpha=0.7, label="Throat")
+
+    ax1.set_title(f"{engine_name} - Centerline Distribution", fontsize=14)
+    ax1.grid(True, alpha=0.3)
+
+    # Combined legend
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    if pressure is not None:
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+    else:
+        ax1.legend(loc="upper right")
+
+    plt.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=dpi, bbox_inches="tight")
+    plt.close()
+
+    return output_path

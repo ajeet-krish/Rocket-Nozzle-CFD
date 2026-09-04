@@ -252,6 +252,23 @@ def run_rans_stage(config: EngineConfig) -> int:
 
     # Contour generation removed - user extracts from ParaView
 
+    # Centerline Mach/pressure distribution
+    if vtu.exists():
+        try:
+            from cfd.vtu_parser import parse_vtu
+            from viz.postprocessing import plot_mach_vs_axis
+            vtu_data = parse_vtu(vtu)
+            centerline_path = images_dir / "mach_vs_axis.png"
+            plot_mach_vs_axis(
+                vtu_data,
+                centerline_path,
+                nozzle_config=nozzle_config,
+                engine_name=config.label,
+            )
+            print(f"  Centerline plot: {centerline_path}")
+        except Exception as exc:
+            print(f"  Centerline plot FAILED: {exc}")
+
     print(f"  Exit Mach: {results.exit_mach:.4f}, Time: {elapsed:.1f}s")
 
     euler_dir = Path(f"{config.output_dir}/euler")
